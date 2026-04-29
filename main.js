@@ -1,79 +1,68 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// 1. CONFIGURACIÓN PARAMÉTRICA (Lo que puedes modificar después)
-const configuracion = {
-    diametro: 20,
-    altura: 30,
-    nivelPorcentaje: 65 // Cambia esto para ver subir/bajar el grano
-};
-
-// 2. ESCENA, CÁMARA Y RENDERER
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x222222);
+scene.background = new THREE.Color(0x333333); // Fondo gris oscuro para resaltar el metal
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(40, 40, 40);
-
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
+new OrbitControls(camera, renderer.domElement);
 
-// 3. ILUMINACIÓN
-const light = new THREE.DirectionalLight(0xffffff, 1.5);
-light.position.set(10, 20, 10);
-scene.add(light);
-scene.add(new THREE.AmbientLight(0x404040));
+// --- FUNCIÓN MAESTRA PARA CREAR TU SILO ---
+function crearSiloIndustrial(x, z, diametro, altura, nivelPorcentaje, nombre) {
+    const grupoSilo = new THREE.Group();
+    const radio = diametro / 2;
 
-// 4. FUNCIÓN PARA CONSTRUIR EL SILO
-function crearSiloParametrico() {
-    const radio = configuracion.diametro / 2;
-    const altura = configuracion.altura;
-
-    // Cuerpo Exterior (Cilindro transparente)
+    // 1. Cuerpo Cilíndrico (Metal corrugado)
     const geoCuerpo = new THREE.CylinderGeometry(radio, radio, altura, 32);
     const matCuerpo = new THREE.MeshPhongMaterial({ 
-        color: 0x888888, 
+        color: 0x999999, 
         transparent: true, 
-        opacity: 0.3,
-        side: THREE.DoubleSide 
+        opacity: 0.4,
+        shininess: 100 
     });
-    const siloCuerpo = new THREE.Mesh(geoCuerpo, matCuerpo);
-    scene.add(siloCuerpo);
+    const cuerpo = new THREE.Mesh(geoCuerpo, matCuerpo);
+    grupoSilo.add(cuerpo);
 
-    // Contenido (El Grano)
-    const alturaGrano = (configuracion.nivelPorcentaje / 100) * altura;
-    const geoGrano = new THREE.CylinderGeometry(radio * 0.98, radio * 0.98, alturaGrano, 32);
-    const matGrano = new THREE.MeshPhongMaterial({ color: 0xd2b48c });
+    // 2. Techo Cónico (Estilo Kepler Weber)
+    const geoTecho = new THREE.ConeGeometry(radio * 1.05, 5, 32);
+    const matTecho = new THREE.MeshPhongMaterial({ color: 0x777777 });
+    const techo = new THREE.Mesh(geoTecho, matTecho);
+    techo.position.y = altura / 2 + 2.5;
+    grupoSilo.add(techo);
+
+    // 3. Contenido (Grano/Stock)
+    const alturaGrano = (nivelPorcentaje / 100) * altura;
+    const geoGrano = new THREE.CylinderGeometry(radio * 0.99, radio * 0.99, alturaGrano, 32);
+    const matGrano = new THREE.MeshPhongMaterial({ color: 0xffa500 }); // Color Naranja/Soya
     const grano = new THREE.Mesh(geoGrano, matGrano);
-    
-    // Ajustar posición del grano para que esté en la base
     grano.position.y = -(altura / 2) + (alturaGrano / 2);
-    scene.add(grano);
+    grupoSilo.add(grano);
 
-    // Piso de referencia
-    const grid = new THREE.GridHelper(100, 10);
-    grid.position.y = -(altura / 2);
-    scene.add(grid);
+    grupoSilo.position.set(x, 0, z);
+    scene.add(grupoSilo);
 }
 
-crearSiloParametrico();
+// --- BLOQUE DE POSICIONAMIENTO (Basado en tu layout) ---
+// Aquí es donde ajustas las coordenadas X y Z para que queden como en la foto
+crearSiloIndustrial(-25, 0, 20, 30, 75, "Silo A"); // Grande Izquierda
+crearSiloIndustrial(0, 0, 20, 30, 40, "Silo B");  // Grande Centro
+crearSiloIndustrial(20, 10, 10, 20, 90, "Silo C"); // Pequeño Fondo
 
-// 5. CICLO DE ANIMACIÓN
+// Iluminación para efecto metálico
+const light1 = new THREE.DirectionalLight(0xffffff, 1);
+light1.position.set(10, 50, 20);
+scene.add(light1);
+const light2 = new THREE.AmbientLight(0x404040, 2);
+scene.add(light2);
+
+camera.position.set(60, 60, 60);
+
 function animate() {
     requestAnimationFrame(animate);
-    controls.update();
     renderer.render(scene, camera);
 }
 animate();
-
-// Ajuste de ventana
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-document.getElementById('status').innerText = "Estado: Conectado - Visualizando Stock";
