@@ -1,82 +1,88 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+// 1. CONFIGURACIÓN DE LA ESCENA
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x333333); // Fondo gris oscuro para resaltar el metal
+scene.background = new THREE.Color(0x1a1a1a); // Fondo oscuro industrial
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(50, 50, 50);
+
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-new OrbitControls(camera, renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
 
-// --- FUNCIÓN MAESTRA PARA CREAR TU SILO ---
-function crearSiloIndustrial(x, z, diametro, altura, nivelPorcentaje, nombre) {
-    const grupoSilo = new THREE.Group();
-    const radio = diametro / 2;
-
-// 1. Array de Datos (Esto simula tu base de datos WMS)
+// 2. BASE DE DATOS DE SILOS (Aquí modificas medidas y niveles)
 const silosData = [
     { x: -30, z: 0, d: 20, h: 30, nivel: 75, nombre: "Silo 01", producto: "Soya", stockMax: 2000 },
     { x: 0, z: 0, d: 20, h: 30, nivel: 40, nombre: "Silo 02", producto: "Soya", stockMax: 2000 },
     { x: 25, z: 10, d: 12, h: 20, nivel: 85, nombre: "Silo 03", producto: "Trigo", stockMax: 800 }
 ];
 
-const objetosSilos = []; // Para que el raycaster los detecte
+const objetosDeteccion = []; // Para las etiquetas
 
-function renderizarPlanta() {
+// 3. FUNCIÓN PARA DIBUJAR CADA SILO
+function crearPlanta() {
     silosData.forEach(data => {
         const grupo = new THREE.Group();
+        const radio = data.d / 2;
+
+        // Cuerpo metálico transparente
+        const cuerpoGeo = new THREE.CylinderGeometry(radio, radio, data.h, 32);
+        const cuerpoMat = new THREE.MeshPhongMaterial({ 
+            color: 0x999999, transparent: true, opacity: 0.3, shininess: 90 
+        });
+        const cuerpo = new THREE.Mesh(cuerpoGeo, cuerpoMat);
         
-        // Cuerpo y Techo (Igual al anterior)
-        const cuerpo = new THREE.Mesh(
-            new THREE.CylinderGeometry(data.d/2, data.d/2, data.h, 32),
-            new THREE.MeshPhongMaterial({ color: 0x999999, transparent: true, opacity: 0.3 })
-        );
-        
-        const techo = new THREE.Mesh(
-            new THREE.ConeGeometry(data.d/2 * 1.05, 5, 32),
-            new THREE.MeshPhongMaterial({ color: 0x555555 })
-        );
+        // Techo cónico
+        const techoGeo = new THREE.ConeGeometry(radio * 1.05, 5, 32);
+        const techoMat = new THREE.MeshPhongMaterial({ color: 0x555555 });
+        const techo = new THREE.Mesh(techoGeo, techoMat);
         techo.position.y = data.h / 2 + 2.5;
 
-        // Grano
-        const hGrano = (data.nivel / 100) * data.h;
-        const grano = new THREE.Mesh(
-            new THREE.CylinderGeometry(data.d/2 - 0.1, data.d/2 - 0.1, hGrano, 32),
-            new THREE.MeshPhongMaterial({ color: data.producto === "Soya" ? 0xffa500 : 0xe3af66 })
-        );
-        grano.position.y = -(data.h / 2) + (hGrano / 2);
+        // Grano (Stock)
+        const alturaGrano = (data.nivel / 100) * data.h;
+        const granoGeo = new THREE.CylinderGeometry(radio * 0.98, radio * 0.98, alturaGrano, 32);
+        const colorGrano = data.producto === "Soya" ? 0xffa500 : 0xe3af66;
+        const granoMat = new THREE.MeshPhongMaterial({ color: colorGrano });
+        const grano = new THREE.Mesh(granoGeo, granoMat);
+        grano.position.y = -(data.h / 2) + (alturaGrano / 2);
 
+        // Armar el silo
         grupo.add(cuerpo, techo, grano);
         grupo.position.set(data.x, 0, data.z);
-        
-        // Guardamos metadatos en el objeto 3D para el tooltip
-        grupo.userData = data; 
+        grupo.userData = data; // Guardamos los datos para el tooltip
         
         scene.add(grupo);
-        objetosSilos.push(cuerpo); // El raycaster detecta la colisión con el cuerpo
+        objetosDeteccion.push(cuerpo); // Registramos para el mouse
     });
 }
 
-// 3. Lógica del Raycaster (Detección de Mouse)
+// 4. LUCES
+const sun = new THREE.DirectionalLight(0xffffff, 2);
+sun.position.set(10, 50, 10);
+scene.add(sun);
+scene.add(new THREE.AmbientLight(0x404040, 1.5));
+
+// 5. LÓGICA DE LAS ETIQUETAS (RAYCASTER)
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
+const tooltip = document.getElementById('tooltip');
 
 window.addEventListener('mousemove', (event) => {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(objetosSilos);
+    const intersects = raycaster.intersectObjects(objetosDeteccion);
 
-    const tooltip = document.getElementById('tooltip');
     if (intersects.length > 0) {
         const d = intersects[0].object.parent.userData;
         tooltip.style.display = 'block';
-        tooltip.style.left = event.clientX + 10 + 'px';
-        tooltip.style.top = event.clientY + 10 + 'px';
+        tooltip.style.left = event.clientX + 15 + 'px';
+        tooltip.style.top = event.clientY + 15 + 'px';
         
         document.getElementById('tooltip-nombre').innerText = d.nombre;
         document.getElementById('tooltip-producto').innerText = d.producto;
@@ -87,4 +93,19 @@ window.addEventListener('mousemove', (event) => {
     }
 });
 
-renderizarPlanta();
+// EJECUCIÓN
+crearPlanta();
+
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
+
+// Ajuste de pantalla
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
