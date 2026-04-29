@@ -1,31 +1,20 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Almacenera 3D - Control de Inventario</title>
-    <style>
-        body { margin: 0; overflow: hidden; background-color: #1a1a1a; }
-        #info {
-            position: absolute; top: 10px; left: 10px;
-            color: white; font-family: Arial, sans-serif;
-            background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px;
-        }
-    </style>
+    <title>Silo 3D - Almacenera</title>
+    <style>body { margin: 0; background: #000; }</style>
 </head>
 <body>
-    <div id="info">
-        <h2>Control de Silos 3D</h2>
-        <p>Silo: 20m Diámetro x 30m Alto</p>
-        <div id="status">Cargando visor...</div>
-    </div>
     <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
     </script>
     <script type="module" src="main.js"></script>
+<div id="tooltip" style="position: absolute; display: none; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; font-family: sans-serif; pointer-events: none; border: 1px solid #ffa500;">
+    <strong id="tooltip-nombre"></strong><br>
+    Producto: <span id="tooltip-producto"></span><br>
+    Stock: <span id="tooltip-stock"></span> Ton<br>
+    Nivel: <span id="tooltip-porcentaje"></span>%
+</div>
+    
 </body>
 </html>
