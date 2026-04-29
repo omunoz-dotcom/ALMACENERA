@@ -1,20 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Silo 3D - Almacenera</title>
-    <style>body { margin: 0; background: #000; }</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Almacenera 3D</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #1a1a1a; font-family: Arial, sans-serif; }
+        #info {
+            position: absolute; top: 10px; left: 10px;
+            color: white; background: rgba(0,0,0,0.8);
+            padding: 15px; border-radius: 8px; z-index: 100;
+            border: 1px solid #444;
+        }
+        /* Estilo para la etiqueta flotante */
+        #tooltip {
+            position: absolute; display: none; background: rgba(0,0,0,0.9);
+            color: #ffa500; padding: 10px; border-radius: 5px;
+            pointer-events: none; border: 1px solid #ffa500; z-index: 1000;
+        }
+    </style>
 </head>
 <body>
+
+    <div id="info">
+        <h2 style="margin:0">Control de Silos 3D</h2>
+        <p id="status">Esperando script...</p>
+    </div>
+
+    <div id="tooltip">
+        <strong id="tooltip-nombre"></strong><br>
+        Producto: <span id="tooltip-producto"></span><br>
+        Stock: <span id="tooltip-stock"></span> Ton<br>
+        Nivel: <span id="tooltip-porcentaje"></span>%
+    </div>
+
     <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
     </script>
-    <script type="module" src="main.js"></script>
-<div id="tooltip" style="position: absolute; display: none; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; font-family: sans-serif; pointer-events: none; border: 1px solid #ffa500;">
-    <strong id="tooltip-nombre"></strong><br>
-    Producto: <span id="tooltip-producto"></span><br>
-    Stock: <span id="tooltip-stock"></span> Ton<br>
-    Nivel: <span id="tooltip-porcentaje"></span>%
-</div>
-    
+
+    <script type="module">
+        import './main.js';
+        document.getElementById('status').innerText = "Visor Activo";
+    </script>
 </body>
 </html>
