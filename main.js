@@ -1,68 +1,72 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+// 1. Array de Datos (Esto simula tu base de datos WMS)
+const silosData = [
+    { x: -30, z: 0, d: 20, h: 30, nivel: 75, nombre: "Silo 01", producto: "Soya", stockMax: 2000 },
+    { x: 0, z: 0, d: 20, h: 30, nivel: 40, nombre: "Silo 02", producto: "Soya", stockMax: 2000 },
+    { x: 25, z: 10, d: 12, h: 20, nivel: 85, nombre: "Silo 03", producto: "Trigo", stockMax: 800 }
+];
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x333333); // Fondo gris oscuro para resaltar el metal
+const objetosSilos = []; // Para que el raycaster los detecte
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+function renderizarPlanta() {
+    silosData.forEach(data => {
+        const grupo = new THREE.Group();
+        
+        // Cuerpo y Techo (Igual al anterior)
+        const cuerpo = new THREE.Mesh(
+            new THREE.CylinderGeometry(data.d/2, data.d/2, data.h, 32),
+            new THREE.MeshPhongMaterial({ color: 0x999999, transparent: true, opacity: 0.3 })
+        );
+        
+        const techo = new THREE.Mesh(
+            new THREE.ConeGeometry(data.d/2 * 1.05, 5, 32),
+            new THREE.MeshPhongMaterial({ color: 0x555555 })
+        );
+        techo.position.y = data.h / 2 + 2.5;
 
-new OrbitControls(camera, renderer.domElement);
+        // Grano
+        const hGrano = (data.nivel / 100) * data.h;
+        const grano = new THREE.Mesh(
+            new THREE.CylinderGeometry(data.d/2 - 0.1, data.d/2 - 0.1, hGrano, 32),
+            new THREE.MeshPhongMaterial({ color: data.producto === "Soya" ? 0xffa500 : 0xe3af66 })
+        );
+        grano.position.y = -(data.h / 2) + (hGrano / 2);
 
-// --- FUNCIÓN MAESTRA PARA CREAR TU SILO ---
-function crearSiloIndustrial(x, z, diametro, altura, nivelPorcentaje, nombre) {
-    const grupoSilo = new THREE.Group();
-    const radio = diametro / 2;
-
-    // 1. Cuerpo Cilíndrico (Metal corrugado)
-    const geoCuerpo = new THREE.CylinderGeometry(radio, radio, altura, 32);
-    const matCuerpo = new THREE.MeshPhongMaterial({ 
-        color: 0x999999, 
-        transparent: true, 
-        opacity: 0.4,
-        shininess: 100 
+        grupo.add(cuerpo, techo, grano);
+        grupo.position.set(data.x, 0, data.z);
+        
+        // Guardamos metadatos en el objeto 3D para el tooltip
+        grupo.userData = data; 
+        
+        scene.add(grupo);
+        objetosSilos.push(cuerpo); // El raycaster detecta la colisión con el cuerpo
     });
-    const cuerpo = new THREE.Mesh(geoCuerpo, matCuerpo);
-    grupoSilo.add(cuerpo);
-
-    // 2. Techo Cónico (Estilo Kepler Weber)
-    const geoTecho = new THREE.ConeGeometry(radio * 1.05, 5, 32);
-    const matTecho = new THREE.MeshPhongMaterial({ color: 0x777777 });
-    const techo = new THREE.Mesh(geoTecho, matTecho);
-    techo.position.y = altura / 2 + 2.5;
-    grupoSilo.add(techo);
-
-    // 3. Contenido (Grano/Stock)
-    const alturaGrano = (nivelPorcentaje / 100) * altura;
-    const geoGrano = new THREE.CylinderGeometry(radio * 0.99, radio * 0.99, alturaGrano, 32);
-    const matGrano = new THREE.MeshPhongMaterial({ color: 0xffa500 }); // Color Naranja/Soya
-    const grano = new THREE.Mesh(geoGrano, matGrano);
-    grano.position.y = -(altura / 2) + (alturaGrano / 2);
-    grupoSilo.add(grano);
-
-    grupoSilo.position.set(x, 0, z);
-    scene.add(grupoSilo);
 }
 
-// --- BLOQUE DE POSICIONAMIENTO (Basado en tu layout) ---
-// Aquí es donde ajustas las coordenadas X y Z para que queden como en la foto
-crearSiloIndustrial(-25, 0, 20, 30, 75, "Silo A"); // Grande Izquierda
-crearSiloIndustrial(0, 0, 20, 30, 40, "Silo B");  // Grande Centro
-crearSiloIndustrial(20, 10, 10, 20, 90, "Silo C"); // Pequeño Fondo
+// 3. Lógica del Raycaster (Detección de Mouse)
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
-// Iluminación para efecto metálico
-const light1 = new THREE.DirectionalLight(0xffffff, 1);
-light1.position.set(10, 50, 20);
-scene.add(light1);
-const light2 = new THREE.AmbientLight(0x404040, 2);
-scene.add(light2);
+window.addEventListener('mousemove', (event) => {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-camera.position.set(60, 60, 60);
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(objetosSilos);
 
-function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-}
-animate();
+    const tooltip = document.getElementById('tooltip');
+    if (intersects.length > 0) {
+        const d = intersects[0].object.parent.userData;
+        tooltip.style.display = 'block';
+        tooltip.style.left = event.clientX + 10 + 'px';
+        tooltip.style.top = event.clientY + 10 + 'px';
+        
+        document.getElementById('tooltip-nombre').innerText = d.nombre;
+        document.getElementById('tooltip-producto').innerText = d.producto;
+        document.getElementById('tooltip-stock').innerText = (d.stockMax * d.nivel / 100).toFixed(0);
+        document.getElementById('tooltip-porcentaje').innerText = d.nivel;
+    } else {
+        tooltip.style.display = 'none';
+    }
+});
+
+renderizarPlanta();
