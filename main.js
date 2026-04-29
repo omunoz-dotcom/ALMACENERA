@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// 1. CONFIGURACIÓN DE LA ESCENA
+// 1. CONFIGURACIÓN DE ESCENA
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1a1a1a); // Fondo oscuro industrial
+scene.background = new THREE.Color(0x1a1a1a);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(50, 50, 50);
@@ -14,35 +14,33 @@ document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 
-// 2. BASE DE DATOS DE SILOS (Aquí modificas medidas y niveles)
+// 2. DATOS DE LOS SILOS
 const silosData = [
     { x: -30, z: 0, d: 20, h: 30, nivel: 75, nombre: "Silo 01", producto: "Soya", stockMax: 2000 },
     { x: 0, z: 0, d: 20, h: 30, nivel: 40, nombre: "Silo 02", producto: "Soya", stockMax: 2000 },
     { x: 25, z: 10, d: 12, h: 20, nivel: 85, nombre: "Silo 03", producto: "Trigo", stockMax: 800 }
 ];
 
-const objetosDeteccion = []; // Para las etiquetas
+const objetosDeteccion = [];
 
-// 3. FUNCIÓN PARA DIBUJAR CADA SILO
+// 3. FUNCIÓN PARA CREAR CADA SILO
 function crearPlanta() {
     silosData.forEach(data => {
         const grupo = new THREE.Group();
         const radio = data.d / 2;
 
-        // Cuerpo metálico transparente
+        // Cuerpo
         const cuerpoGeo = new THREE.CylinderGeometry(radio, radio, data.h, 32);
-        const cuerpoMat = new THREE.MeshPhongMaterial({ 
-            color: 0x999999, transparent: true, opacity: 0.3, shininess: 90 
-        });
+        const cuerpoMat = new THREE.MeshPhongMaterial({ color: 0x999999, transparent: true, opacity: 0.3 });
         const cuerpo = new THREE.Mesh(cuerpoGeo, cuerpoMat);
         
-        // Techo cónico
+        // Techo
         const techoGeo = new THREE.ConeGeometry(radio * 1.05, 5, 32);
         const techoMat = new THREE.MeshPhongMaterial({ color: 0x555555 });
         const techo = new THREE.Mesh(techoGeo, techoMat);
         techo.position.y = data.h / 2 + 2.5;
 
-        // Grano (Stock)
+        // Grano
         const alturaGrano = (data.nivel / 100) * data.h;
         const granoGeo = new THREE.CylinderGeometry(radio * 0.98, radio * 0.98, alturaGrano, 32);
         const colorGrano = data.producto === "Soya" ? 0xffa500 : 0xe3af66;
@@ -50,13 +48,12 @@ function crearPlanta() {
         const grano = new THREE.Mesh(granoGeo, granoMat);
         grano.position.y = -(data.h / 2) + (alturaGrano / 2);
 
-        // Armar el silo
         grupo.add(cuerpo, techo, grano);
         grupo.position.set(data.x, 0, data.z);
-        grupo.userData = data; // Guardamos los datos para el tooltip
+        grupo.userData = data; 
         
         scene.add(grupo);
-        objetosDeteccion.push(cuerpo); // Registramos para el mouse
+        objetosDeteccion.push(cuerpo);
     });
 }
 
@@ -66,7 +63,7 @@ sun.position.set(10, 50, 10);
 scene.add(sun);
 scene.add(new THREE.AmbientLight(0x404040, 1.5));
 
-// 5. LÓGICA DE LAS ETIQUETAS (RAYCASTER)
+// 5. MOUSE Y TOOLTIP
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 const tooltip = document.getElementById('tooltip');
@@ -78,7 +75,7 @@ window.addEventListener('mousemove', (event) => {
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(objetosDeteccion);
 
-    if (intersects.length > 0) {
+    if (intersects.length > 0 && tooltip) {
         const d = intersects[0].object.parent.userData;
         tooltip.style.display = 'block';
         tooltip.style.left = event.clientX + 15 + 'px';
@@ -88,12 +85,12 @@ window.addEventListener('mousemove', (event) => {
         document.getElementById('tooltip-producto').innerText = d.producto;
         document.getElementById('tooltip-stock').innerText = (d.stockMax * d.nivel / 100).toFixed(0);
         document.getElementById('tooltip-porcentaje').innerText = d.nivel;
-    } else {
+    } else if (tooltip) {
         tooltip.style.display = 'none';
     }
 });
 
-// EJECUCIÓN
+// 6. INICIO
 crearPlanta();
 
 function animate() {
@@ -103,7 +100,6 @@ function animate() {
 }
 animate();
 
-// Ajuste de pantalla
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
