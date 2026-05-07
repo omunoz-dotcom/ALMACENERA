@@ -4,45 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Logístico Agripac</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
-        :root { --blue: #1a237e; --red: #d32f2f; --gray: #f8f9fa; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #eef2f7; margin: 0; padding: 20px; }
-        
-        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--blue); padding-bottom: 20px; margin-bottom: 30px; }
-        .logo h1 { color: var(--blue); margin: 0; font-size: 28px; letter-spacing: 1px; }
+        :root {
+            --blue: #1a237e;
+            --red: #d32f2f;
+            --green: #25d366;
+            --bg: #f0f2f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--blue);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 { color: var(--blue); margin: 0; font-size: 28px; }
         .logo p { color: var(--red); margin: 0; font-weight: bold; font-size: 14px; }
 
-        /* Tabla Estilizada */
-        .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid #e0e0e0; }
+        /* Tabla de Planificación */
+        .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid #ddd; }
         table { width: 100%; border-collapse: collapse; background: white; }
         th { background: var(--blue); color: white; padding: 15px; font-size: 12px; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; text-align: center; color: #444; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; text-align: center; }
         tr:hover { background-color: #f1f4ff; }
 
-        .btn-qr { background: var(--blue); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
-        .btn-qr:hover { background: var(--red); transform: translateY(-2px); }
+        .btn-qr {
+            background: var(--blue);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
 
-        /* Modal y Ticket */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; backdrop-filter: blur(5px); }
-        .ticket-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 101; background: white; border-radius: 12px; width: 360px; overflow: hidden; }
+        .btn-qr:hover { background: var(--red); }
+
+        /* Modal del Ticket */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 100; backdrop-filter: blur(5px);
+        }
+
+        .ticket-modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 101; background: white; border-radius: 12px; width: 350px; overflow: hidden;
+        }
+
+        .ticket-body { padding: 25px; text-align: center; background: white; }
+        .ticket-header { background: var(--blue); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         
-        .ticket-body { padding: 25px; text-align: center; }
-        .ticket-header { background: var(--blue); color: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
-        #qrcode { background: white; padding: 15px; display: inline-block; border: 2px solid #eee; margin-bottom: 20px; }
+        #qrcode { margin-bottom: 20px; display: inline-block; padding: 10px; border: 1px solid #eee; }
         
         .details { text-align: left; border-top: 2px dashed #ddd; padding-top: 15px; font-size: 13px; }
-        .details p { margin: 8px 0; }
-        
-        .actions { display: flex; gap: 10px; padding: 20px; background: #f9f9f9; }
-        .btn-dl { flex: 2; background: #2e7d32; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-close { flex: 1; background: #757575; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; }
+        .details p { margin: 6px 0; }
 
-        #loading { text-align: center; padding: 40px; color: var(--blue); font-weight: bold; }
+        /* Acciones */
+        .actions { display: flex; flex-direction: column; gap: 10px; padding: 20px; background: #f9f9f9; }
+        .btn-action { border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; width: 100%; }
+        .bg-green { background: var(--green); }
+        .bg-blue { background: #2e7d32; } /* Para descarga */
+        .bg-gray { background: #757575; }
+
+        #loading-msg { text-align: center; padding: 50px; color: var(--blue); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -53,25 +101,27 @@
             <h1>AGRIPAC S.A.</h1>
             <p>SISTEMA DE GESTIÓN LOGÍSTICA</p>
         </div>
-        <div style="text-align: right">
-            <span id="date-display" style="font-size: 14px; font-weight: bold;"></span>
+        <div id="status-link" style="font-size: 12px; text-align: right;">
+            <strong>Base de Datos:</strong> Conectada <br>
+            <span id="current-date"></span>
         </div>
     </header>
 
-    <div id="loading">Cargando planificación desde Google Sheets...</div>
+    <div id="loading-msg">Sincronizando con Planificación en la nube...</div>
 
-    <div class="table-container">
-        <table id="main-table" style="display: none;">
+    <div class="table-container" id="table-wrapper" style="display: none;">
+        <table>
             <thead>
                 <tr>
                     <th>Conductor</th>
                     <th>Placa</th>
-                    <th>Área Carga</th>
-                    <th>Área Descarga</th>
+                    <th>Origen / Destino</th>
+                    <th>Estado</th>
                     <th>Acción</th>
                 </tr>
             </thead>
-            <tbody id="table-content"></tbody>
+            <tbody id="table-body">
+                </tbody>
         </table>
     </div>
 </div>
@@ -81,41 +131,40 @@
     <div id="capture-area" style="background: white; padding: 20px;">
         <div class="ticket-header">
             <h3 style="margin:0">PASE DE INGRESO</h3>
-            <small>TRAZABILIDAD GARANTIZADA</small>
+            <small>AGRIPAC - TRAZABILIDAD</small>
         </div>
         <div id="qrcode"></div>
         <div class="details">
             <p><strong>ID ÚNICO:</strong> <span id="t-id"></span></p>
             <p><strong>CONDUCTOR:</strong> <span id="t-chofer"></span></p>
             <p><strong>PLACA:</strong> <span id="t-placa"></span></p>
-            <p style="color: var(--red); font-size: 11px; text-align: center; margin-top: 15px;">DOCUMENTO OFICIAL PARA INGRESO A PLANTA</p>
+            <p style="text-align: center; font-size: 10px; color: var(--red); margin-top: 10px;">
+                PRESENTAR EN GARITA PARA ACCESO
+            </p>
         </div>
     </div>
     <div class="actions">
-        <button class="btn-dl" onclick="downloadTicket()">Descargar Pase</button>
-        <button class="btn-close" onclick="closeTicket()">Cerrar</button>
+        <button class="btn-action bg-green" onclick="enviarWhatsApp()">Enviar por WhatsApp</button>
+        <button class="btn-action bg-blue" onclick="downloadTicket()">Descargar Imagen</button>
+        <button class="btn-action bg-gray" onclick="closeTicket()">Cerrar</button>
     </div>
 </div>
 
 <script>
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?gid=0&single=true&output=csv";
 
-    document.getElementById('date-display').innerText = new Date().toLocaleDateString();
+    document.getElementById('current-date').innerText = new Date().toLocaleDateString();
 
-    async function loadSheets() {
+    async function fetchData() {
         try {
-            const res = await fetch(CSV_URL);
-            const data = await res.text();
+            const response = await fetch(CSV_URL);
+            const data = await response.text();
             const rows = data.split('\n').map(row => row.split(','));
-            
-            const container = document.getElementById('table-content');
-            container.innerHTML = '';
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
 
-            // Saltamos la cabecera e iteramos
             rows.slice(1).forEach(cols => {
                 if (cols.length < 12) return;
-                
-                // Mapeo: 0:ID, 1:Carga, 2:Descarga, 7:Chofer, 8:Placa, 11:Status
                 const [id, carga, descarga, , , , , chofer, placa, , , status] = cols;
 
                 if (status && status.trim().toUpperCase() === "OK") {
@@ -123,19 +172,18 @@
                     tr.innerHTML = `
                         <td><strong>${chofer}</strong></td>
                         <td>${placa}</td>
-                        <td>${carga}</td>
-                        <td>${descarga}</td>
-                        <td><button class="btn-qr" onclick="openTicket('${id}', '${chofer}', '${placa}')">Generar Pase</button></td>
+                        <td>${carga} <br> <small>${descarga}</small></td>
+                        <td><span style="color:green; font-weight:bold;">● OK</span></td>
+                        <td><button class="btn-qr" onclick="openTicket('${id}', '${chofer}', '${placa}')">Ver Pase</button></td>
                     `;
-                    container.appendChild(tr);
+                    tbody.appendChild(tr);
                 }
             });
 
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('main-table').style.display = 'table';
-
-        } catch (err) {
-            document.getElementById('loading').innerText = "Error al conectar con la base de datos.";
+            document.getElementById('loading-msg').style.display = 'none';
+            document.getElementById('table-wrapper').style.display = 'block';
+        } catch (e) {
+            document.getElementById('loading-msg').innerText = "Error al cargar datos. Verifique conexión.";
         }
     }
 
@@ -143,7 +191,7 @@
         document.getElementById('t-id').innerText = id;
         document.getElementById('t-chofer').innerText = chofer;
         document.getElementById('t-placa').innerText = placa;
-        
+
         const qrBox = document.getElementById('qrcode');
         qrBox.innerHTML = '';
         new QRCode(qrBox, { text: id, width: 180, height: 180, colorDark: "#1a237e" });
@@ -162,13 +210,30 @@
         html2canvas(area).then(canvas => {
             const link = document.createElement('a');
             link.download = `PASE_${document.getElementById('t-placa').innerText}.png`;
-            link.href = canvas.toDataURL("image/png");
+            link.href = canvas.toDataURL();
             link.click();
         });
     }
 
-    loadSheets();
-    setInterval(loadSheets, 30000); // Auto-refresco cada 30 seg
+    function enviarWhatsApp() {
+        const area = document.getElementById('capture-area');
+        const chofer = document.getElementById('t-chofer').innerText;
+        const placa = document.getElementById('t-placa').innerText;
+
+        html2canvas(area).then(canvas => {
+            canvas.toBlob(blob => {
+                const item = new ClipboardItem({ "image/png": blob });
+                navigator.clipboard.write([item]).then(() => {
+                    const msg = encodeURIComponent(`*AGRIPAC - PASE DE SEGURIDAD*\n\nHola ${chofer}, adjunto su pase para la placa ${placa}.\n\n_(Favor de pegar la imagen que se acaba de copiar en este chat)_`);
+                    window.open(`https://wa.me/?text=${msg}`, '_blank');
+                    alert("¡Pase copiado al portapapeles! Selecciónalo en WhatsApp y pégalo (Ctrl+V).");
+                });
+            }, 'image/png');
+        });
+    }
+
+    fetchData();
+    setInterval(fetchData, 45000); // Refresco automático cada 45 segundos
 </script>
 
 </body>
