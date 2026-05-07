@@ -8,207 +8,167 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
-        :root {
-            --agripac-blue: #1a237e;
-            --agripac-red: #d32f2f;
-            --bg: #f4f7f6;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 4px solid var(--agripac-blue);
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-        }
-
-        .logo-text h1 { color: var(--agripac-blue); margin: 0; font-size: 26px; }
-        .logo-text p { color: var(--agripac-red); margin: 0; font-weight: bold; font-size: 14px; }
-
-        /* Estilo de la Tabla */
-        .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: var(--agripac-blue); color: white; padding: 12px; font-size: 12px; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; text-align: center; }
-        tr:hover { background-color: #f9faff; }
-
-        .btn-generar {
-            background: var(--agripac-blue);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
-        .btn-generar:hover { background: var(--agripac-red); }
-
-        /* Modal del Pase */
-        .overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 100;
-        }
-
-        #ticket-container {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 101; background: white; padding: 0; border-radius: 10px; width: 350px; text-align: center;
-        }
-
-        .ticket-card { padding: 20px; border: 1px solid #ddd; }
-        .ticket-header { background: var(--agripac-blue); color: white; padding: 10px; border-radius: 8px 8px 0 0; }
+        :root { --blue: #1a237e; --red: #d32f2f; --gray: #f8f9fa; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #eef2f7; margin: 0; padding: 20px; }
         
-        #qrcode { margin: 20px auto; display: flex; justify-content: center; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         
-        .ticket-details { text-align: left; padding: 10px; font-size: 13px; border-top: 2px dashed #ccc; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--blue); padding-bottom: 20px; margin-bottom: 30px; }
+        .logo h1 { color: var(--blue); margin: 0; font-size: 28px; letter-spacing: 1px; }
+        .logo p { color: var(--red); margin: 0; font-weight: bold; font-size: 14px; }
+
+        /* Tabla Estilizada */
+        .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid #e0e0e0; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: var(--blue); color: white; padding: 15px; font-size: 12px; text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; text-align: center; color: #444; }
+        tr:hover { background-color: #f1f4ff; }
+
+        .btn-qr { background: var(--blue); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn-qr:hover { background: var(--red); transform: translateY(-2px); }
+
+        /* Modal y Ticket */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; backdrop-filter: blur(5px); }
+        .ticket-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 101; background: white; border-radius: 12px; width: 360px; overflow: hidden; }
         
-        .actions { padding: 15px; background: #f9f9f9; border-radius: 0 0 10px 10px; }
-        .btn-download { background: #28a745; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; margin-right: 10px; }
-        .btn-close { background: #6c757d; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
+        .ticket-body { padding: 25px; text-align: center; }
+        .ticket-header { background: var(--blue); color: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+        #qrcode { background: white; padding: 15px; display: inline-block; border: 2px solid #eee; margin-bottom: 20px; }
+        
+        .details { text-align: left; border-top: 2px dashed #ddd; padding-top: 15px; font-size: 13px; }
+        .details p { margin: 8px 0; }
+        
+        .actions { display: flex; gap: 10px; padding: 20px; background: #f9f9f9; }
+        .btn-dl { flex: 2; background: #2e7d32; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-close { flex: 1; background: #757575; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; }
+
+        #loading { text-align: center; padding: 40px; color: var(--blue); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <div class="logo-text">
+        <div class="logo">
             <h1>AGRIPAC S.A.</h1>
-            <p>SISTEMA DE PLANIFICACIÓN LOGÍSTICA</p>
+            <p>SISTEMA DE GESTIÓN LOGÍSTICA</p>
         </div>
-        <div style="text-align: right; font-size: 12px;">
-            <strong>Estado:</strong> Conectado a Google Sheets<br>
-            <span id="fecha"></span>
+        <div style="text-align: right">
+            <span id="date-display" style="font-size: 14px; font-weight: bold;"></span>
         </div>
     </header>
 
-    <div class="table-responsive">
-        <table>
+    <div id="loading">Cargando planificación desde Google Sheets...</div>
+
+    <div class="table-container">
+        <table id="main-table" style="display: none;">
             <thead>
                 <tr>
-                    <th>Operador</th>
                     <th>Conductor</th>
                     <th>Placa</th>
                     <th>Área Carga</th>
                     <th>Área Descarga</th>
-                    <th>Pase de Ingreso</th>
+                    <th>Acción</th>
                 </tr>
             </thead>
-            <tbody id="data-body">
-                </tbody>
+            <tbody id="table-content"></tbody>
         </table>
     </div>
 </div>
 
-<div class="overlay" id="overlay"></div>
-<div id="ticket-container">
-    <div id="capture-area" class="ticket-card">
+<div class="modal-overlay" id="overlay" onclick="closeTicket()"></div>
+<div class="ticket-modal" id="ticket-modal">
+    <div id="capture-area" style="background: white; padding: 20px;">
         <div class="ticket-header">
-            <h2 style="margin:0; font-size:18px;">PASE DE INGRESO</h2>
-            <small>AGRIPAC - TRAZABILIDAD</small>
+            <h3 style="margin:0">PASE DE INGRESO</h3>
+            <small>TRAZABILIDAD GARANTIZADA</small>
         </div>
-        
         <div id="qrcode"></div>
-        
-        <div class="ticket-details">
+        <div class="details">
             <p><strong>ID ÚNICO:</strong> <span id="t-id"></span></p>
             <p><strong>CONDUCTOR:</strong> <span id="t-chofer"></span></p>
             <p><strong>PLACA:</strong> <span id="t-placa"></span></p>
-            <p style="font-size: 10px; color: red; text-align: center; margin-top: 15px;">
-                PRESENTAR ESTE CÓDIGO EN GARITA PARA INGRESO
-            </p>
+            <p style="color: var(--red); font-size: 11px; text-align: center; margin-top: 15px;">DOCUMENTO OFICIAL PARA INGRESO A PLANTA</p>
         </div>
     </div>
     <div class="actions">
-        <button class="btn-download" onclick="descargarPase()">Descargar Imagen</button>
-        <button class="btn-close" onclick="cerrarTicket()">Cerrar</button>
+        <button class="btn-dl" onclick="downloadTicket()">Descargar Pase</button>
+        <button class="btn-close" onclick="closeTicket()">Cerrar</button>
     </div>
 </div>
 
 <script>
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?gid=0&single=true&output=csv";
 
-    document.getElementById('fecha').innerText = new Date().toLocaleDateString();
+    document.getElementById('date-display').innerText = new Date().toLocaleDateString();
 
-    async function fetchData() {
-        const response = await fetch(CSV_URL);
-        const text = await response.text();
-        const rows = text.split('\n').slice(1);
-        const tbody = document.getElementById('data-body');
-        
-        tbody.innerHTML = '';
+    async function loadSheets() {
+        try {
+            const res = await fetch(CSV_URL);
+            const data = await res.text();
+            const rows = data.split('\n').map(row => row.split(','));
+            
+            const container = document.getElementById('table-content');
+            container.innerHTML = '';
 
-        rows.forEach(row => {
-            const cols = row.split(',');
-            if (cols.length < 12) return;
+            // Saltamos la cabecera e iteramos
+            rows.slice(1).forEach(cols => {
+                if (cols.length < 12) return;
+                
+                // Mapeo: 0:ID, 1:Carga, 2:Descarga, 7:Chofer, 8:Placa, 11:Status
+                const [id, carga, descarga, , , , , chofer, placa, , , status] = cols;
 
-            // Mapeo: 0:ID, 1:Carga, 2:Descarga, 6:Operador, 7:Chofer, 8:Placa, 11:Status
-            const [id, carga, descarga, , , , operador, chofer, placa, , , status] = cols;
+                if (status && status.trim().toUpperCase() === "OK") {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${chofer}</strong></td>
+                        <td>${placa}</td>
+                        <td>${carga}</td>
+                        <td>${descarga}</td>
+                        <td><button class="btn-qr" onclick="openTicket('${id}', '${chofer}', '${placa}')">Generar Pase</button></td>
+                    `;
+                    container.appendChild(tr);
+                }
+            });
 
-            if (status.trim().toUpperCase() === "OK") {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${operador}</td>
-                    <td>${chofer}</td>
-                    <td>${placa}</td>
-                    <td>${carga}</td>
-                    <td>${descarga}</td>
-                    <td><button class="btn-generar" onclick="abrirTicket('${id}', '${chofer}', '${placa}')">Generar QR</button></td>
-                `;
-                tbody.appendChild(tr);
-            }
-        });
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('main-table').style.display = 'table';
+
+        } catch (err) {
+            document.getElementById('loading').innerText = "Error al conectar con la base de datos.";
+        }
     }
 
-    function abrirTicket(id, chofer, placa) {
+    function openTicket(id, chofer, placa) {
         document.getElementById('t-id').innerText = id;
         document.getElementById('t-chofer').innerText = chofer;
         document.getElementById('t-placa').innerText = placa;
-
-        const qrDiv = document.getElementById("qrcode");
-        qrDiv.innerHTML = "";
-        new QRCode(qrDiv, { text: id, width: 160, height: 160 });
+        
+        const qrBox = document.getElementById('qrcode');
+        qrBox.innerHTML = '';
+        new QRCode(qrBox, { text: id, width: 180, height: 180, colorDark: "#1a237e" });
 
         document.getElementById('overlay').style.display = 'block';
-        document.getElementById('ticket-container').style.display = 'block';
+        document.getElementById('ticket-modal').style.display = 'block';
     }
 
-    function cerrarTicket() {
+    function closeTicket() {
         document.getElementById('overlay').style.display = 'none';
-        document.getElementById('ticket-container').style.display = 'none';
+        document.getElementById('ticket-modal').style.display = 'none';
     }
 
-    function descargarPase() {
+    function downloadTicket() {
         const area = document.getElementById('capture-area');
         html2canvas(area).then(canvas => {
             const link = document.createElement('a');
             link.download = `PASE_${document.getElementById('t-placa').innerText}.png`;
-            link.href = canvas.toDataURL();
+            link.href = canvas.toDataURL("image/png");
             link.click();
         });
     }
 
-    fetchData();
-    // Auto-actualizar cada 1 minuto
-    setInterval(fetchData, 60000);
+    loadSheets();
+    setInterval(loadSheets, 30000); // Auto-refresco cada 30 seg
 </script>
 
 </body>
