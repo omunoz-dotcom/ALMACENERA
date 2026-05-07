@@ -2,198 +2,213 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Logístico - Agripac S.A.</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Logístico Agripac</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
         :root {
-            --blue-agripac: #1a237e;
-            --red-agripac: #d32f2f;
-            --white: #ffffff;
-            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --agripac-blue: #1a237e;
+            --agripac-red: #d32f2f;
+            --bg: #f4f7f6;
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
             margin: 0;
             padding: 20px;
+            color: #333;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: auto;
-            background: var(--white);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
         header {
-            text-align: center;
-            border-bottom: 4px solid var(--blue-agripac);
-            margin-bottom: 30px;
-            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--agripac-blue);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
         }
 
-        header h1 { color: var(--blue-agripac); margin: 0; font-size: 24px; }
-        header p { color: var(--red-agripac); font-weight: bold; margin: 5px 0; }
+        .logo-text h1 { color: var(--agripac-blue); margin: 0; font-size: 26px; }
+        .logo-text p { color: var(--agripac-red); margin: 0; font-weight: bold; font-size: 14px; }
 
-        /* Tabla Estilizada */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
+        /* Estilo de la Tabla */
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: var(--agripac-blue); color: white; padding: 12px; font-size: 12px; text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; text-align: center; }
+        tr:hover { background-color: #f9faff; }
 
-        th {
-            background-color: var(--blue-agripac);
-            color: white;
-            padding: 12px;
-            font-size: 13px;
-            text-transform: uppercase;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        .btn-qr {
-            background-color: var(--blue-agripac);
+        .btn-generar {
+            background: var(--agripac-blue);
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
+            padding: 8px 16px;
+            border-radius: 6px;
             cursor: pointer;
+            font-weight: bold;
             transition: 0.3s;
         }
 
-        .btn-qr:hover { background-color: var(--red-agripac); }
+        .btn-generar:hover { background: var(--agripac-red); }
 
-        /* Modal del Pase de Ingreso */
-        #modalPase {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border: 2px solid var(--blue-agripac);
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            z-index: 1000;
-            text-align: center;
-            border-radius: 10px;
-        }
-
-        .ticket-header { border-bottom: 2px solid #eee; margin-bottom: 10px; }
-        #qrcode { margin: 15px auto; display: flex; justify-content: center; }
-        
+        /* Modal del Pase */
         .overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 999;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 100;
         }
+
+        #ticket-container {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 101; background: white; padding: 0; border-radius: 10px; width: 350px; text-align: center;
+        }
+
+        .ticket-card { padding: 20px; border: 1px solid #ddd; }
+        .ticket-header { background: var(--agripac-blue); color: white; padding: 10px; border-radius: 8px 8px 0 0; }
+        
+        #qrcode { margin: 20px auto; display: flex; justify-content: center; }
+        
+        .ticket-details { text-align: left; padding: 10px; font-size: 13px; border-top: 2px dashed #ccc; }
+        
+        .actions { padding: 15px; background: #f9f9f9; border-radius: 0 0 10px 10px; }
+        .btn-download { background: #28a745; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+        .btn-close { background: #6c757d; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>AGRIPAC S.A.</h1>
-        <p>CONTROL DE PLANIFICACIÓN DIARIA</p>
+        <div class="logo-text">
+            <h1>AGRIPAC S.A.</h1>
+            <p>SISTEMA DE PLANIFICACIÓN LOGÍSTICA</p>
+        </div>
+        <div style="text-align: right; font-size: 12px;">
+            <strong>Estado:</strong> Conectado a Google Sheets<br>
+            <span id="fecha"></span>
+        </div>
     </header>
 
-    <table id="tablaPlanificacion">
-        <thead>
-            <tr>
-                <th>ID Único</th>
-                <th>Operador</th>
-                <th>Conductor</th>
-                <th>Placa</th>
-                <th>Ruta</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody>
-            </tbody>
-    </table>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Operador</th>
+                    <th>Conductor</th>
+                    <th>Placa</th>
+                    <th>Área Carga</th>
+                    <th>Área Descarga</th>
+                    <th>Pase de Ingreso</th>
+                </tr>
+            </thead>
+            <tbody id="data-body">
+                </tbody>
+        </table>
+    </div>
 </div>
 
-<div class="overlay" id="overlay" onclick="cerrarPase()"></div>
-<div id="modalPase">
-    <div class="ticket-header">
-        <h3 style="color: var(--blue-agripac); margin: 0;">PASE DE INGRESO</h3>
-        <p id="pID" style="font-weight: bold; color: var(--red-agripac);"></p>
+<div class="overlay" id="overlay"></div>
+<div id="ticket-container">
+    <div id="capture-area" class="ticket-card">
+        <div class="ticket-header">
+            <h2 style="margin:0; font-size:18px;">PASE DE INGRESO</h2>
+            <small>AGRIPAC - TRAZABILIDAD</small>
+        </div>
+        
+        <div id="qrcode"></div>
+        
+        <div class="ticket-details">
+            <p><strong>ID ÚNICO:</strong> <span id="t-id"></span></p>
+            <p><strong>CONDUCTOR:</strong> <span id="t-chofer"></span></p>
+            <p><strong>PLACA:</strong> <span id="t-placa"></span></p>
+            <p style="font-size: 10px; color: red; text-align: center; margin-top: 15px;">
+                PRESENTAR ESTE CÓDIGO EN GARITA PARA INGRESO
+            </p>
+        </div>
     </div>
-    <div id="qrcode"></div>
-    <div style="text-align: left; font-size: 13px;">
-        <p><strong>Conductor:</strong> <span id="pChofer"></span></p>
-        <p><strong>Placa:</strong> <span id="pPlaca"></span></p>
+    <div class="actions">
+        <button class="btn-download" onclick="descargarPase()">Descargar Imagen</button>
+        <button class="btn-close" onclick="cerrarTicket()">Cerrar</button>
     </div>
-    <button class="btn-qr" onclick="cerrarPase()">Cerrar</button>
 </div>
 
 <script>
-    const csvUrl = "TU_ENLACE_CSV_AQUÍ";
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?gid=0&single=true&output=csv";
 
-    async function cargarDatos() {
-        const response = await fetch(csvUrl);
-        const data = await response.text();
-        const rows = data.split('\n').slice(1);
-        const tbody = document.querySelector("#tablaPlanificacion tbody");
+    document.getElementById('fecha').innerText = new Date().toLocaleDateString();
+
+    async function fetchData() {
+        const response = await fetch(CSV_URL);
+        const text = await response.text();
+        const rows = text.split('\n').slice(1);
+        const tbody = document.getElementById('data-body');
+        
+        tbody.innerHTML = '';
 
         rows.forEach(row => {
             const cols = row.split(',');
             if (cols.length < 12) return;
 
+            // Mapeo: 0:ID, 1:Carga, 2:Descarga, 6:Operador, 7:Chofer, 8:Placa, 11:Status
             const [id, carga, descarga, , , , operador, chofer, placa, , , status] = cols;
 
             if (status.trim().toUpperCase() === "OK") {
-                const tr = document.createElement("tr");
+                const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${id}</strong></td>
                     <td>${operador}</td>
                     <td>${chofer}</td>
                     <td>${placa}</td>
-                    <td>${carga} > ${descarga}</td>
-                    <td><button class="btn-qr" onclick="generarPase('${id}', '${chofer}', '${placa}')">Generar Pase</button></td>
+                    <td>${carga}</td>
+                    <td>${descarga}</td>
+                    <td><button class="btn-generar" onclick="abrirTicket('${id}', '${chofer}', '${placa}')">Generar QR</button></td>
                 `;
                 tbody.appendChild(tr);
             }
         });
     }
 
-    let qrInstance = null;
+    function abrirTicket(id, chofer, placa) {
+        document.getElementById('t-id').innerText = id;
+        document.getElementById('t-chofer').innerText = chofer;
+        document.getElementById('t-placa').innerText = placa;
 
-    function generarPase(id, chofer, placa) {
-        document.getElementById("pID").innerText = id;
-        document.getElementById("pChofer").innerText = chofer;
-        document.getElementById("pPlaca").innerText = placa;
-        
-        const qrContainer = document.getElementById("qrcode");
-        qrContainer.innerHTML = ""; // Limpiar QR anterior
-        
-        new QRCode(qrContainer, {
-            text: id,
-            width: 150,
-            height: 150
+        const qrDiv = document.getElementById("qrcode");
+        qrDiv.innerHTML = "";
+        new QRCode(qrDiv, { text: id, width: 160, height: 160 });
+
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('ticket-container').style.display = 'block';
+    }
+
+    function cerrarTicket() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('ticket-container').style.display = 'none';
+    }
+
+    function descargarPase() {
+        const area = document.getElementById('capture-area');
+        html2canvas(area).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `PASE_${document.getElementById('t-placa').innerText}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
         });
-
-        document.getElementById("modalPase").style.display = "block";
-        document.getElementById("overlay").style.display = "block";
     }
 
-    function cerrarPase() {
-        document.getElementById("modalPase").style.display = "none";
-        document.getElementById("overlay").style.display = "none";
-    }
-
-    cargarDatos();
+    fetchData();
+    // Auto-actualizar cada 1 minuto
+    setInterval(fetchData, 60000);
 </script>
 
 </body>
