@@ -9,92 +9,56 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
-        :root {
-            --blue: #1a237e;
-            --red: #d32f2f;
-            --green: #25d366;
-            --bg: #f0f2f5;
-        }
+        :root { --blue: #1a237e; --red: #d32f2f; --green: #25d366; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: auto;
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 4px solid var(--blue);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-
+        .container { max-width: 1100px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--blue); padding-bottom: 20px; margin-bottom: 30px; }
         .logo h1 { color: var(--blue); margin: 0; font-size: 28px; }
         .logo p { color: var(--red); margin: 0; font-weight: bold; font-size: 14px; }
 
-        /* Tabla de Planificación */
+        /* Tabla */
         .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid #ddd; }
         table { width: 100%; border-collapse: collapse; background: white; }
         th { background: var(--blue); color: white; padding: 15px; font-size: 12px; text-transform: uppercase; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; text-align: center; }
-        tr:hover { background-color: #f1f4ff; }
-
-        .btn-qr {
-            background: var(--blue);
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
-        .btn-qr:hover { background: var(--red); }
-
-        /* Modal del Ticket (DISEÑO MEJORADO) */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 100; backdrop-filter: blur(5px);
-        }
-
-        .ticket-modal {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 101; background: white; border-radius: 12px; width: 380px; overflow: hidden;
-        }
-
-        .ticket-body { padding: 25px; text-align: center; background: white; }
         
-        /* Cabecera del Pase con Logo */
-        .ticket-header-card { 
-            display: flex; align-items: center; justify-content: center; gap: 15px;
-            background: var(--blue); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; 
-        }
-        .logo-pase { width: 50px; height: 50px; background: white; border-radius: 50%; padding: 5px; }
+        .btn-qr { background: var(--blue); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; }
 
-        /* QR CENTRADO Y GRANDE */
-        #qrcode-container { display: flex; justify-content: center; align-items: center; margin-bottom: 25px; }
-        #qrcode { padding: 15px; background: white; border: 2px solid #eee; border-radius: 8px; }
+        /* Modal y Pase */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; backdrop-filter: blur(5px); }
+        .ticket-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 101; background: white; border-radius: 12px; width: 380px; overflow: hidden; }
         
-        .details { text-align: left; border-top: 2px dashed #ddd; padding-top: 15px; font-size: 13px; }
-        .details p { margin: 8px 0; }
+        /* CONTENEDOR QR CON LOGO CENTRAL */
+        #qrcode-wrapper { 
+            position: relative; 
+            display: inline-block; 
+            margin: 20px auto; 
+            background: white;
+            padding: 10px;
+            border: 1px solid #eee;
+        }
+        #qrcode { display: block; }
+        
+        /* Estilo del Logo dentro del QR */
+        .qr-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 45px; /* Tamaño ideal para no romper el escaneo */
+            height: 45px;
+            background: white;
+            padding: 2px;
+            border-radius: 4px;
+        }
 
-        /* Acciones (WhatsApp y Descarga) */
-        .actions-card { display: flex; flex-direction: column; gap: 10px; padding: 20px; background: #f9f9f9; }
-
-        #loading-msg { text-align: center; padding: 50px; color: var(--blue); font-weight: bold; }
+        .ticket-header { background: var(--blue); color: white; padding: 15px; text-align: center; }
+        .details { text-align: left; padding: 20px; border-top: 2px dashed #ddd; font-size: 13px; }
+        .actions { display: flex; flex-direction: column; gap: 10px; padding: 20px; background: #f9f9f9; }
+        
+        .btn-ws { background: var(--green); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-dl { background: var(--blue); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -105,68 +69,54 @@
             <h1>AGRIPAC S.A.</h1>
             <p>SISTEMA DE GESTIÓN LOGÍSTICA</p>
         </div>
-        <div id="status-link" style="font-size: 12px; text-align: right;">
-            <strong>Base de Datos:</strong> Conectada <br>
+        <div style="text-align: right; font-size: 12px;">
+            <strong>Dashboard de Trazabilidad</strong><br>
             <span id="current-date"></span>
         </div>
     </header>
 
-    <div id="loading-msg">Sincronizando con Planificación en la nube...</div>
+    <div id="loading" style="text-align:center; padding:20px;">Sincronizando con Google Sheets...</div>
 
-    <div class="table-container" id="table-wrapper" style="display: none;">
+    <div class="table-container" id="wrapper" style="display:none;">
         <table>
             <thead>
                 <tr>
                     <th>Conductor</th>
                     <th>Placa</th>
                     <th>Origen / Destino</th>
-                    <th>Estado</th>
                     <th>Acción</th>
                 </tr>
             </thead>
-            <tbody id="table-body">
-                </tbody>
+            <tbody id="table-body"></tbody>
         </table>
     </div>
 </div>
 
 <div class="modal-overlay" id="overlay" onclick="closeTicket()"></div>
 <div class="ticket-modal" id="ticket-modal">
-    <div id="capture-area" style="background: white; padding: 20px;">
-        <div class="ticket-header-card">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgdU9ENZe0xEEBIekcna9hIY1LQynypXsvGw&s" alt="Logo Agripac" class="logo-pase">
-            <div style="text-align: left">
-                <h3 style="margin:0; font-size: 18px;">PASE DE INGRESO</h3>
-                <small>TRAZABILIDAD GARANTIZADA</small>
-            </div>
+    <div id="capture-area" style="background: white; text-align: center;">
+        <div class="ticket-header">
+            <h3 style="margin:0">PASE DE INGRESO ÚNICO</h3>
+            <small>AGRIPAC S.A. - SEGURIDAD PLANTA</small>
         </div>
-        
-        <div id="qrcode-container">
+
+        <div id="qrcode-wrapper">
             <div id="qrcode"></div>
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgdU9ENZe0xEEBIekcna9hIY1LQynypXsvGw&s" class="qr-logo">
         </div>
-        
+
         <div class="details">
-            <p><strong>ID ÚNICO:</strong> <span id="t-id"></span></p>
+            <p><strong>ID:</strong> <span id="t-id"></span></p>
             <p><strong>CONDUCTOR:</strong> <span id="t-chofer"></span></p>
             <p><strong>PLACA:</strong> <span id="t-placa"></span></p>
-            <p style="text-align: center; font-size: 10px; color: var(--red); margin-top: 15px; font-weight: bold;">
-                PRESENTAR ESTE CÓDIGO EN GARITA PARA ACCESO
-            </p>
+            <p style="text-align: center; color: var(--red); font-weight: bold; margin-top: 15px;">MUESTRE ESTE QR EN GARITA</p>
         </div>
     </div>
     
-    <div class="actions-card">
-        <button onclick="enviarWhatsApp()" style="background: var(--green); color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%;">
-            🟢 Enviar por WhatsApp
-        </button>
-
-        <button onclick="downloadTicket()" style="background: var(--blue); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%;">
-            💾 Descargar Imagen
-        </button>
-
-        <button onclick="closeTicket()" style="background: #757575; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%;">
-            Cerrar
-        </button>
+    <div class="actions">
+        <button class="btn-ws" onclick="enviarWhatsApp()">🟢 Enviar a WhatsApp</button>
+        <button class="btn-dl" onclick="downloadTicket()">💾 Descargar Imagen</button>
+        <button onclick="closeTicket()" style="border:none; background:none; cursor:pointer; color:#777;">Cerrar</button>
     </div>
 </div>
 
@@ -192,19 +142,15 @@
                     tr.innerHTML = `
                         <td><strong>${chofer}</strong></td>
                         <td>${placa}</td>
-                        <td>${carga} <br> <small>${descarga}</small></td>
-                        <td><span style="color:green; font-weight:bold;">● OK</span></td>
-                        <td><button class="btn-qr" onclick="openTicket('${id}', '${chofer}', '${placa}')">Ver Pase</button></td>
+                        <td>${carga} > ${descarga}</td>
+                        <td><button class="btn-qr" onclick="openTicket('${id}', '${chofer}', '${placa}')">Generar Pase</button></td>
                     `;
                     tbody.appendChild(tr);
                 }
             });
-
-            document.getElementById('loading-msg').style.display = 'none';
-            document.getElementById('table-wrapper').style.display = 'block';
-        } catch (e) {
-            document.getElementById('loading-msg').innerText = "Error al cargar datos. Verifique conexión.";
-        }
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('wrapper').style.display = 'block';
+        } catch (e) { console.error(e); }
     }
 
     function openTicket(id, chofer, placa) {
@@ -214,8 +160,14 @@
 
         const qrBox = document.getElementById('qrcode');
         qrBox.innerHTML = '';
-        // QR MÁS GRANDE (200x200) Y CENTRADO
-        new QRCode(qrBox, { text: id, width: 200, height: 200, colorDark: "#1a237e" });
+        // Generamos el QR con nivel de corrección 'H' (High) para soportar el logo central
+        new QRCode(qrBox, { 
+            text: id, 
+            width: 220, 
+            height: 220, 
+            colorDark: "#000000",
+            correctLevel : QRCode.CorrectLevel.H 
+        });
 
         document.getElementById('overlay').style.display = 'block';
         document.getElementById('ticket-modal').style.display = 'block';
@@ -228,7 +180,7 @@
 
     function downloadTicket() {
         const area = document.getElementById('capture-area');
-        html2canvas(area).then(canvas => {
+        html2canvas(area, { useCORS: true }).then(canvas => {
             const link = document.createElement('a');
             link.download = `PASE_${document.getElementById('t-placa').innerText}.png`;
             link.href = canvas.toDataURL();
@@ -238,27 +190,20 @@
 
     function enviarWhatsApp() {
         const area = document.getElementById('capture-area');
-        const chofer = document.getElementById('t-chofer').innerText;
-        const placa = document.getElementById('t-placa').innerText;
-
-        html2canvas(area).then(canvas => {
+        html2canvas(area, { useCORS: true }).then(canvas => {
             canvas.toBlob(blob => {
-                try {
-                    const item = new ClipboardItem({ "image/png": blob });
-                    navigator.clipboard.write([item]).then(() => {
-                        const msg = encodeURIComponent(`*AGRIPAC - PASE DE SEGURIDAD*\n\nHola ${chofer}, adjunto su pase para la placa ${placa}.\n\n_(Favor de pegar la imagen que se acaba de copiar en este chat)_`);
-                        window.open(`https://wa.me/?text=${msg}`, '_blank');
-                        alert("¡Pase copiado! Selecciónalo en WhatsApp y pégalo (Ctrl+V).");
-                    });
-                } catch (err) {
-                    alert("Tu navegador no soporta copiar imágenes directamente. Por favor, usa 'Descargar Imagen' y envíala manualmente.");
-                }
-            }, 'image/png');
+                const item = new ClipboardItem({ "image/png": blob });
+                navigator.clipboard.write([item]).then(() => {
+                    const msg = encodeURIComponent(`*AGRIPAC - PASE DE INGRESO*\n\nAdjunto pase para la placa ${document.getElementById('t-placa').innerText}.\n\n_Pega la imagen en este chat._`);
+                    window.open(`https://wa.me/?text=${msg}`, '_blank');
+                    alert("Imagen copiada. Pégala en el chat de WhatsApp.");
+                });
+            });
         });
     }
 
     fetchData();
-    setInterval(fetchData, 45000); // Refresco automático cada 45 segundos
+    setInterval(fetchData, 40000);
 </script>
 
 </body>
