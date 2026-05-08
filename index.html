@@ -3,207 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Logístico Agripac</title>
+    <title>AGRIPAC - Sistema de Gestión Logística 360</title>
     
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
-        :root { --blue: #1a237e; --red: #d32f2f; --green: #25d366; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
-
-        .container { max-width: 1100px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--blue); padding-bottom: 20px; margin-bottom: 30px; }
-        .logo h1 { color: var(--blue); margin: 0; font-size: 28px; }
-        .logo p { color: var(--red); margin: 0; font-weight: bold; font-size: 14px; }
-
-        /* Tabla */
-        .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid #ddd; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th { background: var(--blue); color: white; padding: 15px; font-size: 12px; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; text-align: center; }
-        
-        .btn-qr { background: var(--blue); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-
-        /* Modal y Pase */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; backdrop-filter: blur(5px); }
-        .ticket-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 101; background: white; border-radius: 12px; width: 380px; overflow: hidden; }
-        
-        /* CONTENEDOR QR CON LOGO CENTRAL */
-        #qrcode-wrapper { 
-            position: relative; 
-            display: inline-block; 
-            margin: 20px auto; 
-            background: white;
-            padding: 10px;
-            border: 1px solid #eee;
-        }
-        #qrcode { display: block; }
-        
-        /* Estilo del Logo dentro del QR */
-        .qr-logo {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 45px; /* Tamaño ideal para no romper el escaneo */
-            height: 45px;
-            background: white;
-            padding: 2px;
-            border-radius: 4px;
+        :root {
+            --agri-blue: #1a237e;
+            --agri-red: #d32f2f;
+            --agri-green: #2e7d32;
+            --agri-gray: #f4f7f6;
+            --dark: #2c3e50;
         }
 
-        .ticket-header { background: var(--blue); color: white; padding: 15px; text-align: center; }
-        .details { text-align: left; padding: 20px; border-top: 2px dashed #ddd; font-size: 13px; }
-        .actions { display: flex; flex-direction: column; gap: 10px; padding: 20px; background: #f9f9f9; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--agri-gray); margin: 0; padding-bottom: 50px; }
         
-        .btn-ws { background: var(--green); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-dl { background: var(--blue); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        /* Navegación de Módulos */
+        nav { 
+            background: var(--agri-blue); 
+            padding: 10px; 
+            display: flex; 
+            gap: 10px; 
+            overflow-x: auto; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        nav button { 
+            background: rgba(255,255,255,0.1); 
+            color: white; 
+            border: 1px solid rgba(255,255,255,0.3); 
+            padding: 12px 20px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+        nav button:hover, nav button.active { background: white; color: var(--agri-blue); }
+
+        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+        
+        /* Tarjetas de Módulo */
+        .modulo { display: none; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .modulo.active { display: block; animation: fadeIn 0.5s; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { color: var(--agri-blue); border-bottom: 2px solid var(--agri-gray); padding-bottom: 10px; margin-top: 0; }
+
+        /* Scanner Box */
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 20px; border: 2px solid #ddd; }
+        
+        /* Inputs y Botones */
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--dark); }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        
+        .btn { 
+            width: 100%; padding: 15px; border: none; border-radius: 8px; 
+            color: white; font-weight: bold; font-size: 16px; cursor: pointer; 
+            transition: 0.3s; margin-top: 10px;
+        }
+        .btn-blue { background: var(--agri-blue); }
+        .btn-green { background: var(--agri-green); }
+        .btn-red { background: var(--agri-red); }
+        .btn:active { transform: scale(0.98); }
+
+        /* Badge de Estado */
+        .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 12px; background: #e0e0e0; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
+<nav id="module-nav">
+    <button onclick="switchTab('tab-garita')" class="active">👮 Garita</button>
+    <button onclick="switchTab('tab-bascula')">⚖️ Báscula</button>
+    <button onclick="switchTab('tab-planif')">📋 Planificación</button>
+    <button onclick="switchTab('tab-despacho')">🚛 Despacho</button>
+</nav>
+
 <div class="container">
-    <header>
-        <div class="logo">
-            <h1>AGRIPAC S.A.</h1>
-            <p>SISTEMA DE GESTIÓN LOGÍSTICA</p>
-        </div>
-        <div style="text-align: right; font-size: 12px;">
-            <strong>Dashboard de Trazabilidad</strong><br>
-            <span id="current-date"></span>
-        </div>
-    </header>
-
-    <div id="loading" style="text-align:center; padding:20px;">Sincronizando con Google Sheets...</div>
-
-    <div class="table-container" id="wrapper" style="display:none;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Conductor</th>
-                    <th>Placa</th>
-                    <th>Origen / Destino</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-        </table>
-    </div>
-</div>
-
-<div class="modal-overlay" id="overlay" onclick="closeTicket()"></div>
-<div class="ticket-modal" id="ticket-modal">
-    <div id="capture-area" style="background: white; text-align: center;">
-        <div class="ticket-header">
-            <h3 style="margin:0">PASE DE INGRESO ÚNICO</h3>
-            <small>AGRIPAC S.A. - SEGURIDAD PLANTA</small>
-        </div>
-
-        <div id="qrcode-wrapper">
-            <div id="qrcode"></div>
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgdU9ENZe0xEEBIekcna9hIY1LQynypXsvGw&s" class="qr-logo">
-        </div>
-
-        <div class="details">
-            <p><strong>ID:</strong> <span id="t-id"></span></p>
-            <p><strong>CONDUCTOR:</strong> <span id="t-chofer"></span></p>
-            <p><strong>PLACA:</strong> <span id="t-placa"></span></p>
-            <p style="text-align: center; color: var(--red); font-weight: bold; margin-top: 15px;">MUESTRE ESTE QR EN GARITA</p>
-        </div>
-    </div>
     
-    <div class="actions">
-        <button class="btn-ws" onclick="enviarWhatsApp()">🟢 Enviar a WhatsApp</button>
-        <button class="btn-dl" onclick="downloadTicket()">💾 Descargar Imagen</button>
-        <button onclick="closeTicket()" style="border:none; background:none; cursor:pointer; color:#777;">Cerrar</button>
+    <div class="modulo active" id="scanner-section" style="margin-bottom: 20px; text-align: center;">
+        <div id="reader"></div>
+        <div class="input-group">
+            <input type="text" id="id-input" placeholder="ID ESCANEADO O MANUAL">
+        </div>
+        <p style="font-size: 12px; color: #666;">Asegúrese de escanear el QR antes de procesar en cualquier módulo.</p>
     </div>
+
+    <div id="tab-garita" class="modulo">
+        <h2>Control de Garita</h2>
+        <div class="status-badge">Verificación de QR e Ingreso</div>
+        <button class="btn btn-blue" onclick="registrar('GARITA', 'ENTRADA', 'Validación de ingreso QR')">REGISTRAR ENTRADA</button>
+        <button class="btn btn-red" onclick="registrar('GARITA', 'SALIDA', 'Salida autorizada de planta')">REGISTRAR SALIDA FINAL</button>
+    </div>
+
+    <div id="tab-bascula" class="modulo">
+        <h2>Control de Báscula</h2>
+        <div class="status-badge">Registro de Peso SAP</div>
+        <div class="input-group">
+            <label>Peso en KG:</label>
+            <input type="number" id="peso-input" placeholder="Ej: 12500">
+        </div>
+        <button class="btn btn-green" onclick="registrar('BASCULA', 'PESAJE_IN', document.getElementById('peso-input').value)">REGISTRAR PESO ENTRADA</button>
+        <button class="btn btn-blue" onclick="registrar('BASCULA', 'PESAJE_OUT', document.getElementById('peso-input').value)">REGISTRAR PESO SALIDA</button>
+    </div>
+
+    <div id="tab-planif" class="modulo">
+        <h2>Planificación / Documentos</h2>
+        <div class="status-badge">Control Documentario</div>
+        <button class="btn btn-blue" onclick="registrar('PLANIFICACION', 'DOCS_IN', 'Documentos de carga recibidos')">RECIBIR DOCUMENTOS</button>
+        <button class="btn btn-green" onclick="registrar('PLANIFICACION', 'DOCS_OUT', 'Facturas y guías entregadas')">ENTREGAR DOCUMENTOS SALIDA</button>
+    </div>
+
+    <div id="tab-despacho" class="modulo">
+        <h2>Despacho / Andenes</h2>
+        <div class="status-badge">Asignación y Notificación</div>
+        <div class="input-group">
+            <label>Asignar Andén:</label>
+            <select id="anden-select">
+                <option value="ANDEN 1">Andén 1</option>
+                <option value="ANDEN 2">Andén 2</option>
+                <option value="ANDEN 3">Andén 3</option>
+                <option value="ANDEN 4">Andén 4</option>
+                <option value="ANDEN 5">Andén 5</option>
+            </select>
+        </div>
+        <button class="btn btn-blue" onclick="asignarAnden()">ASIGNAR Y NOTIFICAR WA</button>
+    </div>
+
 </div>
 
 <script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?gid=0&single=true&output=csv";
+    // --- CONFIGURACIÓN DEL SCANNER ---
+    const html5QrCode = new Html5Qrcode("reader");
+    const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
 
-    document.getElementById('current-date').innerText = new Date().toLocaleDateString();
+    html5QrCode.start({ facingMode: "environment" }, qrConfig, (decodedText) => {
+        document.getElementById('id-input').value = decodedText;
+        vibrate();
+    });
 
-    async function fetchData() {
-        try {
-            const response = await fetch(CSV_URL);
-            const data = await response.text();
-            const rows = data.split('\n').map(row => row.split(','));
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
+    function vibrate() { if (navigator.vibrate) navigator.vibrate(100); }
 
-            rows.slice(1).forEach(cols => {
-                if (cols.length < 12) return;
-                const [id, carga, descarga, , , , , chofer, placa, , , status] = cols;
-
-                if (status && status.trim().toUpperCase() === "OK") {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><strong>${chofer}</strong></td>
-                        <td>${placa}</td>
-                        <td>${carga} > ${descarga}</td>
-                        <td><button class="btn-qr" onclick="openTicket('${id}', '${chofer}', '${placa}')">Generar Pase</button></td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('wrapper').style.display = 'block';
-        } catch (e) { console.error(e); }
-    }
-
-    function openTicket(id, chofer, placa) {
-        document.getElementById('t-id').innerText = id;
-        document.getElementById('t-chofer').innerText = chofer;
-        document.getElementById('t-placa').innerText = placa;
-
-        const qrBox = document.getElementById('qrcode');
-        qrBox.innerHTML = '';
-        // Generamos el QR con nivel de corrección 'H' (High) para soportar el logo central
-        new QRCode(qrBox, { 
-            text: id, 
-            width: 220, 
-            height: 220, 
-            colorDark: "#000000",
-            correctLevel : QRCode.CorrectLevel.H 
+    // --- NAVEGACIÓN ---
+    function switchTab(tabId) {
+        document.querySelectorAll('.modulo').forEach(m => {
+            if(m.id !== 'scanner-section') m.classList.remove('active');
         });
-
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById('ticket-modal').style.display = 'block';
+        document.getElementById(tabId).classList.add('active');
+        
+        document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
     }
 
-    function closeTicket() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('ticket-modal').style.display = 'none';
+    // --- COMUNICACIÓN CON GOOGLE SHEETS (MOVIMIENTOS TIPO SAP) ---
+    function registrar(modulo, evento, detalle) {
+        const id = document.getElementById('id-input').value;
+        if (!id) return alert("Error: Debe escanear el código QR primero.");
+
+        const payload = {
+            idUnico: id,
+            modulo: modulo,
+            evento: evento,
+            detalle: detalle,
+            fecha: new Date().toLocaleString()
+        };
+
+        console.log("Enviando a Movimientos SAP:", payload);
+        
+        // AQUÍ SE CONECTA CON TU GOOGLE APPS SCRIPT
+        // google.script.run.withSuccessHandler(success).registrarMovimientoLogistico(payload);
+        
+        alert(`REGISTRADO: ${modulo} - ${evento}\nID: ${id}\nDetalle: ${detalle}`);
     }
 
-    function downloadTicket() {
-        const area = document.getElementById('capture-area');
-        html2canvas(area, { useCORS: true }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `PASE_${document.getElementById('t-placa').innerText}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-        });
-    }
+    function asignarAnden() {
+        const id = document.getElementById('id-input').value;
+        const anden = document.getElementById('anden-select').value;
+        
+        if (!id) return alert("Escanee el QR del camión.");
 
-    function enviarWhatsApp() {
-        const area = document.getElementById('capture-area');
-        html2canvas(area, { useCORS: true }).then(canvas => {
-            canvas.toBlob(blob => {
-                const item = new ClipboardItem({ "image/png": blob });
-                navigator.clipboard.write([item]).then(() => {
-                    const msg = encodeURIComponent(`*AGRIPAC - PASE DE INGRESO*\n\nAdjunto pase para la placa ${document.getElementById('t-placa').innerText}.\n\n_Pega la imagen en este chat._`);
-                    window.open(`https://wa.me/?text=${msg}`, '_blank');
-                    alert("Imagen copiada. Pégala en el chat de WhatsApp.");
-                });
-            });
-        });
-    }
+        registrar('DESPACHO', 'ASIGNAR_ANDEN', anden);
 
-    fetchData();
-    setInterval(fetchData, 40000);
+        // Notificación WhatsApp
+        const msg = encodeURIComponent(`*AGRIPAC LOGÍSTICA*\n\nSu unidad ha sido autorizada.\nProceda inmediatamente al *${anden}* para su proceso.`);
+        window.open(`https://wa.me/?text=${msg}`, '_blank');
+    }
 </script>
 
 </body>
