@@ -3,44 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AGRIPAC - Sistema Logístico Integral</title>
+    <title>AGRIPAC LOGÍSTICA - Sistema 360</title>
     
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
-        :root { --blue: #1a237e; --red: #d32f2f; --green: #2e7d32; --bg: #f0f2f5; }
+        :root { --blue: #1a237e; --red: #d32f2f; --green: #25d366; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; }
         
         nav { background: var(--blue); padding: 10px; display: flex; gap: 10px; overflow-x: auto; position: sticky; top: 0; z-index: 1000; }
-        nav button { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 10px 15px; border-radius: 8px; cursor: pointer; }
+        nav button { background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
         nav button.active { background: white; color: var(--blue); font-weight: bold; }
 
         .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
         
-        /* Módulos */
         .modulo { display: none; }
         .modulo.active { display: block; }
 
-        /* Tabla de Planificación */
-        .table-res { overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: var(--blue); color: white; padding: 10px; }
-        td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
+        /* Tabla Estilizada */
+        .table-res { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: var(--blue); color: white; padding: 12px; font-size: 12px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; font-size: 14px; }
 
         /* Scanner */
-        #reader { width: 100%; max-width: 400px; margin: 10px auto; border: 2px solid #ddd; display: none; }
+        #reader { width: 100%; max-width: 400px; margin: 10px auto; display: none; border: 2px solid var(--blue); }
         
         /* Botones */
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px; }
         .btn-blue { background: var(--blue); }
         .btn-green { background: var(--green); }
         .btn-red { background: var(--red); }
-        .btn-scan { background: #546e7a; margin-bottom: 15px; }
+        .btn-ticket { background: var(--blue); padding: 6px 10px; font-size: 11px; }
 
-        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+
+        /* MODAL DEL TICKET */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1100; backdrop-filter: blur(4px); }
+        .ticket-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1101; background: white; border-radius: 15px; width: 350px; overflow: hidden; }
+        .ticket-header { background: var(--blue); color: white; padding: 15px; text-align: center; }
+        
+        #qrcode-wrapper { position: relative; display: flex; justify-content: center; margin: 20px 0; }
+        .qr-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 45px; height: 45px; background: white; padding: 2px; border-radius: 5px; }
+        
+        .ticket-details { padding: 0 20px 20px; text-align: left; font-size: 13px; border-top: 1px dashed #ccc; padding-top: 15px; }
     </style>
 </head>
 <body>
@@ -64,12 +73,11 @@
                             <th>Conductor</th>
                             <th>Placa</th>
                             <th>Ruta</th>
-                            <th>Estado</th>
-                            <th>Acción</th>
+                            <th>Pase QR</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
-                        <tr><td colspan="5">Cargando datos de Agripac...</td></tr>
+                        <tr><td colspan="4">Conectando con base de datos Agripac...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -78,13 +86,10 @@
 
     <div id="tab-garita" class="modulo">
         <div class="card">
-            <h2>Módulo Garita</h2>
-            <button class="btn btn-scan" id="btn-start-scan" onclick="toggleScanner()">📷 Activar Escáner QR</button>
+            <h2>Control de Garita</h2>
+            <button class="btn" style="background:#546e7a" onclick="toggleScanner()">📷 Activar Escáner</button>
             <div id="reader"></div>
-            
-            <label>ID Detectado:</label>
-            <input type="text" id="id-input" placeholder="Escanee o ingrese ID manualmente">
-            
+            <input type="text" id="id-input" placeholder="ID del camión">
             <button class="btn btn-blue" onclick="registrarSAP('GARITA', 'ENTRADA')">Validar Ingreso</button>
             <button class="btn btn-red" onclick="registrarSAP('GARITA', 'SALIDA')">Salida Final</button>
         </div>
@@ -92,34 +97,56 @@
 
     <div id="tab-bascula" class="modulo">
         <div class="card">
-            <h2>Báscula de Pesaje</h2>
-            <label>Peso (KG):</label>
-            <input type="number" id="peso-input" placeholder="0.00">
-            <button class="btn btn-green" onclick="registrarSAP('BASCULA', 'PESO_IN')">Registrar Peso Inicial</button>
-            <button class="btn btn-blue" onclick="registrarSAP('BASCULA', 'PESO_OUT')">Registrar Peso Final</button>
+            <h2>Módulo Báscula</h2>
+            <input type="number" id="peso-input" placeholder="Ingrese Peso en KG">
+            <button class="btn btn-green" onclick="registrarSAP('BASCULA', 'PESO_IN')">Peso Inicial</button>
+            <button class="btn btn-blue" onclick="registrarSAP('BASCULA', 'PESO_OUT')">Peso Final</button>
         </div>
     </div>
 
     <div id="tab-despacho" class="modulo">
         <div class="card">
-            <h2>Despacho y Andenes</h2>
-            <label>Seleccionar Andén:</label>
+            <h2>Despacho de Unidades</h2>
             <select id="anden-select">
                 <option value="ANDEN 1">Andén 1</option>
                 <option value="ANDEN 2">Andén 2</option>
                 <option value="ANDEN 3">Andén 3</option>
             </select>
-            <button class="btn btn-blue" onclick="notificarAndenWA()">Asignar y Notificar WA</button>
+            <button class="btn btn-blue" onclick="asignarAndenWA()">Notificar por WhatsApp</button>
         </div>
     </div>
 
+</div>
+
+<div class="modal-overlay" id="overlay" onclick="closeTicket()"></div>
+<div class="ticket-modal" id="ticket-modal">
+    <div id="capture-area" style="background: white;">
+        <div class="ticket-header">
+            <h3 style="margin:0">PASE DE INGRESO</h3>
+            <small>AGRIPAC S.A. - TRAZABILIDAD</small>
+        </div>
+        <div id="qrcode-wrapper">
+            <div id="qrcode"></div>
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgdU9ENZe0xEEBIekcna9hIY1LQynypXsvGw&s" class="qr-logo">
+        </div>
+        <div class="ticket-details">
+            <p><strong>ID:</strong> <span id="t-id"></span></p>
+            <p><strong>CONDUCTOR:</strong> <span id="t-chofer"></span></p>
+            <p><strong>PLACA:</strong> <span id="t-placa"></span></p>
+            <p style="text-align:center; color:red; font-weight:bold; margin-top:10px; font-size:10px;">VÁLIDO SOLO PARA EL DÍA DE HOY</p>
+        </div>
+    </div>
+    <div style="padding: 15px; background: #f9f9f9; display: flex; flex-direction: column; gap: 8px;">
+        <button class="btn btn-green" onclick="sendWAImage()">🟢 Enviar a WhatsApp</button>
+        <button onclick="closeTicket()" style="border:none; background:none; cursor:pointer; color:#777;">Cerrar</button>
+    </div>
 </div>
 
 <script>
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?gid=0&single=true&output=csv";
     let html5QrCode;
 
-    // 1. CARGAR PLANIFICACIÓN
+    // CARGAR DATOS EXCEL
     async function fetchPlanif() {
         const res = await fetch(CSV_URL);
         const csv = await res.text();
@@ -136,36 +163,59 @@
                 tbody.innerHTML += `<tr>
                     <td>${chofer}</td>
                     <td>${placa}</td>
-                    <td>${carga} > ${descarga}</td>
-                    <td><small>Pendiente</small></td>
-                    <td><button onclick="copiarID('${id}')" style="font-size:10px">Usar</button></td>
+                    <td>${carga}</td>
+                    <td><button class="btn btn-ticket" onclick="openTicket('${id}','${chofer}','${placa}')">GENERAR QR</button></td>
                 </tr>`;
             }
         });
     }
 
-    function copiarID(id) {
-        document.getElementById('id-input').value = id;
-        alert("ID cargado para procesar: " + id);
+    // MODAL QR
+    function openTicket(id, chofer, placa) {
+        document.getElementById('t-id').innerText = id;
+        document.getElementById('t-chofer').innerText = chofer;
+        document.getElementById('t-placa').innerText = placa;
+        
+        const qrDiv = document.getElementById('qrcode');
+        qrDiv.innerHTML = "";
+        new QRCode(qrDiv, { text: id, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.H });
+
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('ticket-modal').style.display = 'block';
     }
 
-    // 2. CONTROL DEL ESCÁNER (MANUAL)
+    function closeTicket() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('ticket-modal').style.display = 'none';
+    }
+
+    // WHATSAPP: COPIAR IMAGEN Y ABRIR CHAT
+    function sendWAImage() {
+        const area = document.getElementById('capture-area');
+        html2canvas(area, { useCORS: true }).then(canvas => {
+            canvas.toBlob(blob => {
+                const item = new ClipboardItem({ "image/png": blob });
+                navigator.clipboard.write([item]).then(() => {
+                    const chofer = document.getElementById('t-chofer').innerText;
+                    const msg = encodeURIComponent(`*AGRIPAC S.A.*\nHola ${chofer}, adjunto su pase de ingreso. Por favor péguelo a continuación.`);
+                    window.open(`https://wa.me/?text=${msg}`, '_blank');
+                    alert("Pase copiado. Pégalo en el chat de WhatsApp del conductor.");
+                });
+            });
+        });
+    }
+
+    // CONTROL ESCÁNER
     function toggleScanner() {
         const reader = document.getElementById('reader');
         if (!html5QrCode) {
             reader.style.display = 'block';
             html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
-                (text) => {
-                    document.getElementById('id-input').value = text;
-                    stopScanner();
-                    alert("QR Detectado: " + text);
-                }
-            );
-            document.getElementById('btn-start-scan').innerText = "❌ Apagar Cámara";
-        } else {
-            stopScanner();
-        }
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+                document.getElementById('id-input').value = text;
+                stopScanner();
+            });
+        } else { stopScanner(); }
     }
 
     function stopScanner() {
@@ -173,40 +223,32 @@
             html5QrCode.stop().then(() => {
                 html5QrCode = null;
                 document.getElementById('reader').style.display = 'none';
-                document.getElementById('btn-start-scan').innerText = "📷 Activar Escáner QR";
             });
         }
     }
 
-    // 3. NAVEGACIÓN
+    // NAVEGACIÓN
     function switchTab(tabId) {
         document.querySelectorAll('.modulo').forEach(m => m.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
         event.currentTarget.classList.add('active');
-        if (tabId !== 'tab-garita') stopScanner();
+        stopScanner();
     }
 
-    // 4. REGISTRO SAP (SIMULADO)
-    function registrarSAP(modulo, evento) {
+    function registrarSAP(mod, ev) {
         const id = document.getElementById('id-input').value;
-        const peso = document.getElementById('peso-input').value;
-        if(!id) return alert("Error: No hay un ID de camión seleccionado.");
-        
-        const log = { id, modulo, evento, fecha: new Date().toLocaleString(), detalle: peso || "N/A" };
-        console.log("MOVIMIENTO SAP REGISTRADO:", log);
-        alert(`REGISTRO EXITOSO EN HOJA MOVIMIENTOS\nMódulo: ${modulo}\nEvento: ${evento}`);
+        if(!id) return alert("Escanee un QR primero.");
+        alert(`MOVIMIENTO SAP: ${mod} - ${ev} - ID: ${id}`);
     }
 
-    function notificarAndenWA() {
+    function asignarAndenWA() {
         const anden = document.getElementById('anden-select').value;
-        const msg = encodeURIComponent(`*AGRIPAC LOGÍSTICA*\n\nSu unidad ha sido autorizada.\nProceda al *${anden}* para carga.`);
+        const msg = encodeURIComponent(`*AGRIPAC*\nUnidad autorizada. Proceda al *${anden}*.`);
         window.open(`https://wa.me/?text=${msg}`, '_blank');
     }
 
     fetchPlanif();
-    setInterval(fetchPlanif, 60000); // Actualiza cada minuto
 </script>
-
 </body>
 </html>
