@@ -315,11 +315,16 @@
       <div class="metric">
         <div class="metric-label">Programados</div>
         <div class="metric-value" id="m-total">—</div>
-        <div class="metric-sub">vehículos hoy</div>
+        <div class="metric-sub" id="m-fecha-label">vehículos hoy</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Aprobados</div>
+        <div class="metric-value" id="m-aprobados" style="color:var(--green);">—</div>
+        <div class="metric-sub">con OK en planilla</div>
       </div>
       <div class="metric">
         <div class="metric-label">En planta</div>
-        <div class="metric-value" id="m-dentro" style="color:var(--green);">—</div>
+        <div class="metric-value" id="m-dentro" style="color:var(--blue);">—</div>
         <div class="metric-sub">activos</div>
         <div class="progress-wrap"><div class="progress-bar" id="pb-dentro" style="width:0%"></div></div>
       </div>
@@ -329,19 +334,20 @@
         <div class="metric-sub">completados</div>
         <div class="progress-wrap"><div class="progress-bar" id="pb-done" style="width:0%;background:var(--text3)"></div></div>
       </div>
-      <div class="metric">
-        <div class="metric-label">Pendientes</div>
-        <div class="metric-value" id="m-pend" style="color:var(--amber);">—</div>
-        <div class="metric-sub">por ingresar</div>
-      </div>
     </div>
 
     <div class="card">
       <div class="card-title">
-        <i class="ti ti-list-details"></i> Planificación del día
+        <i class="ti ti-list-details"></i> Planificación
         <div class="card-title-actions">
-          <input type="search" id="search-plan" placeholder="Buscar conductor o placa…" oninput="filtrarPlan()" style="width:200px;" />
-          <button class="btn" onclick="cargarCSV()"><i class="ti ti-refresh"></i> Actualizar</button>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button class="btn btn-sm" onclick="cambiarDia(-1)" title="Día anterior"><i class="ti ti-chevron-left"></i></button>
+            <input type="date" id="filtro-fecha" onchange="filtrarPlan()" style="font-size:13px;padding:5px 8px;" />
+            <button class="btn btn-sm" onclick="cambiarDia(1)" title="Día siguiente"><i class="ti ti-chevron-right"></i></button>
+            <button class="btn btn-sm" onclick="irHoy()" title="Ir a hoy"><i class="ti ti-calendar-event"></i> Hoy</button>
+          </div>
+          <input type="search" id="search-plan" placeholder="Buscar chofer, placa, carga…" oninput="filtrarPlan()" style="width:190px;" />
+          <button class="btn btn-sm" onclick="cargarCSV()"><i class="ti ti-refresh"></i></button>
         </div>
       </div>
       <div id="fuente-csv" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
@@ -349,17 +355,22 @@
         <table>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Conductor</th>
+              <th>ID</th>
+              <th>Área carga</th>
+              <th>Área descarga</th>
+              <th>Detalle carga</th>
+              <th>Tipo carro</th>
+              <th>Operador</th>
+              <th>Chofer</th>
               <th>Placa</th>
-              <th>Ruta / Origen</th>
-              <th>Hora prog.</th>
+              <th>Hora</th>
+              <th>Aprobación</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody id="plan-body">
-            <tr><td colspan="7" class="loading-cell"><i class="ti ti-loader"></i> Cargando planificación…</td></tr>
+            <tr><td colspan="12" class="loading-cell"><i class="ti ti-loader"></i> Cargando planificación…</td></tr>
           </tbody>
         </table>
       </div>
@@ -569,16 +580,489 @@
 
 <script>
 // ─── CONFIGURACIÓN ────────────────────────────────────────────────────
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?gid=0&single=true&output=csv';
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?output=csv';
 
 // ─── ESTADO ──────────────────────────────────────────────────────────
-let planData = [];
-let estados = {};        // idx -> 'pendiente' | 'dentro' | 'done'
-let ingresos = {};       // idx -> { hora, conductor, placa, ruta }
+let todosLosDatos = [];   // todos los registros del CSV
+let planData = [];        // filtrados por fecha seleccionada
+let estados = {};         // idx -> 'pendiente' | 'dentro' | 'done'
+let ingresos = {};
 let pesajes = [];
 let historial = [];
 let andenes = [1,2,3].map(id => ({ id, libre: true, vehiculo: null, conductor: null, hora: null }));
 let paseActual = null;
+
+// ─── RELOJ ───────────────────────────────────────────────────────────
+function reloj() {
+  const n = new Date();
+  const pad = v => String(v).padStart(2,'0');
+  document.getElementById('clock').textContent = pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
+  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  document.getElementById('fecha').textContent = dias[n.getDay()]+' '+n.getDate()+' '+meses[n.getMonth()]+' '+n.getFullYear();
+}
+setInterval(reloj, 1000); reloj();
+
+// ─── FECHA HELPERS ────────────────────────────────────────────────────
+function fechaHoyISO() {
+  const n = new Date();
+  return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+}
+
+// Convierte DD/MM/YYYY o MM/DD/YYYY a YYYY-MM-DD para comparación
+function normalizarFecha(str) {
+  if (!str) return '';
+  str = str.trim();
+  // Detectar formato DD/MM/YYYY
+  const m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  // Ya en YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0,10);
+  return str;
+}
+
+function fechaISO_aDDMMYYYY(iso) {
+  if (!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return d+'/'+m+'/'+y;
+}
+
+function irHoy() {
+  document.getElementById('filtro-fecha').value = fechaHoyISO();
+  filtrarPlan();
+}
+
+function cambiarDia(delta) {
+  const inp = document.getElementById('filtro-fecha');
+  const base = inp.value ? new Date(inp.value+'T12:00:00') : new Date();
+  base.setDate(base.getDate() + delta);
+  inp.value = base.getFullYear()+'-'+String(base.getMonth()+1).padStart(2,'0')+'-'+String(base.getDate()).padStart(2,'0');
+  filtrarPlan();
+}
+
+// ─── CSV ─────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''));
+  return lines.slice(1).map((line, i) => {
+    const cols = [];
+    let cur = '', inQ = false;
+    for (const ch of line) {
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+      else cur += ch;
+    }
+    cols.push(cur.trim());
+    const obj = { _idx: i + 1 };
+    headers.forEach((h, j) => { obj[h] = (cols[j]||'').replace(/^"|"$/g,'').trim(); });
+    return obj;
+  }).filter(r => Object.values(r).some((v,i) => i > 0 && v));
+}
+
+function cargarCSV() {
+  const body = document.getElementById('plan-body');
+  body.innerHTML = '<tr><td colspan="12" class="loading-cell"><i class="ti ti-loader"></i> Cargando planificación…</td></tr>';
+  fetch(CSV_URL + '&nocache=' + Date.now())
+    .then(r => { if (!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(text => {
+      todosLosDatos = parseCSV(text);
+      if (!todosLosDatos.length) throw new Error('vacío');
+      todosLosDatos.forEach(r => { if (!estados[r._idx]) estados[r._idx] = 'pendiente'; });
+      document.getElementById('fuente-csv').textContent = '⟳ Actualizado ' + new Date().toLocaleTimeString('es-EC') + ' · ' + todosLosDatos.length + ' registros totales';
+      filtrarPlan();
+    })
+    .catch(() => { cargarDemo(); });
+}
+
+function filtrarPlan() {
+  const fechaSel = document.getElementById('filtro-fecha').value; // YYYY-MM-DD
+  const q = (document.getElementById('search-plan').value || '').toLowerCase();
+
+  planData = todosLosDatos.filter(r => {
+    const fRaw = r['FECHA'] || r['Fecha'] || '';
+    const fNorm = normalizarFecha(fRaw);
+    const coincideFecha = !fechaSel || fNorm === fechaSel;
+    const str = Object.values(r).join(' ').toLowerCase();
+    const coincideQ = !q || str.includes(q);
+    return coincideFecha && coincideQ;
+  });
+
+  // Etiqueta de fecha en métrica
+  const lbl = document.getElementById('m-fecha-label');
+  if (lbl) lbl.textContent = fechaSel ? 'el ' + fechaISO_aDDMMYYYY(fechaSel) : 'todos los días';
+
+  renderPlan();
+  actualizarMetricas();
+}
+
+function cargarDemo() {
+  const hoy = fechaHoyISO();
+  const fmtHoy = fechaISO_aDDMMYYYY(hoy);
+  todosLosDatos = [
+    {_idx:1,'ID-UNICO':'AL-M460I-DTC0-V1.1','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'T5432','FECHA':fmtHoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
+    {_idx:2,'ID-UNICO':'AL-X8VLJ-759F-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'AVENA','FECHA':fmtHoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
+    {_idx:3,'ID-UNICO':'AL-PN15L-YE2L-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'TRIGO','FECHA':fmtHoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
+    {_idx:4,'ID-UNICO':'AL-RAHIK-BP3M-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'PASTA SOYA','FECHA':fmtHoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
+    {_idx:5,'ID-UNICO':'AL-VB2G8-2MTM-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'PASTA SOYA 3','FECHA':fmtHoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
+    {_idx:6,'ID-UNICO':'AL-VB2G8-2MTM-V1.0','ÁREA DE CARGA':'ANDY PUERTO','ÁREA DE DESCARGA':'STORE OCEAN','DETALLE CARGA':'MAIZ','FECHA':fmtHoy,'TIPO CARRO':'BAÑERA','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'WILLIAM','PLACA':'AAA-1334','TELEFONO':'939745803','HORA SOLICITADA':'14:00','APROBACION CARGA':'OK'},
+  ];
+  todosLosDatos.forEach(r => { if (!estados[r._idx]) estados[r._idx] = 'pendiente'; });
+  document.getElementById('fuente-csv').textContent = '⚠ Modo demo — datos de ejemplo (CORS bloqueado; funciona en GitHub Pages)';
+  filtrarPlan();
+}
+
+// ─── RENDER PLAN ──────────────────────────────────────────────────────
+function renderPlan() {
+  const body = document.getElementById('plan-body');
+  if (!planData.length) {
+    const fechaSel = document.getElementById('filtro-fecha').value;
+    body.innerHTML = `<tr><td colspan="12" class="loading-cell">Sin registros para ${fechaSel ? fechaISO_aDDMMYYYY(fechaSel) : 'la fecha seleccionada'}</td></tr>`;
+    return;
+  }
+  body.innerHTML = planData.map(r => {
+    const id    = r['ID-UNICO'] || '—';
+    const cargo = r['ÁREA DE CARGA'] || '—';
+    const desc  = r['ÁREA DE DESCARGA'] || '—';
+    const det   = r['DETALLE CARGA'] || '—';
+    const tipo  = r['TIPO CARRO'] || '—';
+    const op    = r['OPERADOR LOGÍSTICO'] || '—';
+    const chofer= r['CHOFER'] || '—';
+    const placa = r['PLACA'] || '—';
+    const hora  = r['HORA SOLICITADA'] || '—';
+    const aprob = (r['APROBACION CARGA'] || '').toUpperCase();
+    const est   = estados[r._idx] || 'pendiente';
+
+    const aprobBadge = aprob === 'OK'
+      ? '<span class="badge badge-done"><i class="ti ti-check"></i> OK</span>'
+      : aprob
+      ? '<span class="badge badge-pending">'+aprob+'</span>'
+      : '<span style="color:var(--text3);font-size:12px;">—</span>';
+
+    const statBadge = est === 'pendiente'
+      ? '<span class="badge badge-pending"><i class="ti ti-clock"></i> Pendiente</span>'
+      : est === 'dentro'
+      ? '<span class="badge badge-in"><i class="ti ti-circle-check"></i> En planta</span>'
+      : '<span class="badge badge-done"><i class="ti ti-checks"></i> Finalizado</span>';
+
+    const acciones = est === 'pendiente'
+      ? `<button class="btn btn-success btn-sm" onclick="ingresoRapido(${r._idx})"><i class="ti ti-login"></i> Ingresar</button>`
+      : est === 'dentro'
+      ? `<button class="btn btn-danger btn-sm" onclick="salidaRapida(${r._idx})"><i class="ti ti-logout"></i> Salida</button>`
+      : `<span style="font-size:12px;color:var(--text3);">✓ Listo</span>`;
+
+    return `<tr>
+      <td><span class="mono-tag" style="font-size:11px;">${id}</span></td>
+      <td>${cargo}</td>
+      <td>${desc}</td>
+      <td style="font-weight:500;">${det}</td>
+      <td style="color:var(--text2);">${tipo}</td>
+      <td style="color:var(--text2);">${op}</td>
+      <td>${chofer}</td>
+      <td><span class="mono-tag">${placa}</span></td>
+      <td><span class="mono-tag">${hora}</span></td>
+      <td>${aprobBadge}</td>
+      <td>${statBadge}</td>
+      <td>${acciones}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── MÉTRICAS ────────────────────────────────────────────────────────
+function actualizarMetricas() {
+  const total = planData.length;
+  const aprobados = planData.filter(r => (r['APROBACION CARGA']||'').toUpperCase() === 'OK').length;
+  const dentro = planData.filter(r => estados[r._idx] === 'dentro').length;
+  const done   = planData.filter(r => estados[r._idx] === 'done').length;
+  document.getElementById('m-total').textContent = total;
+  document.getElementById('m-aprobados').textContent = aprobados;
+  document.getElementById('m-dentro').textContent = dentro;
+  document.getElementById('m-done').textContent = done;
+  if (total > 0) {
+    document.getElementById('pb-dentro').style.width = Math.round(dentro/total*100)+'%';
+    document.getElementById('pb-done').style.width = Math.round(done/total*100)+'%';
+  }
+  renderActivos();
+}
+
+// ─── INGRESO / SALIDA RÁPIDA ─────────────────────────────────────────
+function ingresoRapido(idx) {
+  const r = todosLosDatos.find(x => x._idx === idx); if (!r) return;
+  const chofer = r['CHOFER']||'—', placa = r['PLACA']||'—', det = r['DETALLE CARGA']||'—';
+  estados[idx] = 'dentro';
+  ingresos[idx] = { hora: horaActual(), conductor: chofer, placa, ruta: det };
+  agregarLog('Ingreso', chofer, placa, det, 'Planificado · '+r['TIPO CARRO']);
+  agregarTimeline('tl-in', 'Ingreso: '+chofer, placa+' · '+det);
+  mostrarPase(idx, chofer, placa, det, r['ÁREA DE DESCARGA']||'—');
+  renderPlan(); actualizarMetricas();
+}
+
+function salidaRapida(idx) {
+  const r = todosLosDatos.find(x => x._idx === idx); if (!r) return;
+  const chofer = r['CHOFER']||'—', placa = r['PLACA']||'—', det = r['DETALLE CARGA']||'—';
+  estados[idx] = 'done';
+  delete ingresos[idx];
+  andenes.forEach(a => { if (a.vehiculo === placa) { a.libre=true; a.vehiculo=null; a.conductor=null; a.hora=null; }});
+  agregarLog('Salida', chofer, placa, det, 'Finalizado');
+  agregarTimeline('tl-out', 'Salida: '+chofer, placa);
+  renderPlan(); actualizarMetricas(); renderAndenes();
+}
+
+// ─── GARITA ──────────────────────────────────────────────────────────
+function buscarVehiculo() {
+  const q = document.getElementById('g-placa').value.trim().toUpperCase();
+  const el = document.getElementById('g-resultado');
+  if (!q) { el.innerHTML = ''; return; }
+  // Buscar en datos del día filtrado primero, luego en todos
+  const found = planData.find(r => (r['PLACA']||'').toUpperCase().includes(q))
+             || todosLosDatos.find(r => (r['PLACA']||'').toUpperCase().includes(q));
+  if (found) {
+    const est = estados[found._idx] || 'pendiente';
+    const badge = est==='pendiente' ? '<span class="badge badge-pending">Pendiente ingreso</span>'
+      : est==='dentro' ? '<span class="badge badge-in">Actualmente en planta</span>'
+      : '<span class="badge badge-done">Finalizado</span>';
+    const btn = est==='pendiente'
+      ? `<button class="btn btn-success btn-sm" onclick="ingresoRapido(${found._idx})"><i class="ti ti-login"></i> Autorizar ingreso</button>`
+      : est==='dentro'
+      ? `<button class="btn btn-danger btn-sm" onclick="salidaRapida(${found._idx})"><i class="ti ti-logout"></i> Registrar salida</button>`
+      : '';
+    el.innerHTML = `<div class="alert alert-success" style="margin-bottom:10px;"><i class="ti ti-check"></i> Vehículo encontrado ${badge}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:13px;margin-bottom:10px;">
+        <div><span style="color:var(--text3);font-size:11px;">CHOFER</span><br><strong>${found['CHOFER']||'—'}</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;">PLACA</span><br><span class="mono-tag">${found['PLACA']||'—'}</span></div>
+        <div><span style="color:var(--text3);font-size:11px;">DETALLE CARGA</span><br>${found['DETALLE CARGA']||'—'}</div>
+        <div><span style="color:var(--text3);font-size:11px;">ÁREA DESCARGA</span><br>${found['ÁREA DE DESCARGA']||'—'}</div>
+        <div><span style="color:var(--text3);font-size:11px;">HORA SOLICITADA</span><br><span class="mono-tag">${found['HORA SOLICITADA']||'—'}</span></div>
+        <div style="display:flex;align-items:flex-end;">${btn}</div>
+      </div>`;
+  } else {
+    el.innerHTML = '<div class="alert alert-warning"><i class="ti ti-alert-triangle"></i> Placa no encontrada en planificación</div>';
+  }
+}
+
+function registrarIngreso() {
+  const cond = document.getElementById('m-conductor').value.trim();
+  const placa = document.getElementById('m-placa-in').value.trim();
+  const ruta = document.getElementById('m-ruta').value.trim();
+  if (!cond || !placa) { mostrarMsg('g-msg','warning','Complete conductor y placa'); return; }
+  agregarLog('Ingreso', cond, placa, ruta, 'Manual');
+  agregarTimeline('tl-in', 'Ingreso: '+cond, placa);
+  ['m-conductor','m-placa-in','m-ruta'].forEach(id => document.getElementById(id).value='');
+  mostrarMsg('g-msg','success','Ingreso registrado correctamente');
+  renderActivos();
+}
+
+function registrarSalida() {
+  const placa = document.getElementById('m-placa-in').value.trim();
+  const cond = document.getElementById('m-conductor').value.trim();
+  if (!placa) { mostrarMsg('g-msg','warning','Ingrese la placa del vehículo'); return; }
+  andenes.forEach(a => { if (a.vehiculo===placa) { a.libre=true; a.vehiculo=null; a.conductor=null; a.hora=null; }});
+  agregarLog('Salida', cond||'—', placa, document.getElementById('m-ruta').value||'—', 'Manual');
+  agregarTimeline('tl-out', 'Salida: '+(cond||placa), placa);
+  ['m-conductor','m-placa-in','m-ruta'].forEach(id => document.getElementById(id).value='');
+  mostrarMsg('g-msg','success','Salida registrada');
+  renderAndenes(); renderActivos();
+}
+
+// ─── TIMELINE ────────────────────────────────────────────────────────
+function agregarTimeline(cls, title, sub) {
+  const tl = document.getElementById('garita-timeline');
+  const item = document.createElement('div');
+  item.className = 'timeline-item';
+  item.innerHTML = `<div class="tl-dot ${cls}"></div><div style="flex:1;"><div style="font-size:13px;font-weight:500;">${title}</div><div class="tl-sub">${sub}</div></div><div class="tl-time">${horaActual()}</div>`;
+  tl.insertBefore(item, tl.firstChild);
+  while (tl.children.length > 10) tl.removeChild(tl.lastChild);
+}
+
+// ─── BÁSCULA ─────────────────────────────────────────────────────────
+function calcNeto() {
+  const br = parseFloat(document.getElementById('b-bruto').value)||0;
+  const ta = parseFloat(document.getElementById('b-tara').value)||0;
+  const n = br - ta;
+  document.getElementById('b-neto').textContent = n > 0 ? n.toLocaleString('es-EC')+' kg' : '— kg';
+}
+
+function registrarPesaje() {
+  const placa = document.getElementById('b-placa').value.trim();
+  const bruto = parseFloat(document.getElementById('b-bruto').value);
+  const tara  = parseFloat(document.getElementById('b-tara').value);
+  const prod  = document.getElementById('b-producto').value.trim();
+  if (!placa||isNaN(bruto)||isNaN(tara)) { mostrarMsg('b-msg','warning','Complete todos los campos'); return; }
+  const neto = bruto - tara;
+  pesajes.push({ placa, bruto, tara, neto, prod, hora: horaActual() });
+  agregarLog('Pesaje','—',placa,prod,bruto+'kg bruto / '+tara+'kg tara / '+neto+'kg neto');
+  agregarTimeline('tl-peso','Pesaje: '+placa,neto.toLocaleString('es-EC')+' kg neto');
+  limpiarBascula(); renderPesajes();
+  mostrarMsg('b-msg','success','Pesaje registrado: '+neto.toLocaleString('es-EC')+' kg neto');
+}
+
+function limpiarBascula() {
+  ['b-placa','b-bruto','b-tara','b-producto'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('b-neto').textContent='— kg';
+}
+
+function renderPesajes() {
+  const body = document.getElementById('pesajes-body');
+  if (!pesajes.length) { body.innerHTML='<tr><td colspan="6" class="loading-cell">Sin pesajes</td></tr>'; return; }
+  body.innerHTML = [...pesajes].reverse().map(p =>
+    `<tr><td><span class="mono-tag">${p.placa}</span></td><td>${p.prod||'—'}</td>
+    <td style="font-family:var(--mono);">${p.bruto.toLocaleString('es-EC')}</td>
+    <td style="font-family:var(--mono);">${p.tara.toLocaleString('es-EC')}</td>
+    <td style="font-weight:600;font-family:var(--mono);">${p.neto.toLocaleString('es-EC')}</td>
+    <td style="font-size:12px;color:var(--text3);">${p.hora}</td></tr>`
+  ).join('');
+  const total = pesajes.reduce((s,p)=>s+p.neto,0);
+  document.getElementById('total-neto').textContent = total.toLocaleString('es-EC')+' kg';
+}
+
+// ─── DESPACHO / ANDENES ──────────────────────────────────────────────
+function renderAndenes() {
+  const grid = document.getElementById('andenes-grid');
+  const sel  = document.getElementById('d-anden');
+  grid.innerHTML = andenes.map(a =>
+    `<div class="anden ${a.libre?'libre':'ocupado'}" onclick="clickAnden(${a.id})" title="${a.libre?'Libre':'Click para liberar'}">
+      <div class="anden-num">Andén ${a.id}</div>
+      <div class="anden-icon">${a.libre?'<i class="ti ti-parking"></i>':'<i class="ti ti-truck"></i>'}</div>
+      <div class="anden-label">${a.libre?'Libre':(a.vehiculo||'Ocupado')}</div>
+    </div>`
+  ).join('');
+  sel.innerHTML = andenes.filter(a=>a.libre).map(a=>`<option value="${a.id}">Andén ${a.id}</option>`).join('');
+}
+
+function clickAnden(id) {
+  const a = andenes.find(x=>x.id===id);
+  if (a&&!a.libre) { if (confirm('¿Liberar andén '+id+' ('+( a.vehiculo||'vehículo')+')?')) { a.libre=true; a.vehiculo=null; a.conductor=null; a.hora=null; renderAndenes(); renderActivos(); }}
+}
+
+function agregarAnden() {
+  andenes.push({ id: andenes.length+1, libre:true, vehiculo:null, conductor:null, hora:null });
+  renderAndenes();
+}
+
+function asignarAnden() {
+  const placa = document.getElementById('d-placa').value.trim();
+  const aid   = parseInt(document.getElementById('d-anden').value);
+  const obs   = document.getElementById('d-obs').value.trim();
+  if (!placa||!aid) { mostrarMsg('d-msg','warning','Complete los campos requeridos'); return; }
+  const a = andenes.find(x=>x.id===aid); if (!a) return;
+  const pl = todosLosDatos.find(r=>(r['PLACA']||'').toUpperCase()===placa.toUpperCase());
+  a.libre=false; a.vehiculo=placa; a.conductor=pl?pl['CHOFER']:'—'; a.hora=horaActual();
+  renderAndenes(); renderActivos();
+  document.getElementById('d-placa').value='';
+  document.getElementById('d-obs').value='';
+  mostrarMsg('d-msg','success',placa+' asignado a andén '+aid);
+  agregarLog('Despacho', a.conductor||'—', placa,'Andén '+aid, obs||'Asignación de andén');
+}
+
+function renderActivos() {
+  const body = document.getElementById('activos-body');
+  const dentro = planData.filter(r=>estados[r._idx]==='dentro');
+  if (!dentro.length) { body.innerHTML='<tr><td colspan="6" class="loading-cell">Sin vehículos activos en planta</td></tr>'; return; }
+  body.innerHTML = dentro.map(r => {
+    const chofer=r['CHOFER']||'—', placa=r['PLACA']||'—', det=r['DETALLE CARGA']||'—';
+    const info=ingresos[r._idx]||{};
+    const and=andenes.find(a=>a.vehiculo===placa);
+    return `<tr>
+      <td>${chofer}</td>
+      <td><span class="mono-tag">${placa}</span></td>
+      <td style="color:var(--text2);">${det}</td>
+      <td><span class="mono-tag">${info.hora||'—'}</span></td>
+      <td>${and?'<span class="badge badge-pending">Andén '+and.id+'</span>':'<span style="color:var(--text3);font-size:12px;">Sin asignar</span>'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="salidaRapida(${r._idx})"><i class="ti ti-logout"></i> Salida</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── HISTORIAL ───────────────────────────────────────────────────────
+function agregarLog(tipo, cond, placa, ruta, detalle) {
+  historial.unshift({ hora: horaActual(), tipo, cond, placa, ruta, detalle });
+  renderHistorial();
+}
+
+function renderHistorial() {
+  const body = document.getElementById('hist-body');
+  if (!historial.length) { body.innerHTML='<tr><td colspan="6" class="loading-cell">Sin movimientos</td></tr>'; return; }
+  body.innerHTML = historial.map(r => {
+    const badge = r.tipo==='Ingreso'?'<span class="badge badge-in">Ingreso</span>'
+      : r.tipo==='Salida'?'<span class="badge badge-out">Salida</span>'
+      : r.tipo==='Pesaje'?'<span class="badge badge-pending">Pesaje</span>'
+      : '<span class="badge badge-done">'+r.tipo+'</span>';
+    return `<tr>
+      <td><span class="mono-tag">${r.hora}</span></td>
+      <td>${badge}</td><td>${r.cond}</td>
+      <td><span class="mono-tag">${r.placa}</span></td>
+      <td style="color:var(--text2);">${r.ruta}</td>
+      <td style="font-size:12px;color:var(--text3);">${r.detalle}</td>
+    </tr>`;
+  }).join('');
+}
+
+function limpiarHistorial() {
+  if (confirm('¿Limpiar historial del día?')) { historial=[]; renderHistorial(); }
+}
+
+function exportarCSV() {
+  const rows = [['Hora','Tipo','Conductor','Placa','Ruta','Detalle'],
+    ...historial.map(r=>[r.hora,r.tipo,r.cond,r.placa,r.ruta,r.detalle])];
+  const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download = 'agripac_movimientos_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+// ─── PASE MODAL ──────────────────────────────────────────────────────
+function mostrarPase(idx, chofer, placa, det, descarga) {
+  paseActual = { idx, chofer, placa, det, descarga };
+  document.getElementById('p-id').textContent = 'AG-'+String(idx).padStart(4,'0');
+  document.getElementById('p-cond').textContent = chofer;
+  document.getElementById('p-placa').textContent = placa;
+  document.getElementById('p-ruta').textContent = det + (descarga ? ' → '+descarga : '');
+  document.getElementById('p-hora').textContent = horaActual();
+  document.getElementById('pase-modal').classList.add('open');
+}
+
+function cerrarPase() { document.getElementById('pase-modal').classList.remove('open'); }
+
+function enviarWhatsApp() {
+  if (!paseActual) return;
+  const d = new Date().toLocaleDateString('es-EC');
+  const msg = `🟢 *AGRIPAC S.A. — Pase de Ingreso*\n\n📋 ID: AG-${String(paseActual.idx).padStart(4,'0')}\n👤 Chofer: ${paseActual.chofer}\n🚛 Placa: ${paseActual.placa}\n📦 Carga: ${paseActual.det}\n📍 Descarga: ${paseActual.descarga||'—'}\n🕐 Hora: ${horaActual()}\n📅 Fecha: ${d}\n\n_Válido únicamente para el día de hoy_`;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────
+function horaActual() {
+  const n = new Date();
+  return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+}
+
+function mostrarMsg(id, tipo, txt) {
+  const el = document.getElementById(id);
+  const icon = tipo==='success'?'ti-check':tipo==='warning'?'ti-alert-triangle':'ti-info-circle';
+  el.className='alert alert-'+tipo;
+  el.innerHTML=`<i class="ti ${icon}"></i> ${txt}`;
+  el.style.display='flex';
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>{ el.style.display='none'; }, 3500);
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+tab).classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────
+// Establecer fecha de hoy al iniciar
+document.getElementById('filtro-fecha').value = fechaHoyISO();
+renderAndenes();
+cargarCSV();
+// Auto-refresh cada 5 minutos
+setInterval(cargarCSV, 5 * 60 * 1000);
+
+
 
 // ─── RELOJ ───────────────────────────────────────────────────────────
 function reloj() {
