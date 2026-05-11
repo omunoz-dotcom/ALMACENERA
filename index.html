@@ -7,10 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
   <style>
     :root {
       --bg: #f5f4f0;
@@ -40,238 +36,148 @@
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #1a1a18;
-        --surface: #242422;
-        --surface2: #2e2e2a;
-        --border: #3a3a36;
-        --border2: #4e4e48;
-        --text: #f0efe9;
-        --text2: #a0a098;
-        --text3: #666660;
-        --green-bg: #04342c;
-        --green-text: #9fe1cb;
-        --red-bg: #4a1b0c;
-        --red-text: #f5c4b3;
-        --amber-bg: #412402;
-        --amber-text: #fac775;
-        --blue-bg: #042c53;
-        --blue-text: #b5d4f4;
+        --bg: #1a1a18; --surface: #242422; --surface2: #2e2e2a;
+        --border: #3a3a36; --border2: #4e4e48;
+        --text: #f0efe9; --text2: #a0a098; --text3: #666660;
+        --green-bg: #04342c; --green-text: #9fe1cb;
+        --red-bg: #4a1b0c; --red-text: #f5c4b3;
+        --amber-bg: #412402; --amber-text: #fac775;
+        --blue-bg: #042c53; --blue-text: #b5d4f4;
       }
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { font-size: 15px; }
     body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* HEADER */
     header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 56px;
-      position: sticky;
-      top: 0;
-      z-index: 50;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; display: flex; align-items: center; justify-content: space-between;
+      height: 56px; position: sticky; top: 0; z-index: 50;
     }
     .logo { display: flex; align-items: center; gap: 10px; }
-    .logo-badge {
-      background: var(--green);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      padding: 3px 8px;
-      border-radius: 4px;
-    }
+    .logo-badge { background: var(--green); color: #fff; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 4px; }
     .logo-name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
     .logo-sub { font-size: 12px; color: var(--text3); margin-left: 4px; }
-    .header-right { display: flex; align-items: center; gap: 16px; }
-    #clock { font-family: var(--mono); font-size: 15px; font-weight: 500; }
-    #fecha { font-size: 12px; color: var(--text2); }
 
-    /* NAV */
     nav {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-      display: flex;
-      gap: 2px;
-      overflow-x: auto;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; display: flex; gap: 2px; overflow-x: auto;
     }
     .nav-btn {
       display: flex; align-items: center; gap: 6px;
-      padding: 0 14px;
-      height: 44px;
-      font-size: 13px;
-      font-family: var(--font);
-      color: var(--text2);
-      background: transparent;
-      border: none;
-      border-bottom: 2px solid transparent;
-      cursor: pointer;
-      white-space: nowrap;
+      padding: 0 14px; height: 44px; font-size: 13px; font-family: var(--font);
+      color: var(--text2); background: transparent; border: none;
+      border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap;
       transition: color 0.15s, border-color 0.15s;
     }
     .nav-btn:hover { color: var(--text); }
     .nav-btn.active { color: var(--green); border-bottom-color: var(--green); font-weight: 500; }
 
-    /* LAYOUT */
-    main { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem; }
+    main { max-width: 1300px; margin: 0 auto; padding: 1.5rem 2rem; }
     .section { display: none; }
     .section.active { display: block; }
 
-    /* GRIDS */
-    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.25rem; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.25rem; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
-    @media (max-width: 800px) {
-      .grid-4 { grid-template-columns: repeat(2, 1fr); }
-      .grid-2 { grid-template-columns: 1fr; }
-      .grid-3 { grid-template-columns: 1fr; }
-      main { padding: 1rem; }
-    }
+    .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 1.25rem; }
+    .grid-2  { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+    @media(max-width:800px){ .grid-4{grid-template-columns:repeat(2,1fr);} .grid-2{grid-template-columns:1fr;} main{padding:1rem;} }
 
-    /* METRIC */
-    .metric {
-      background: var(--surface2);
-      border-radius: var(--radius);
-      padding: 1rem 1.25rem;
-    }
+    .metric { background: var(--surface2); border-radius: var(--radius); padding: 1rem 1.25rem; }
     .metric-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); margin-bottom: 6px; }
     .metric-value { font-size: 28px; font-weight: 600; font-family: var(--mono); }
     .metric-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .progress-wrap { margin-top: 6px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-bar { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s; }
 
-    /* CARD */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 1.25rem;
-      margin-bottom: 1rem;
-    }
-    .card-title {
-      font-size: 14px; font-weight: 500;
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 1rem; padding-bottom: 0.75rem;
-      border-bottom: 1px solid var(--border);
-      flex-wrap: wrap; gap: 8px;
-    }
-    .card-title-actions { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+    .card-title { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .card-actions { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
-    /* TABLE */
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); font-weight: 500; padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
-    td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); font-weight: 500; padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
     tbody tr:hover td { background: var(--surface2); }
-    .loading-cell { text-align: center; padding: 2.5rem; color: var(--text3); font-style: italic; }
+    .empty-cell { text-align: center; padding: 2.5rem; color: var(--text3); font-style: italic; }
 
-    /* BADGE */
     .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 500; white-space: nowrap; }
     .badge-pending { background: var(--amber-bg); color: var(--amber-text); }
-    .badge-in { background: var(--blue-bg); color: var(--blue-text); }
-    .badge-done { background: var(--green-bg); color: var(--green-text); }
-    .badge-out { background: var(--surface2); color: var(--text2); }
+    .badge-in      { background: var(--blue-bg);  color: var(--blue-text); }
+    .badge-done    { background: var(--green-bg);  color: var(--green-text); }
+    .badge-ok      { background: var(--green-bg);  color: var(--green-text); }
+    .badge-no      { background: var(--red-bg);    color: var(--red-text); }
 
-    /* BUTTONS */
-    .btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 7px 14px; border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: transparent; cursor: pointer;
-      font-size: 13px; font-family: var(--font); color: var(--text);
-      transition: all 0.15s; white-space: nowrap;
-    }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: transparent; cursor: pointer; font-size: 13px; font-family: var(--font); color: var(--text); transition: all 0.15s; white-space: nowrap; }
     .btn:hover { background: var(--surface2); border-color: var(--border2); }
     .btn:active { transform: scale(0.98); }
     .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
     .btn-primary:hover { opacity: 0.82; background: var(--text); }
     .btn-success { background: var(--green-bg); color: var(--green-text); border-color: var(--green); }
-    .btn-danger { background: var(--red-bg); color: var(--red-text); border-color: var(--red); }
-    .btn-warning { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber); }
+    .btn-danger  { background: var(--red-bg);   color: var(--red-text);   border-color: var(--red); }
+    .btn-warning { background: var(--amber-bg);  color: var(--amber-text); border-color: var(--amber); }
     .btn-sm { padding: 4px 10px; font-size: 12px; }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    /* INPUTS */
-    input[type=text], input[type=number], input[type=search], select, input[type=date], textarea {
-      font-family: var(--font); font-size: 13px;
-      background: var(--surface); color: var(--text);
-      border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 7px 10px; outline: none;
-      transition: border-color 0.15s;
+    input[type=text], input[type=number], input[type=search], input[type=date], select, textarea {
+      font-family: var(--font); font-size: 13px; background: var(--surface); color: var(--text);
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 7px 10px; outline: none; transition: border-color 0.15s;
     }
-    input:focus, select:focus, textarea:focus { border-color: var(--green); }
-    .field-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; display: block; }
+    input:focus, select:focus { border-color: var(--green); }
     .field { margin-bottom: 10px; }
+    .field-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; display: block; }
     .field input, .field select { width: 100%; }
 
-    /* ALERT */
     .alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
     .alert-success { background: var(--green-bg); color: var(--green-text); }
     .alert-warning { background: var(--amber-bg); color: var(--amber-text); }
-    .alert-danger { background: var(--red-bg); color: var(--red-text); }
-    .alert-info { background: var(--blue-bg); color: var(--blue-text); }
+    .alert-danger  { background: var(--red-bg);   color: var(--red-text); }
+    .alert-info    { background: var(--blue-bg);  color: var(--blue-text); }
 
-    /* TIMELINE */
-    .timeline-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
-    .timeline-item:last-child { border-bottom: none; }
+    .tl-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+    .tl-item:last-child { border-bottom: none; }
     .tl-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
-    .tl-in { background: var(--green); }
-    .tl-out { background: var(--red); }
+    .tl-in   { background: var(--green); }
+    .tl-out  { background: var(--red); }
     .tl-peso { background: var(--amber); }
-    .tl-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
     .tl-time { font-size: 12px; color: var(--text3); font-family: var(--mono); white-space: nowrap; margin-left: auto; }
 
-    /* ANDENES */
-    .andenes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
-    .anden {
-      border: 1px solid var(--border); border-radius: var(--radius-lg);
-      padding: 1rem; text-align: center; transition: all 0.15s;
-    }
-    .anden.libre { border-color: var(--green); background: var(--green-bg); cursor: pointer; }
-    .anden.ocupado { border-color: var(--amber); background: var(--surface2); }
-    .anden-num { font-size: 16px; font-weight: 600; font-family: var(--mono); }
-    .anden-icon { font-size: 22px; margin: 6px 0; }
-    .anden-label { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
-    
-    /* CRONÓMETRO */
-    .timer-box { font-family: var(--mono); font-size: 16px; font-weight: 600; color: var(--blue); margin-bottom: 8px; }
+    .andenes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 10px; }
+    .anden { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem; text-align: center; cursor: pointer; transition: all 0.15s; }
+    .anden:hover { border-color: var(--border2); }
+    .anden.libre   { border-color: var(--green); background: var(--green-bg); }
+    .anden.ocupado { border-color: var(--amber); background: var(--amber-bg); }
+    .anden-num   { font-size: 15px; font-weight: 600; font-family: var(--mono); }
+    .anden-icon  { font-size: 22px; margin: 5px 0; }
+    .anden-label { font-size: 11px; }
+    .anden.libre   .anden-label { color: var(--green-text); }
+    .anden.ocupado .anden-label { color: var(--amber-text); }
 
-    /* PASE MODAL */
-    #pase-modal {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5); z-index: 200;
-      align-items: center; justify-content: center; padding: 1rem;
-    }
+    #pase-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
     #pase-modal.open { display: flex; }
-    .modal-box {
-      background: var(--surface); border-radius: var(--radius-lg);
-      border: 1px solid var(--border); padding: 1.5rem;
-      width: 100%; max-width: 360px;
-    }
+    .modal-box { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1.5rem; width: 100%; max-width: 370px; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .pase-card {
-      border: 2px dashed var(--border2); border-radius: var(--radius-lg);
-      padding: 1.25rem; text-align: center; background: var(--surface);
-    }
-    .pase-co { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); }
+    .pase-card { border: 2px dashed var(--border2); border-radius: var(--radius-lg); padding: 1.25rem; text-align: center; background: var(--surface2); }
+    .pase-co    { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); }
     .pase-title { font-size: 16px; font-weight: 600; margin: 4px 0 12px; }
-    .pase-qr { width: 120px; height: 120px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; }
-    .pase-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+    .pase-qr    { width: 72px; height: 72px; margin: 0 auto 12px; background: var(--surface); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
+    .pase-row   { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid var(--border); text-align: left; }
     .pase-row:last-of-type { border: none; }
     .pase-row span:first-child { color: var(--text2); }
-    .pase-row span:last-child { font-weight: 500; }
+    .pase-row span:last-child  { font-weight: 500; max-width: 200px; text-align: right; }
     .pase-validity { font-size: 11px; color: var(--text3); margin-top: 8px; }
 
-    /* PROGRESS */
-    .progress-wrap { margin-top: 6px; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
-    .progress-bar { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s; }
+    .mono-tag { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 2px 7px; border-radius: 5px; }
 
-    /* MONO TAG */
-    .mono-tag { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 2px 7px; border-radius: 5px; cursor: pointer; }
+    /* Date picker bar */
+    .date-bar {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 10px 16px; flex-wrap: wrap;
+    }
+    .date-bar label { font-size: 13px; color: var(--text2); white-space: nowrap; }
+    .date-bar input[type=date] { font-family: var(--mono); font-size: 13px; }
+    .date-nav-btn { padding: 5px 10px; border-radius: var(--radius); border: 1px solid var(--border); background: transparent; cursor: pointer; font-size: 20px; color: var(--text2); line-height: 1; display: flex; align-items: center; }
+    .date-nav-btn:hover { background: var(--surface2); }
+    #fecha-count { font-size: 13px; color: var(--text3); margin-left: 4px; }
+    .today-pill { display: inline-flex; align-items: center; gap: 4px; background: var(--green-bg); color: var(--green-text); font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 100px; }
   </style>
 </head>
 <body>
@@ -282,635 +188,735 @@
     <span class="logo-name">AGRIPAC</span>
     <span class="logo-sub">Control de Ingreso a Planta</span>
   </div>
-  <div class="header-right">
+  <div style="display:flex;align-items:center;gap:14px;">
     <div style="text-align:right;">
-      <div id="clock"></div>
-      <div id="fecha"></div>
+      <div id="clock" style="font-family:var(--mono);font-size:15px;font-weight:500;"></div>
+      <div id="fecha-hdr" style="font-size:11px;color:var(--text3);"></div>
     </div>
-    <button class="btn btn-sm" onclick="cargarCSV()" title="Actualizar planificación">
-      <i class="ti ti-refresh"></i>
-    </button>
+    <button class="btn btn-sm" onclick="cargarCSV()" title="Actualizar"><i class="ti ti-refresh"></i></button>
   </div>
 </header>
 
 <nav>
-  <button class="nav-btn active" onclick="showTab('planificacion')" id="tab-planificacion">
-    <i class="ti ti-calendar"></i> Planificación
-  </button>
-  <button class="nav-btn" onclick="showTab('garita')" id="tab-garita">
-    <i class="ti ti-shield-check"></i> Garita
-  </button>
-  <button class="nav-btn" onclick="showTab('bascula')" id="tab-bascula">
-    <i class="ti ti-weight"></i> Báscula
-  </button>
-  <button class="nav-btn" onclick="showTab('despacho')" id="tab-despacho">
-    <i class="ti ti-truck"></i> Despacho
-  </button>
-  <button class="nav-btn" onclick="showTab('historial')" id="tab-historial">
-    <i class="ti ti-history"></i> Historial
-  </button>
+  <button class="nav-btn active" onclick="showTab('planificacion')" id="tab-planificacion"><i class="ti ti-calendar"></i> Planificación</button>
+  <button class="nav-btn" onclick="showTab('garita')"       id="tab-garita"><i class="ti ti-shield-check"></i> Garita</button>
+  <button class="nav-btn" onclick="showTab('bascula')"      id="tab-bascula"><i class="ti ti-weight"></i> Báscula</button>
+  <button class="nav-btn" onclick="showTab('despacho')"     id="tab-despacho"><i class="ti ti-truck"></i> Despacho</button>
+  <button class="nav-btn" onclick="showTab('historial')"    id="tab-historial"><i class="ti ti-history"></i> Historial</button>
 </nav>
 
 <main>
 
-  <div class="section active" id="sec-planificacion">
-    <div class="grid-4">
-      <div class="metric">
-        <div class="metric-label">Programados</div>
-        <div class="metric-value" id="m-total">—</div>
-        <div class="metric-sub" id="m-fecha-label">vehículos</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">En planta</div>
-        <div class="metric-value" id="m-dentro" style="color:var(--blue);">—</div>
-        <div class="metric-sub">activos en proceso</div>
-        <div class="progress-wrap"><div class="progress-bar" id="pb-dentro" style="width:0%"></div></div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">En Despacho</div>
-        <div class="metric-value" id="m-cargando" style="color:var(--amber);">—</div>
-        <div class="metric-sub">asignados a andén</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Finalizados</div>
-        <div class="metric-value" id="m-done" style="color:var(--green);">—</div>
-        <div class="metric-sub">salida completa</div>
-        <div class="progress-wrap"><div class="progress-bar" id="pb-done" style="width:0%;background:var(--green)"></div></div>
+<!-- ══════════════ PLANIFICACIÓN ══════════════ -->
+<div class="section active" id="sec-planificacion">
+
+  <!-- Selector de fecha -->
+  <div class="date-bar">
+    <label><i class="ti ti-calendar-event" style="vertical-align:-2px;"></i> Fecha de planificación:</label>
+    <button class="date-nav-btn" onclick="cambiarDia(-1)" title="Día anterior">&#8249;</button>
+    <input type="date" id="fecha-filtro" onchange="aplicarFiltroFecha()" />
+    <button class="date-nav-btn" onclick="cambiarDia(1)"  title="Día siguiente">&#8250;</button>
+    <button class="btn btn-sm" onclick="irHoy()"><i class="ti ti-home"></i> Hoy</button>
+    <span id="hoy-pill" style="display:none;" class="today-pill"><i class="ti ti-circle-check"></i> Hoy</span>
+    <span id="fecha-count" style="margin-left:auto;"></span>
+  </div>
+
+  <!-- Métricas -->
+  <div class="grid-4">
+    <div class="metric">
+      <div class="metric-label">Programados</div>
+      <div class="metric-value" id="m-total">—</div>
+      <div class="metric-sub">vehículos</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">En planta</div>
+      <div class="metric-value" id="m-dentro" style="color:var(--green);">—</div>
+      <div class="metric-sub">activos</div>
+      <div class="progress-wrap"><div class="progress-bar" id="pb-dentro" style="width:0%"></div></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Finalizados</div>
+      <div class="metric-value" id="m-done" style="color:var(--text2);">—</div>
+      <div class="metric-sub">completados</div>
+      <div class="progress-wrap"><div class="progress-bar" id="pb-done" style="width:0%;background:var(--text3)"></div></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Pendientes</div>
+      <div class="metric-value" id="m-pend" style="color:var(--amber);">—</div>
+      <div class="metric-sub">por ingresar</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <i class="ti ti-list-details"></i> Planificación del día
+      <div class="card-actions">
+        <input type="search" id="search-plan" placeholder="Buscar chofer, placa, detalle…" oninput="renderPlan()" style="width:210px;" />
+        <button class="btn" onclick="cargarCSV()"><i class="ti ti-refresh"></i> Actualizar</button>
       </div>
     </div>
+    <div id="fuente-csv" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID Único</th>
+            <th>Área Carga</th>
+            <th>Área Descarga</th>
+            <th>Detalle Carga</th>
+            <th>Tipo Carro</th>
+            <th>Op. Logístico</th>
+            <th>Chofer</th>
+            <th>Placa</th>
+            <th>Teléfono</th>
+            <th>Hora</th>
+            <th>Aprobación</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="plan-body">
+          <tr><td colspan="13" class="empty-cell"><i class="ti ti-loader"></i> Cargando planificación…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
+<!-- ══════════════ GARITA ══════════════ -->
+<div class="section" id="sec-garita">
+  <div class="grid-2">
     <div class="card">
-      <div class="card-title">
-        <i class="ti ti-list-details"></i> Planificación
-        <div class="card-title-actions">
-          <div style="display:flex;align-items:center;gap:6px;">
-            <button class="btn btn-sm" onclick="cambiarDia(-1)" title="Día anterior"><i class="ti ti-chevron-left"></i></button>
-            <input type="date" id="filtro-fecha" onchange="filtrarPlan()" style="font-size:13px;padding:5px 8px;" />
-            <button class="btn btn-sm" onclick="cambiarDia(1)" title="Día siguiente"><i class="ti ti-chevron-right"></i></button>
-            <button class="btn btn-sm" onclick="irHoy()" title="Ir a hoy"><i class="ti ti-calendar-event"></i> Hoy</button>
-          </div>
-          <input type="search" id="search-plan" placeholder="Buscar chofer o placa…" oninput="filtrarPlan()" style="width:190px;" />
-          <button class="btn btn-sm" onclick="cargarCSV()"><i class="ti ti-refresh"></i></button>
-        </div>
+      <div class="card-title"><i class="ti ti-search"></i> Validar vehículo por placa</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <input type="text" id="g-placa" placeholder="Ej: BBB-3333" style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')buscarVehiculo()" />
+        <button class="btn btn-primary" onclick="buscarVehiculo()"><i class="ti ti-search"></i> Buscar</button>
       </div>
+      <div id="g-resultado"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-activity"></i> Actividad reciente en garita</div>
+      <div id="garita-timeline">
+        <div class="tl-item"><div class="tl-dot" style="background:var(--border2);"></div><div><div style="font-size:13px;color:var(--text3);">Sin actividad registrada</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-pencil"></i> Registro manual de ingreso / salida</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div class="field"><span class="field-label">Chofer</span><input type="text" id="m-conductor" placeholder="Nombre completo" /></div>
+      <div class="field"><span class="field-label">Placa</span><input type="text" id="m-placa-in" placeholder="Placa" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" /></div>
+      <div class="field"><span class="field-label">Área / Motivo</span><input type="text" id="m-ruta" placeholder="Área de carga/descarga" /></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-success" onclick="registrarIngreso()"><i class="ti ti-login"></i> Registrar ingreso</button>
+      <button class="btn btn-danger"  onclick="registrarSalida()"><i class="ti ti-logout"></i> Registrar salida</button>
+    </div>
+    <div id="g-msg" style="margin-top:10px;display:none;"></div>
+  </div>
+</div>
+
+<!-- ══════════════ BÁSCULA ══════════════ -->
+<div class="section" id="sec-bascula">
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-weight"></i> Registro de pesaje</div>
+      <div class="field"><span class="field-label">Placa del vehículo</span><input type="text" id="b-placa" placeholder="Placa" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" /></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="field"><span class="field-label">Peso bruto (kg)</span><input type="number" id="b-bruto" placeholder="0" min="0" step="1" oninput="calcNeto()" /></div>
+        <div class="field"><span class="field-label">Peso tara (kg)</span><input type="number" id="b-tara" placeholder="0" min="0" step="1" oninput="calcNeto()" /></div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:1rem;margin:8px 0 12px;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text3);margin-bottom:4px;">Peso neto calculado</div>
+        <div style="font-size:30px;font-weight:600;font-family:var(--mono);" id="b-neto">— kg</div>
+      </div>
+      <div class="field"><span class="field-label">Detalle de carga</span><input type="text" id="b-producto" placeholder="Descripción del producto" /></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="registrarPesaje()" style="flex:1;"><i class="ti ti-device-floppy"></i> Registrar pesaje</button>
+        <button class="btn" onclick="limpiarBascula()"><i class="ti ti-eraser"></i> Limpiar</button>
+      </div>
+      <div id="b-msg" style="margin-top:10px;display:none;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-list-numbers"></i> Pesajes del día</div>
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Operador</th>
-              <th>Chofer</th>
-              <th>Placa</th>
-              <th>Ruta / Carga</th>
-              <th>Estado Logístico</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="plan-body">
-            <tr><td colspan="7" class="loading-cell"><i class="ti ti-loader"></i> Cargando planificación…</td></tr>
-          </tbody>
+          <thead><tr><th>Placa</th><th>Detalle</th><th>Bruto</th><th>Tara</th><th>Neto</th><th>Hora</th></tr></thead>
+          <tbody id="pesajes-body"><tr><td colspan="6" class="empty-cell">Sin pesajes registrados</td></tr></tbody>
         </table>
       </div>
-    </div>
-  </div>
-
-  <div class="section" id="sec-garita">
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title"><i class="ti ti-login"></i> Autorizar Ingreso</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
-          <input type="text" id="g-placa-in" placeholder="Placa planificada (Ej: ABC-1234)" style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" />
-          <button class="btn btn-success" onclick="registrarIngresoGarita()"><i class="ti ti-check"></i> Dar Ingreso</button>
-        </div>
-        <div style="font-size:11px; color:var(--text3);">El vehículo pasará a estado "En Planta" y podrá ir a Báscula.</div>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><i class="ti ti-logout"></i> Dar Salida Final</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
-          <input type="text" id="g-placa-out" placeholder="Placa con Docs y Pesaje Out" style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" />
-          <button class="btn btn-danger" onclick="registrarSalidaGarita()"><i class="ti ti-door-exit"></i> Confirmar Salida</button>
-        </div>
-        <div style="font-size:11px; color:var(--text3);">El ciclo logístico finalizará completamente.</div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:13px;">
+        <span style="color:var(--text2);">Total neto acumulado</span>
+        <span style="font-weight:600;font-family:var(--mono);" id="total-neto">0 kg</span>
       </div>
     </div>
   </div>
+</div>
 
-  <div class="section" id="sec-bascula">
-    <div class="card">
-      <div class="card-title"><i class="ti ti-weight"></i> Estación de Pesaje</div>
-      <div class="field" style="max-width: 300px; margin-bottom: 20px;">
-        <span class="field-label">Placa del vehículo en báscula</span>
-        <input type="text" id="b-placa" placeholder="Placa" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" />
-      </div>
-
-      <div class="grid-2">
-        <div style="border: 1px dashed var(--blue); padding: 1rem; border-radius: var(--radius);">
-          <span style="font-weight: 600; color: var(--blue);">1. PESAJE ENTRADA (TARA)</span>
-          <div style="margin-top: 10px;">
-            <input type="number" id="b-tara" placeholder="Peso Tara (kg)" />
-            <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="registrarPesaje('IN')">Registrar Tara</button>
-          </div>
-        </div>
-        
-        <div style="border: 1px dashed var(--green); padding: 1rem; border-radius: var(--radius);">
-          <span style="font-weight: 600; color: var(--green);">2. PESAJE SALIDA (BRUTO)</span>
-          <div style="margin-top: 10px;">
-            <input type="number" id="b-bruto" placeholder="Peso Bruto (kg)" />
-            <button class="btn btn-success" style="width:100%; margin-top:10px;" onclick="registrarPesaje('OUT')">Registrar Bruto</button>
-          </div>
-        </div>
-      </div>
-      <div id="b-msg" style="margin-top:15px;display:none;"></div>
+<!-- ══════════════ DESPACHO ══════════════ -->
+<div class="section" id="sec-despacho">
+  <div class="card">
+    <div class="card-title">
+      <i class="ti ti-building-warehouse"></i> Estado de andenes
+      <div class="card-actions"><button class="btn btn-sm" onclick="agregarAnden()"><i class="ti ti-plus"></i> Agregar andén</button></div>
+    </div>
+    <div class="andenes-grid" id="andenes-grid"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-transfer"></i> Asignar vehículo a andén</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;">
+      <div class="field"><span class="field-label">Placa</span><input type="text" id="d-placa" placeholder="Placa" style="text-transform:uppercase;width:100%;" oninput="this.value=this.value.toUpperCase()" /></div>
+      <div class="field"><span class="field-label">Andén</span><select id="d-anden" style="width:100%;"></select></div>
+      <div class="field"><span class="field-label">Observaciones</span><input type="text" id="d-obs" placeholder="Notas" style="width:100%;" /></div>
+      <button class="btn btn-primary" onclick="asignarAnden()" style="margin-bottom:10px;"><i class="ti ti-check"></i> Asignar</button>
+    </div>
+    <div id="d-msg" style="display:none;"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-truck-delivery"></i> Vehículos actualmente en planta</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Chofer</th><th>Placa</th><th>Área Carga</th><th>Área Descarga</th><th>Detalle</th><th>Hora ingreso</th><th>Andén</th><th>Acción</th></tr></thead>
+        <tbody id="activos-body"><tr><td colspan="8" class="empty-cell">Sin vehículos en planta</td></tr></tbody>
+      </table>
     </div>
   </div>
+</div>
 
-  <div class="section" id="sec-despacho">
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title"><i class="ti ti-list"></i> Vehículos Esperando Andén (Báscula IN OK)</div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Conductor</th><th>Placa</th><th>Acción</th></tr></thead>
-            <tbody id="activos-body">
-              <tr><td colspan="3" class="loading-cell">Sin vehículos en espera</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><i class="ti ti-transfer"></i> Asignar y Notificar WA</div>
-        <div class="field">
-          <span class="field-label">Placa</span>
-          <input type="text" id="d-placa" placeholder="Seleccione de la lista" style="text-transform:uppercase;" readonly />
-        </div>
-        <div class="field">
-          <span class="field-label">Andén</span>
-          <select id="d-anden"></select>
-        </div>
-        <button class="btn btn-primary" style="width:100%;" onclick="asignarAndenWA()"><i class="ti ti-brand-whatsapp"></i> Asignar y Avisar por WhatsApp</button>
-        <div id="d-msg" style="margin-top:10px; display:none;"></div>
+<!-- ══════════════ HISTORIAL ══════════════ -->
+<div class="section" id="sec-historial">
+  <div class="card">
+    <div class="card-title">
+      <i class="ti ti-history"></i> Historial de movimientos
+      <div class="card-actions">
+        <button class="btn btn-sm" onclick="exportarCSV()"><i class="ti ti-download"></i> Exportar CSV</button>
+        <button class="btn btn-sm" onclick="limpiarHistorial()"><i class="ti ti-trash"></i> Limpiar</button>
       </div>
     </div>
-
-    <div class="card">
-      <div class="card-title"><i class="ti ti-building-warehouse"></i> Panel de Andenes (Carga en Vivo)</div>
-      <div class="andenes-grid" id="andenes-grid"></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Hora</th><th>Tipo</th><th>Chofer</th><th>Placa</th><th>Área</th><th>Detalle</th></tr></thead>
+        <tbody id="hist-body"><tr><td colspan="6" class="empty-cell">Sin movimientos registrados</td></tr></tbody>
+      </table>
     </div>
   </div>
-
-  <div class="section" id="sec-historial">
-    <div class="card">
-      <div class="card-title">
-        <i class="ti ti-history"></i> Historial de movimientos
-        <div class="card-title-actions">
-          <button class="btn btn-sm" onclick="exportarCSV()"><i class="ti ti-download"></i> Exportar CSV</button>
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Hora</th><th>Estación</th><th>Conductor</th><th>Placa</th><th>Detalle</th></tr></thead>
-          <tbody id="hist-body">
-            <tr><td colspan="5" class="loading-cell">Sin movimientos registrados</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+</div>
 
 </main>
 
+<!-- PASE MODAL -->
 <div id="pase-modal">
   <div class="modal-box">
     <div class="modal-header">
       <span style="font-size:15px;font-weight:600;">Pase de ingreso</span>
       <button class="btn btn-sm" onclick="cerrarPase()"><i class="ti ti-x"></i></button>
     </div>
-    <div class="pase-card" id="pase-card-element">
-      <div class="pase-co">AGRIPAC S.A. — CONTROL DE ACCESO</div>
+    <div class="pase-card">
+      <div class="pase-co">AGRIPAC S.A. — Control de Acceso</div>
       <div class="pase-title">Pase de Ingreso</div>
-      
-      <div class="pase-qr" id="pase-qr"></div>
-      
-      <div id="pase-id-num" class="pase-row"></div>
-      <div id="pase-cond" class="pase-row"></div>
-      <div id="pase-pl" class="pase-row"></div>
-      <div id="pase-ruta" class="pase-row"></div>
-      <div id="pase-hora" class="pase-row" style="border:none;"></div>
-      <div class="pase-validity">Válido únicamente para el día de hoy</div>
+      <div class="pase-qr">
+        <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true" fill="var(--text)">
+          <rect x="1" y="1" width="22" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="6" y="6" width="12" height="12" rx="1"/>
+          <rect x="29" y="1" width="22" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="34" y="6" width="12" height="12" rx="1"/>
+          <rect x="1" y="29" width="22" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="6" y="34" width="12" height="12" rx="1"/>
+          <rect x="29" y="29" width="5" height="5"/><rect x="37" y="29" width="5" height="5"/>
+          <rect x="45" y="29" width="6" height="5"/><rect x="29" y="37" width="5" height="5"/>
+          <rect x="37" y="37" width="5" height="5"/><rect x="29" y="45" width="5" height="6"/>
+          <rect x="37" y="45" width="14" height="6"/>
+        </svg>
+      </div>
+      <div class="pase-row"><span>ID</span><span id="p-id">—</span></div>
+      <div class="pase-row"><span>Chofer</span><span id="p-cond">—</span></div>
+      <div class="pase-row"><span>Placa</span><span id="p-placa">—</span></div>
+      <div class="pase-row"><span>Área carga</span><span id="p-areacarga">—</span></div>
+      <div class="pase-row"><span>Área descarga</span><span id="p-areadesc">—</span></div>
+      <div class="pase-row"><span>Detalle</span><span id="p-detalle">—</span></div>
+      <div class="pase-row"><span>Hora ingreso</span><span id="p-hora">—</span></div>
+      <div class="pase-validity">Válido únicamente el día de hoy</div>
     </div>
-    <div style="margin-top: 1rem; display: flex; gap: 8px;">
-      <button class="btn btn-success" onclick="enviarWhatsAppPase()" style="flex:1;"><i class="ti ti-brand-whatsapp"></i> Enviar Pase (WA)</button>
+    <div style="display:flex;gap:8px;margin-top:1rem;">
+      <button class="btn btn-success" onclick="enviarWhatsApp()" style="flex:1;"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
+      <button class="btn" onclick="cerrarPase()" style="flex:1;">Cerrar</button>
     </div>
-    <div id="pase-msg" style="margin-top:10px; display:none;"></div>
   </div>
 </div>
 
 <script>
-// ─── CONFIGURACIÓN ────────────────────────────────────────────────────
+// ─── CONFIG ──────────────────────────────────────────────────────────
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?output=csv';
 
-// ─── ESTADO GLOBAL ───────────────────────────────────────────────────
-let todosLosDatos = [];
-let planData = [];
-// Posibles estados: 'pendiente', 'en_planta', 'pesado_in', 'en_anden', 'cargando', 'docs_entregados', 'pesado_out', 'done'
-let estadoVehiculos = {}; 
+// Mapeo flexible de columnas (nombres exactos de tu planilla)
+const COL = {
+  id:        ['ID-UNICO','ID UNICO','id-unico'],
+  areaCarga: ['ÁREA DE CARGA','AREA DE CARGA','Area Carga','AreaCarga'],
+  areaDesc:  ['ÁREA DE DESCARGA','AREA DE DESCARGA','Area Descarga'],
+  detalle:   ['DETALLE CARGA','Detalle Carga','DETALLE'],
+  fecha:     ['FECHA','Fecha'],
+  tipoCarro: ['TIPO CARRO','Tipo Carro','TIPOCARRO'],
+  operador:  ['OPERADOR LOGÍSTICO','OPERADOR LOGISTICO','Operador'],
+  chofer:    ['CHOFER','Chofer'],
+  placa:     ['PLACA','Placa'],
+  telefono:  ['TELEFONO','Teléfono','TELÉFONO'],
+  hora:      ['HORA SOLICITADA','HORA','Hora Solicitada','Hora'],
+  aprobacion:['APROBACION CARGA','APROBACION','Aprobacion'],
+};
+
+// ─── ESTADO ──────────────────────────────────────────────────────────
+let todosLosDatos = [];    // todos los registros sin filtrar
+let planData = [];         // filtrados por fecha seleccionada
+let estados = {};          // id -> 'pendiente'|'dentro'|'done'
+let ingresos = {};         // id -> { hora, row }
+let pesajes = [];
 let historial = [];
-let andenes = [1,2,3].map(id => ({ id, libre: true, vehiculo: null, conductor: null, idx: null }));
-let timersIntervals = {};
-let timersStart = {};
+let andenes = [1,2,3].map(id => ({ id, libre:true, vehiculo:null, chofer:null, hora:null }));
 let paseActual = null;
+let fechaSeleccionada = '';  // formato YYYY-MM-DD
 
 // ─── RELOJ ───────────────────────────────────────────────────────────
 function reloj() {
-  const n = new Date();
-  const pad = v => String(v).padStart(2,'0');
-  document.getElementById('clock').textContent = pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
-  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  document.getElementById('fecha').textContent = dias[n.getDay()]+' '+n.getDate()+' '+meses[n.getMonth()]+' '+n.getFullYear();
+  const n = new Date(), p = v => String(v).padStart(2,'0');
+  document.getElementById('clock').textContent = p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());
+  const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'], meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  document.getElementById('fecha-hdr').textContent = dias[n.getDay()]+' '+n.getDate()+' '+meses[n.getMonth()]+' '+n.getFullYear();
 }
-setInterval(reloj, 1000); reloj();
+setInterval(reloj,1000); reloj();
 
-function fechaHoyISO() {
+// ─── FECHA HELPERS ───────────────────────────────────────────────────
+function fechaHoy() {
   const n = new Date();
   return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
 }
 
+// Convierte fecha del CSV (DD/MM/YYYY o MM/DD/YYYY o YYYY-MM-DD) → YYYY-MM-DD
+function normalizarFecha(str) {
+  if (!str) return '';
+  str = str.trim();
+  // YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  // DD/MM/YYYY
+  const m1 = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m1) return m1[3]+'-'+m1[2].padStart(2,'0')+'-'+m1[1].padStart(2,'0');
+  // MM-DD-YYYY
+  const m2 = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if (m2) return m2[3]+'-'+m2[1].padStart(2,'0')+'-'+m2[2].padStart(2,'0');
+  return str;
+}
+
+function formatFechaDisplay(yyyy_mm_dd) {
+  if (!yyyy_mm_dd) return '';
+  const [y,m,d] = yyyy_mm_dd.split('-');
+  const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return d+' '+meses[parseInt(m)-1]+' '+y;
+}
+
 function irHoy() {
-  document.getElementById('filtro-fecha').value = fechaHoyISO();
-  filtrarPlan();
+  fechaSeleccionada = fechaHoy();
+  document.getElementById('fecha-filtro').value = fechaSeleccionada;
+  aplicarFiltroFecha();
 }
 
 function cambiarDia(delta) {
-  const inp = document.getElementById('filtro-fecha');
-  const base = inp.value ? new Date(inp.value+'T12:00:00') : new Date();
-  base.setDate(base.getDate() + delta);
-  inp.value = base.getFullYear()+'-'+String(base.getMonth()+1).padStart(2,'0')+'-'+String(base.getDate()).padStart(2,'0');
-  filtrarPlan();
+  const cur = document.getElementById('fecha-filtro').value || fechaHoy();
+  const d = new Date(cur+'T12:00:00');
+  d.setDate(d.getDate() + delta);
+  const nf = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  fechaSeleccionada = nf;
+  document.getElementById('fecha-filtro').value = nf;
+  aplicarFiltroFecha();
 }
 
-// ─── CARGA DE DATOS ──────────────────────────────────────────────────
+function aplicarFiltroFecha() {
+  fechaSeleccionada = document.getElementById('fecha-filtro').value;
+  const hoy = fechaHoy();
+  const pill = document.getElementById('hoy-pill');
+  pill.style.display = fechaSeleccionada === hoy ? 'inline-flex' : 'none';
+  // Filtrar datos
+  planData = todosLosDatos.filter(r => normalizarFecha(campo(r,'fecha')) === fechaSeleccionada);
+  // Inicializar estados
+  planData.forEach(r => { if (!estados[r._uid]) estados[r._uid] = 'pendiente'; });
+  renderPlan();
+  actualizarMetricas();
+  const count = planData.length;
+  document.getElementById('fecha-count').textContent = count > 0
+    ? count+' vehículo'+(count!==1?'s':'')+' programados — '+formatFechaDisplay(fechaSeleccionada)
+    : 'Sin vehículos para '+formatFechaDisplay(fechaSeleccionada);
+}
+
+// ─── CSV ─────────────────────────────────────────────────────────────
+function campo(row, key) {
+  for (const k of (COL[key]||[])) { if (row[k] !== undefined && row[k] !== '') return row[k]; }
+  return '';
+}
+
 function parseCSV(text) {
   const lines = text.trim().split('\n');
   if (lines.length < 2) return [];
   const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''));
   return lines.slice(1).map((line, i) => {
-    const cols = [];
-    let cur = '', inQ = false;
+    const cols = []; let cur='', inQ=false;
     for (const ch of line) {
-      if (ch === '"') { inQ = !inQ; }
-      else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
-      else cur += ch;
+      if (ch==='"') { inQ=!inQ; }
+      else if (ch===',' && !inQ) { cols.push(cur.trim()); cur=''; }
+      else cur+=ch;
     }
     cols.push(cur.trim());
-    const obj = { _idx: i + 1 };
-    headers.forEach((h, j) => { obj[h] = (cols[j]||'').replace(/^"|"$/g,'').trim(); });
+    const obj = {};
+    headers.forEach((h,j) => { obj[h] = (cols[j]||'').replace(/^"|"$/g,''); });
+    obj._uid = i+1;
     return obj;
-  }).filter(r => Object.values(r).some((v,i) => i > 0 && v));
+  }).filter(r => Object.keys(r).some(k => k!=='_uid' && r[k]));
 }
 
 function cargarCSV() {
-  document.getElementById('plan-body').innerHTML = '<tr><td colspan="7" class="loading-cell"><i class="ti ti-loader"></i> Sincronizando...</td></tr>';
-  fetch(CSV_URL + '&nocache=' + Date.now())
-    .then(r => r.text())
+  document.getElementById('plan-body').innerHTML = '<tr><td colspan="13" class="empty-cell"><i class="ti ti-loader"></i> Cargando planificación…</td></tr>';
+  fetch(CSV_URL + '&t=' + Date.now())
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
     .then(text => {
       todosLosDatos = parseCSV(text);
-      todosLosDatos.forEach(r => { if (!estadoVehiculos[r._idx]) estadoVehiculos[r._idx] = 'pendiente'; });
-      filtrarPlan();
-    }).catch(() => { alert("Error de conexión con Google Sheets."); });
+      document.getElementById('fuente-csv').textContent = '⟳ Actualizado desde Google Sheets — ' + new Date().toLocaleTimeString('es-EC');
+      aplicarFiltroFecha();
+    })
+    .catch(() => {
+      cargarDemo();
+      document.getElementById('fuente-csv').textContent = '⚠ Modo demo (CORS bloqueado desde localhost — funciona correctamente en GitHub Pages)';
+    });
 }
 
-function normalizarFecha(str) {
-  if (!str) return '';
-  str = str.trim();
-  const m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
-  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0,10);
-  return str;
+function cargarDemo() {
+  const hoy = fechaHoy().split('-').reverse().join('/'); // DD/MM/YYYY
+  todosLosDatos = [
+    {_uid:1,'ID-UNICO':'AL-M460I-DTC0-V1.1','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'T5432','FECHA':hoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'ok'},
+    {_uid:2,'ID-UNICO':'AL-X8VLJ-759F-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'AVENA','FECHA':hoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
+    {_uid:3,'ID-UNICO':'AL-PN15L-YE2L-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'TRIGO','FECHA':hoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
+    {_uid:4,'ID-UNICO':'AL-RAHIK-BP3M-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'PASTA SOYA','FECHA':hoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
+    {_uid:5,'ID-UNICO':'AL-VB2G8-2MTM-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'PASTA SOYA 3','FECHA':hoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
+    {_uid:6,'ID-UNICO':'AL-VB2G8-2MTM-V1.0','ÁREA DE CARGA':'ANDY PUERTO','ÁREA DE DESCARGA':'STORE OCEAN','DETALLE CARGA':'MAIZ','FECHA':'11/05/2026','TIPO CARRO':'BAÑERA','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'WILLIAM','PLACA':'AAA-1334','TELEFONO':'939745803','HORA SOLICITADA':'14:00','APROBACION CARGA':'OK'},
+  ];
+  aplicarFiltroFecha();
 }
 
-// ─── FILTRO Y RENDER PLANIFICACIÓN ───────────────────────────────────
-function filtrarPlan() {
-  const fechaSel = document.getElementById('filtro-fecha').value; 
-  const q = document.getElementById('search-plan').value.toLowerCase();
-
-  planData = todosLosDatos.filter(r => {
-    const fNorm = normalizarFecha(r['FECHA'] || r['Fecha'] || '');
-    const coincideFecha = !fechaSel || fNorm === fechaSel;
-    const str = `${r['CHOFER']||''} ${r['PLACA']||''} ${r['DETALLE CARGA']||''}`.toLowerCase();
-    const coincideQ = !q || str.includes(q);
-    return coincideFecha && coincideQ;
-  });
-
-  renderPlan();
-  actualizarMetricas();
-  renderActivos();
-}
-
+// ─── RENDER PLAN ──────────────────────────────────────────────────────
 function renderPlan() {
   const body = document.getElementById('plan-body');
-  if (!planData.length) { body.innerHTML = `<tr><td colspan="7" class="loading-cell">Sin registros</td></tr>`; return; }
+  const q = (document.getElementById('search-plan').value||'').toLowerCase();
+  const filtered = planData.filter(r => {
+    if (!q) return true;
+    return [campo(r,'chofer'),campo(r,'placa'),campo(r,'detalle'),campo(r,'areaCarga'),campo(r,'areaDesc'),campo(r,'id')].join(' ').toLowerCase().includes(q);
+  });
+  if (!filtered.length) {
+    body.innerHTML = '<tr><td colspan="13" class="empty-cell">Sin vehículos para la fecha seleccionada</td></tr>';
+    return;
+  }
+  body.innerHTML = filtered.map(r => {
+    const id     = campo(r,'id');
+    const ac     = campo(r,'areaCarga');
+    const ad     = campo(r,'areaDesc');
+    const det    = campo(r,'detalle');
+    const tipo   = campo(r,'tipoCarro');
+    const op     = campo(r,'operador');
+    const chofer = campo(r,'chofer');
+    const placa  = campo(r,'placa');
+    const tel    = campo(r,'telefono');
+    const hora   = campo(r,'hora');
+    const apro   = campo(r,'aprobacion');
+    const est    = estados[r._uid] || 'pendiente';
 
-  const badges = {
-    'pendiente': '<span class="badge badge-pending">Planificado</span>',
-    'en_planta': '<span class="badge badge-in">En Garita IN</span>',
-    'pesado_in': '<span class="badge badge-in" style="background:var(--blue-bg);color:var(--blue-text);">Báscula IN</span>',
-    'en_anden': '<span class="badge badge-in" style="background:#e8eaf6;color:#283593;">En Andén</span>',
-    'cargando': '<span class="badge" style="background:#fff3e0;color:#e65100;">Cargando...</span>',
-    'docs_entregados': '<span class="badge" style="background:#e1bee7;color:#311b92;">Docs Listos</span>',
-    'pesado_out': '<span class="badge badge-done" style="background:#c8e6c9;color:#2e7d32;">Báscula OUT</span>',
-    'done': '<span class="badge badge-done">Completado</span>'
-  };
+    const aproBadge = apro && apro.toLowerCase()==='ok'
+      ? '<span class="badge badge-ok"><i class="ti ti-check"></i> OK</span>'
+      : apro ? '<span class="badge badge-no">'+apro+'</span>' : '—';
 
-  body.innerHTML = planData.map(r => {
-    const op = r['OPERADOR LOGÍSTICO'] || '—';
-    const chofer = r['CHOFER'] || '—';
-    const placa = r['PLACA'] || '—';
-    const ruta = r['DETALLE CARGA'] || '—';
-    const est = estadoVehiculos[r._idx];
+    const estBadge = est==='pendiente'
+      ? '<span class="badge badge-pending"><i class="ti ti-clock"></i> Pendiente</span>'
+      : est==='dentro'
+      ? '<span class="badge badge-in"><i class="ti ti-circle-check"></i> En planta</span>'
+      : '<span class="badge badge-done"><i class="ti ti-checks"></i> Finalizado</span>';
 
-    let btn = `<button class="btn btn-sm" onclick="mostrarPase(${r._idx}, '${chofer}', '${placa}', '${ruta}')" title="Ver Pase"><i class="ti ti-qrcode"></i> Pase QR</button>`;
-    
-    // Botones rápidos para forzar si es necesario en la tabla
-    if (est === 'pendiente') btn += ` <button class="btn btn-success btn-sm" onclick="ingresarRapido('${placa}')">In</button>`;
+    const acciones = est==='pendiente'
+      ? `<button class="btn btn-success btn-sm" onclick="ingresoRapido(${r._uid})"><i class="ti ti-login"></i> Ingresar</button>`
+      : est==='dentro'
+      ? `<button class="btn btn-danger btn-sm" onclick="salidaRapida(${r._uid})"><i class="ti ti-logout"></i> Salida</button>`
+      : `<span style="font-size:12px;color:var(--text3);">✓ Listo</span>`;
 
     return `<tr>
-      <td><span class="mono-tag" style="font-size:10px;">AG-${r._idx}</span></td>
-      <td style="color:var(--text2);">${op}</td>
-      <td style="font-weight:500;">${chofer}</td>
-      <td><span class="mono-tag">${placa}</span></td>
-      <td style="color:var(--text2);">${ruta}</td>
-      <td>${badges[est]}</td>
-      <td>${btn}</td>
+      <td><span class="mono-tag" style="font-size:11px;">${id||'—'}</span></td>
+      <td>${ac||'—'}</td>
+      <td>${ad||'—'}</td>
+      <td><strong>${det||'—'}</strong></td>
+      <td><span style="font-size:12px;color:var(--text2);">${tipo||'—'}</span></td>
+      <td style="color:var(--text2);font-size:12px;">${op||'—'}</td>
+      <td><strong>${chofer||'—'}</strong></td>
+      <td><span class="mono-tag">${placa||'—'}</span></td>
+      <td style="font-family:var(--mono);font-size:12px;color:var(--text3);">${tel||'—'}</td>
+      <td><span class="mono-tag">${hora||'—'}</span></td>
+      <td>${aproBadge}</td>
+      <td>${estBadge}</td>
+      <td>${acciones}</td>
     </tr>`;
   }).join('');
 }
 
 function actualizarMetricas() {
-  const total = planData.length;
-  const dentro = planData.filter(r => !['pendiente','done'].includes(estadoVehiculos[r._idx])).length;
-  const carg = planData.filter(r => estadoVehiculos[r._idx] === 'cargando').length;
-  const done = planData.filter(r => estadoVehiculos[r._idx] === 'done').length;
-  document.getElementById('m-total').textContent = total;
+  const total  = planData.length;
+  const dentro = planData.filter(r => estados[r._uid]==='dentro').length;
+  const done   = planData.filter(r => estados[r._uid]==='done').length;
+  const pend   = total - dentro - done;
+  document.getElementById('m-total').textContent  = total;
   document.getElementById('m-dentro').textContent = dentro;
-  document.getElementById('m-cargando').textContent = carg;
-  document.getElementById('m-done').textContent = done;
-  if (total > 0) {
+  document.getElementById('m-done').textContent   = done;
+  document.getElementById('m-pend').textContent   = pend;
+  if (total>0) {
     document.getElementById('pb-dentro').style.width = Math.round(dentro/total*100)+'%';
-    document.getElementById('pb-done').style.width = Math.round(done/total*100)+'%';
+    document.getElementById('pb-done').style.width   = Math.round(done/total*100)+'%';
+  }
+  renderActivos();
+}
+
+// ─── INGRESO / SALIDA ────────────────────────────────────────────────
+function ingresoRapido(uid) {
+  const r = planData.find(x=>x._uid===uid); if (!r) return;
+  estados[uid]  = 'dentro';
+  ingresos[uid] = { hora: horaActual(), row: r };
+  const chofer = campo(r,'chofer'), placa = campo(r,'placa');
+  agregarLog('Ingreso', chofer, placa, campo(r,'areaCarga')+' → '+campo(r,'areaDesc'), campo(r,'detalle'));
+  agregarTimeline('tl-in','Ingreso: '+chofer, placa+' · '+campo(r,'detalle'));
+  mostrarPase(uid, r);
+  renderPlan(); actualizarMetricas();
+}
+
+function salidaRapida(uid) {
+  const r = planData.find(x=>x._uid===uid); if (!r) return;
+  estados[uid] = 'done';
+  const chofer = campo(r,'chofer'), placa = campo(r,'placa');
+  delete ingresos[uid];
+  andenes.forEach(a=>{ if(a.vehiculo===placa){a.libre=true;a.vehiculo=null;a.chofer=null;a.hora=null;} });
+  agregarLog('Salida', chofer, placa, campo(r,'areaCarga')+' → '+campo(r,'areaDesc'), 'Salida registrada');
+  agregarTimeline('tl-out','Salida: '+chofer, placa);
+  renderPlan(); actualizarMetricas(); renderAndenes();
+}
+
+// ─── GARITA MANUAL ───────────────────────────────────────────────────
+function buscarVehiculo() {
+  const q = document.getElementById('g-placa').value.trim().toUpperCase();
+  const el = document.getElementById('g-resultado');
+  if (!q) { el.innerHTML=''; return; }
+  // Buscar en todos los datos del CSV
+  const found = todosLosDatos.find(r => (campo(r,'placa')||'').toUpperCase().includes(q));
+  if (found) {
+    const uid = found._uid;
+    const est = estados[uid]||'pendiente';
+    const badge = est==='pendiente' ? '<span class="badge badge-pending">Pendiente ingreso</span>'
+      : est==='dentro' ? '<span class="badge badge-in">Actualmente en planta</span>'
+      : '<span class="badge badge-done">Finalizado</span>';
+    const enPlanHoy = planData.some(r=>r._uid===uid);
+    const btn = est==='pendiente' && enPlanHoy
+      ? `<button class="btn btn-success btn-sm" onclick="ingresoRapido(${uid})"><i class="ti ti-login"></i> Autorizar ingreso</button>`
+      : est==='dentro'
+      ? `<button class="btn btn-danger btn-sm" onclick="salidaRapida(${uid})"><i class="ti ti-logout"></i> Registrar salida</button>`
+      : '';
+    el.innerHTML = `<div class="alert alert-success"><i class="ti ti-check"></i> Vehículo encontrado en planificación ${badge}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;margin-bottom:8px;">
+        <div><span style="color:var(--text3);font-size:11px;">CHOFER</span><br><strong>${campo(found,'chofer')||'—'}</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;">PLACA</span><br><span class="mono-tag">${campo(found,'placa')||'—'}</span></div>
+        <div><span style="color:var(--text3);font-size:11px;">ÁREA CARGA</span><br>${campo(found,'areaCarga')||'—'}</div>
+        <div><span style="color:var(--text3);font-size:11px;">DETALLE</span><br>${campo(found,'detalle')||'—'}</div>
+        <div><span style="color:var(--text3);font-size:11px;">TIPO CARRO</span><br>${campo(found,'tipoCarro')||'—'}</div>
+        <div><span style="color:var(--text3);font-size:11px;">HORA PROG.</span><br><span class="mono-tag">${campo(found,'hora')||'—'}</span></div>
+      </div>
+      <div>${btn}</div>`;
+  } else {
+    el.innerHTML = '<div class="alert alert-warning"><i class="ti ti-alert-triangle"></i> Placa no encontrada en ninguna planificación</div>';
   }
 }
 
-// ─── GARITA (IN / OUT) ───────────────────────────────────────────────
-function registrarIngresoGarita() {
-    const placa = document.getElementById('g-placa-in').value;
-    const r = planData.find(x => (x['PLACA']||'').toUpperCase() === placa);
-    if (!r) return alert("Placa no encontrada en la planificación del día.");
-    if (estadoVehiculos[r._idx] !== 'pendiente') return alert("El vehículo ya fue ingresado.");
-    
-    estadoVehiculos[r._idx] = 'en_planta';
-    agregarHistorial('Garita', r['CHOFER']||'—', placa, 'Ingreso a Planta autorizado');
-    document.getElementById('g-placa-in').value = '';
-    filtrarPlan();
+function registrarIngreso() {
+  const cond  = document.getElementById('m-conductor').value.trim();
+  const placa = document.getElementById('m-placa-in').value.trim();
+  const area  = document.getElementById('m-ruta').value.trim();
+  if (!cond||!placa) { mostrarMsg('g-msg','warning','Complete chofer y placa'); return; }
+  agregarLog('Ingreso', cond, placa, area, 'Registro manual');
+  agregarTimeline('tl-in','Ingreso: '+cond, placa);
+  ['m-conductor','m-placa-in','m-ruta'].forEach(id=>document.getElementById(id).value='');
+  mostrarMsg('g-msg','success','Ingreso registrado correctamente');
+  renderActivos();
 }
 
-function ingresarRapido(placa) {
-    document.getElementById('g-placa-in').value = placa;
-    registrarIngresoGarita();
+function registrarSalida() {
+  const placa = document.getElementById('m-placa-in').value.trim();
+  const cond  = document.getElementById('m-conductor').value.trim();
+  if (!placa) { mostrarMsg('g-msg','warning','Ingrese la placa del vehículo'); return; }
+  andenes.forEach(a=>{ if(a.vehiculo===placa){a.libre=true;a.vehiculo=null;a.chofer=null;a.hora=null;} });
+  agregarLog('Salida', cond||'—', placa, document.getElementById('m-ruta').value||'—', 'Salida manual');
+  agregarTimeline('tl-out','Salida: '+(cond||placa), placa);
+  ['m-conductor','m-placa-in','m-ruta'].forEach(id=>document.getElementById(id).value='');
+  mostrarMsg('g-msg','success','Salida registrada');
+  renderAndenes(); renderActivos();
 }
 
-function registrarSalidaGarita() {
-    const placa = document.getElementById('g-placa-out').value;
-    const r = planData.find(x => (x['PLACA']||'').toUpperCase() === placa);
-    if (!r) return alert("Placa no encontrada.");
-    
-    if (estadoVehiculos[r._idx] !== 'pesado_out') {
-        if(!confirm("El vehículo no ha registrado su peso de salida en Báscula. ¿Desea forzar la salida final?")) return;
-    }
-    
-    estadoVehiculos[r._idx] = 'done';
-    agregarHistorial('Garita', r['CHOFER']||'—', placa, 'Salida final completada');
-    document.getElementById('g-placa-out').value = '';
-    
-    // Liberar andén si por error se quedó pegado
-    andenes.forEach(a => { if(a.vehiculo === placa) { a.libre=true; a.vehiculo=null; clearInterval(timersIntervals[a.id]); }});
-    
-    filtrarPlan(); renderAndenes();
+// ─── TIMELINE ────────────────────────────────────────────────────────
+function agregarTimeline(cls, title, sub) {
+  const tl = document.getElementById('garita-timeline');
+  const item = document.createElement('div');
+  item.className = 'tl-item';
+  item.innerHTML = `<div class="tl-dot ${cls}"></div><div style="flex:1;"><div style="font-size:13px;font-weight:500;">${title}</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">${sub}</div></div><div class="tl-time">${horaActual()}</div>`;
+  tl.insertBefore(item, tl.firstChild);
+  while(tl.children.length>10) tl.removeChild(tl.lastChild);
 }
 
 // ─── BÁSCULA ─────────────────────────────────────────────────────────
-function registrarPesaje(tipo) {
-  const placa = document.getElementById('b-placa').value;
-  const r = planData.find(x => (x['PLACA']||'').toUpperCase() === placa);
-  if (!r) return mostrarMsg('b-msg','warning','Placa no planificada');
-
-  const est = estadoVehiculos[r._idx];
-
-  if (tipo === 'IN') {
-      const tara = document.getElementById('b-tara').value;
-      if (!tara) return mostrarMsg('b-msg','warning','Ingrese el peso TARA');
-      if (est !== 'en_planta') return mostrarMsg('b-msg','warning','El vehículo debe estar en estado "Garita IN" primero.');
-      
-      estadoVehiculos[r._idx] = 'pesado_in';
-      agregarHistorial('Báscula', r['CHOFER']||'—', placa, 'Pesaje IN (Tara): ' + tara + ' kg');
-      mostrarMsg('b-msg','success','Tara registrada. Pase a Despacho.');
-      document.getElementById('b-tara').value = '';
-
-  } else if (tipo === 'OUT') {
-      const bruto = document.getElementById('b-bruto').value;
-      if (!bruto) return mostrarMsg('b-msg','warning','Ingrese el peso BRUTO');
-      if (est !== 'docs_entregados') {
-          if(!confirm("El vehículo no tiene los documentos entregados por Despacho. ¿Forzar pesaje de salida?")) return;
-      }
-      
-      estadoVehiculos[r._idx] = 'pesado_out';
-      agregarHistorial('Báscula', r['CHOFER']||'—', placa, 'Pesaje OUT (Bruto): ' + bruto + ' kg');
-      mostrarMsg('b-msg','success','Bruto registrado. Vehículo listo para salir.');
-      document.getElementById('b-bruto').value = '';
-  }
-  
-  document.getElementById('b-placa').value = '';
-  filtrarPlan();
+function calcNeto() {
+  const br = parseFloat(document.getElementById('b-bruto').value)||0;
+  const ta = parseFloat(document.getElementById('b-tara').value)||0;
+  const n  = br-ta;
+  document.getElementById('b-neto').textContent = n>0 ? n.toLocaleString('es-EC')+' kg' : '— kg';
+}
+function registrarPesaje() {
+  const placa = document.getElementById('b-placa').value.trim();
+  const bruto = parseFloat(document.getElementById('b-bruto').value);
+  const tara  = parseFloat(document.getElementById('b-tara').value);
+  const prod  = document.getElementById('b-producto').value.trim();
+  if (!placa||isNaN(bruto)||isNaN(tara)) { mostrarMsg('b-msg','warning','Complete todos los campos'); return; }
+  const neto = bruto-tara;
+  pesajes.push({placa,bruto,tara,neto,prod,hora:horaActual()});
+  agregarLog('Pesaje','—',placa,prod,bruto+'kg bruto / '+tara+'kg tara / '+neto+'kg neto');
+  agregarTimeline('tl-peso','Pesaje: '+placa,neto.toLocaleString('es-EC')+' kg neto');
+  limpiarBascula(); renderPesajes();
+  mostrarMsg('b-msg','success','Pesaje registrado: '+neto.toLocaleString('es-EC')+' kg neto');
+}
+function limpiarBascula() {
+  ['b-placa','b-bruto','b-tara','b-producto'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('b-neto').textContent='— kg';
+}
+function renderPesajes() {
+  const body = document.getElementById('pesajes-body');
+  if (!pesajes.length) { body.innerHTML='<tr><td colspan="6" class="empty-cell">Sin pesajes</td></tr>'; return; }
+  body.innerHTML = [...pesajes].reverse().map(p=>
+    `<tr><td><span class="mono-tag">${p.placa}</span></td><td>${p.prod||'—'}</td>
+    <td style="font-family:var(--mono);font-size:12px;">${p.bruto.toLocaleString('es-EC')}</td>
+    <td style="font-family:var(--mono);font-size:12px;">${p.tara.toLocaleString('es-EC')}</td>
+    <td style="font-weight:600;font-family:var(--mono);">${p.neto.toLocaleString('es-EC')}</td>
+    <td style="font-size:12px;color:var(--text3);">${p.hora}</td></tr>`
+  ).join('');
+  document.getElementById('total-neto').textContent = pesajes.reduce((s,p)=>s+p.neto,0).toLocaleString('es-EC')+' kg';
 }
 
-// ─── DESPACHO Y ANDENES ──────────────────────────────────────────────
+// ─── DESPACHO / ANDENES ──────────────────────────────────────────────
+function renderAndenes() {
+  const grid = document.getElementById('andenes-grid');
+  const sel  = document.getElementById('d-anden');
+  grid.innerHTML = andenes.map(a=>
+    `<div class="anden ${a.libre?'libre':'ocupado'}" onclick="clickAnden(${a.id})">
+      <div class="anden-num">Andén ${a.id}</div>
+      <div class="anden-icon">${a.libre?'<i class="ti ti-parking"></i>':'<i class="ti ti-truck"></i>'}</div>
+      <div class="anden-label">${a.libre?'Libre':(a.vehiculo||'Ocupado')}</div>
+    </div>`).join('');
+  sel.innerHTML = andenes.filter(a=>a.libre).map(a=>`<option value="${a.id}">Andén ${a.id}</option>`).join('');
+}
+function clickAnden(id) {
+  const a = andenes.find(x=>x.id===id);
+  if (a&&!a.libre&&confirm(`¿Liberar andén ${id} (${a.vehiculo||'vehículo'})?`)) {
+    a.libre=true;a.vehiculo=null;a.chofer=null;a.hora=null;
+    renderAndenes();renderActivos();
+  }
+}
+function agregarAnden() {
+  andenes.push({id:andenes.length+1,libre:true,vehiculo:null,chofer:null,hora:null});
+  renderAndenes();
+}
+function asignarAnden() {
+  const placa = document.getElementById('d-placa').value.trim();
+  const aid   = parseInt(document.getElementById('d-anden').value);
+  const obs   = document.getElementById('d-obs').value.trim();
+  if (!placa||!aid) { mostrarMsg('d-msg','warning','Complete los campos'); return; }
+  const a  = andenes.find(x=>x.id===aid); if(!a) return;
+  const pl = todosLosDatos.find(r=>(campo(r,'placa')||'').toUpperCase()===placa.toUpperCase());
+  a.libre=false; a.vehiculo=placa; a.chofer=pl?campo(pl,'chofer'):'—'; a.hora=horaActual();
+  renderAndenes(); renderActivos();
+  document.getElementById('d-placa').value=''; document.getElementById('d-obs').value='';
+  mostrarMsg('d-msg','success',placa+' asignado a andén '+aid);
+  agregarLog('Despacho',a.chofer,placa,'Andén '+aid,obs||'Asignación de andén');
+}
 function renderActivos() {
   const body = document.getElementById('activos-body');
-  const esperando = planData.filter(r => estadoVehiculos[r._idx] === 'pesado_in');
-  
-  if (!esperando.length) { body.innerHTML = '<tr><td colspan="3" class="loading-cell">Nadie en espera</td></tr>'; return; }
-  
-  body.innerHTML = esperando.map(r => {
-    const placa = r['PLACA']||'—';
+  const dentro = planData.filter(r=>estados[r._uid]==='dentro');
+  if (!dentro.length) { body.innerHTML='<tr><td colspan="8" class="empty-cell">Sin vehículos activos en planta</td></tr>'; return; }
+  body.innerHTML = dentro.map(r=>{
+    const chofer=campo(r,'chofer'),placa=campo(r,'placa'),ac=campo(r,'areaCarga'),ad=campo(r,'areaDesc'),det=campo(r,'detalle');
+    const info=ingresos[r._uid]||{};
+    const and=andenes.find(a=>a.vehiculo===placa);
     return `<tr>
-      <td>${r['CHOFER']||'—'}</td>
-      <td><span class="mono-tag" style="cursor:pointer; color:var(--blue);" onclick="document.getElementById('d-placa').value='${placa}'">${placa}</span></td>
-      <td><button class="btn btn-sm btn-primary" onclick="document.getElementById('d-placa').value='${placa}'">Asignar</button></td>
+      <td><strong>${chofer||'—'}</strong></td>
+      <td><span class="mono-tag">${placa||'—'}</span></td>
+      <td style="color:var(--text2);">${ac||'—'}</td>
+      <td style="color:var(--text2);">${ad||'—'}</td>
+      <td>${det||'—'}</td>
+      <td><span class="mono-tag">${info.hora||'—'}</span></td>
+      <td>${and?'<span class="badge badge-pending">Andén '+and.id+'</span>':'<span style="font-size:12px;color:var(--text3);">Sin asignar</span>'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="salidaRapida(${r._uid})"><i class="ti ti-logout"></i> Salida</button></td>
     </tr>`;
   }).join('');
 }
 
-function asignarAndenWA() {
-  const placa = document.getElementById('d-placa').value;
-  const aid = parseInt(document.getElementById('d-anden').value);
-  if (!placa || !aid) return mostrarMsg('d-msg','warning','Seleccione placa y andén');
-  
-  const pl = planData.find(r => (r['PLACA']||'').toUpperCase() === placa);
-  const a = andenes.find(x => x.id === aid);
-  
-  a.libre = false; a.vehiculo = placa; a.conductor = pl['CHOFER']||'—'; a.idx = pl._idx;
-  estadoVehiculos[pl._idx] = 'en_anden';
-  
-  document.getElementById('d-placa').value = '';
-  agregarHistorial('Despacho', a.conductor, placa, 'Asignado a Andén ' + aid);
-  
-  // WhatsApp Notification
-  const msg = encodeURIComponent(`🟢 *AGRIPAC S.A. - DESPACHO*\n\nSu vehículo placa *${placa}* ha sido procesado en báscula.\n\n📍 Por favor, diríjase y estaciónese en el *Andén ${aid}* para iniciar la carga.`);
-  window.open('https://wa.me/?text=' + msg, '_blank');
-  
-  filtrarPlan(); renderAndenes();
-}
-
-function renderAndenes() {
-  const grid = document.getElementById('andenes-grid');
-  const sel = document.getElementById('d-anden');
-  
-  grid.innerHTML = andenes.map(a => {
-    let content = '';
-    if (!a.libre) {
-       const est = estadoVehiculos[a.idx];
-       if (est === 'en_anden') {
-           content = `<button class="btn btn-success btn-sm" style="width:100%; margin-top:8px;" onclick="iniciarCarga(${a.id}, ${a.idx})"><i class="ti ti-player-play"></i> Iniciar Carga</button>`;
-       } else if (est === 'cargando') {
-           content = `
-             <div class="timer-box" id="timer-a${a.id}">00:00:00</div>
-             <button class="btn btn-danger btn-sm" style="width:100%;" onclick="finalizarCarga(${a.id}, ${a.idx})"><i class="ti ti-check"></i> Fin y Docs</button>
-           `;
-       }
-    }
-    return `<div class="anden ${a.libre ? 'libre' : 'ocupado'}">
-      <div class="anden-num">Andén ${a.id}</div>
-      <div class="anden-label">${a.libre ? 'Disponible' : a.vehiculo}</div>
-      ${content}
-    </div>`;
-  }).join('');
-  
-  sel.innerHTML = andenes.filter(a => a.libre).map(a => `<option value="${a.id}">Andén ${a.id}</option>`).join('');
-}
-
-function iniciarCarga(aid, idx) {
-    estadoVehiculos[idx] = 'cargando';
-    timersStart[aid] = Date.now();
-    timersIntervals[aid] = setInterval(() => {
-        const el = document.getElementById('timer-a'+aid);
-        if(!el) return;
-        const s = Math.floor((Date.now() - timersStart[aid])/1000);
-        const h = String(Math.floor(s/3600)).padStart(2,'0');
-        const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
-        const sec = String(s%60).padStart(2,'0');
-        el.textContent = `${h}:${m}:${sec}`;
-    }, 1000);
-    renderAndenes(); filtrarPlan();
-}
-
-function finalizarCarga(aid, idx) {
-    clearInterval(timersIntervals[aid]);
-    const s = Math.floor((Date.now() - timersStart[aid])/1000);
-    const tFinal = String(Math.floor(s/3600)).padStart(2,'0')+':'+String(Math.floor((s%3600)/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
-    
-    estadoVehiculos[idx] = 'docs_entregados';
-    const a = andenes.find(x => x.id === aid);
-    const placa = a.vehiculo;
-    const cond = a.conductor;
-    
-    a.libre = true; a.vehiculo = null; a.conductor = null; a.idx = null;
-    
-    agregarHistorial('Despacho', cond, placa, `Fin de Carga. Tiempo: ${tFinal}. Docs entregados.`);
-    alert(`Carga finalizada en ${tFinal}.\nEl conductor debe ir a Báscula de salida.`);
-    
-    renderAndenes(); filtrarPlan();
-}
-
 // ─── HISTORIAL ───────────────────────────────────────────────────────
-function agregarHistorial(estacion, cond, placa, detalle) {
-  historial.unshift({ hora: horaActual(), estacion, cond, placa, detalle });
-  const body = document.getElementById('hist-body');
-  body.innerHTML = historial.map(r => `<tr>
-    <td><span class="mono-tag">${r.hora}</span></td>
-    <td><span class="badge badge-in">${r.estacion}</span></td>
-    <td>${r.cond}</td>
-    <td><span class="mono-tag">${r.placa}</span></td>
-    <td style="color:var(--text2); font-size:12px;">${r.detalle}</td>
-  </tr>`).join('');
+function agregarLog(tipo,cond,placa,area,detalle) {
+  historial.unshift({hora:horaActual(),tipo,cond,placa,area,detalle});
+  renderHistorial();
 }
-
-function exportarCSV() {
-  const rows = [['Hora','Estacion','Conductor','Placa','Detalle'], ...historial.map(r=>[r.hora,r.estacion,r.cond,r.placa,r.detalle])];
-  const csv = rows.map(r=>r.map(v=>'"'+v+'"').join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-  a.download = 'Log_Agripac_'+new Date().toISOString().slice(0,10)+'.csv';
+function renderHistorial() {
+  const body=document.getElementById('hist-body');
+  if (!historial.length){body.innerHTML='<tr><td colspan="6" class="empty-cell">Sin movimientos</td></tr>';return;}
+  body.innerHTML=historial.map(r=>{
+    const badge=r.tipo==='Ingreso'?'<span class="badge badge-in">Ingreso</span>'
+      :r.tipo==='Salida'?'<span class="badge" style="background:var(--surface2);color:var(--text2);">Salida</span>'
+      :r.tipo==='Pesaje'?'<span class="badge badge-pending">Pesaje</span>'
+      :'<span class="badge badge-done">'+r.tipo+'</span>';
+    return `<tr><td><span class="mono-tag">${r.hora}</span></td><td>${badge}</td><td>${r.cond}</td><td><span class="mono-tag">${r.placa}</span></td><td style="color:var(--text2);">${r.area}</td><td style="font-size:12px;color:var(--text3);">${r.detalle}</td></tr>`;
+  }).join('');
+}
+function limpiarHistorial(){if(confirm('¿Limpiar historial del día?')){historial=[];renderHistorial();}}
+function exportarCSV(){
+  const rows=[['Hora','Tipo','Chofer','Placa','Área','Detalle'],...historial.map(r=>[r.hora,r.tipo,r.cond,r.placa,r.area,r.detalle])];
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='agripac_movimientos_'+fechaSeleccionada+'.csv';
   a.click();
 }
 
-// ─── PASE QR Y WHATSAPP ──────────────────────────────────────────────
-function mostrarPase(idx, cond, placa, ruta) {
-  paseActual = { idx, cond, placa, ruta };
-  const h = horaActual();
-  const idUnico = 'AG-' + String(idx).padStart(4,'0');
-  
-  document.getElementById('pase-id-num').innerHTML = `<span class="pase-field-label">ID Único</span><span class="pase-field-value">${idUnico}</span>`;
-  document.getElementById('pase-cond').innerHTML = `<span class="pase-field-label">Conductor</span><span class="pase-field-value">${cond}</span>`;
-  document.getElementById('pase-pl').innerHTML = `<span class="pase-field-label">Placa</span><span class="pase-field-value">${placa}</span>`;
-  document.getElementById('pase-ruta').innerHTML = `<span class="pase-field-label">Ruta</span><span class="pase-field-value">${ruta}</span>`;
-  document.getElementById('pase-hora').innerHTML = `<span class="pase-field-label">Hora emisión</span><span class="pase-field-value">${h}</span>`;
-  
-  // Generar QR Real
-  const qrContainer = document.getElementById('pase-qr');
-  qrContainer.innerHTML = '';
-  new QRCode(qrContainer, { text: idUnico, width: 110, height: 110, correctLevel: QRCode.CorrectLevel.H, colorDark: "#1a1a18" });
-
+// ─── PASE ────────────────────────────────────────────────────────────
+function mostrarPase(uid,r) {
+  paseActual={uid,r};
+  document.getElementById('p-id').textContent    = 'AG-'+String(uid).padStart(4,'0');
+  document.getElementById('p-cond').textContent  = campo(r,'chofer')||'—';
+  document.getElementById('p-placa').textContent = campo(r,'placa')||'—';
+  document.getElementById('p-areacarga').textContent = campo(r,'areaCarga')||'—';
+  document.getElementById('p-areadesc').textContent  = campo(r,'areaDesc')||'—';
+  document.getElementById('p-detalle').textContent   = campo(r,'detalle')||'—';
+  document.getElementById('p-hora').textContent  = horaActual();
   document.getElementById('pase-modal').classList.add('open');
 }
-
-function cerrarPase() { document.getElementById('pase-modal').classList.remove('open'); }
-
-async function enviarWhatsAppPase() {
-  if (!paseActual) return;
-  const btn = event.currentTarget;
-  const originalHtml = btn.innerHTML;
-  btn.innerHTML = '<i class="ti ti-loader"></i> Copiando...';
-  
-  const paseElement = document.getElementById('pase-card-element');
-  try {
-      const canvas = await html2canvas(paseElement, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-      const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-      
-      const d = new Date().toLocaleDateString('es-EC');
-      const idUnico = 'AG-' + String(paseActual.idx).padStart(4,'0');
-      const msg = `🟢 *AGRIPAC S.A. — Pase de Ingreso*\n\n📋 ID: ${idUnico}\n👤 Conductor: ${paseActual.cond}\n🚛 Placa: ${paseActual.placa}\n📍 Ruta: ${paseActual.ruta}\n📅 Fecha: ${d}\n\n_⚠️ Por favor, pegue (Ctrl+V) la imagen que se acaba de copiar en este chat._`;
-      
-      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-      mostrarMsg('pase-msg', 'success', 'Pase copiado al portapapeles. Péguelo en WhatsApp.');
-  } catch(e) {
-      alert("Su navegador no soporta el copiado automático de imágenes. Descargue la imagen manualmente.");
-  } finally {
-      btn.innerHTML = originalHtml;
-  }
+function cerrarPase(){document.getElementById('pase-modal').classList.remove('open');}
+function enviarWhatsApp(){
+  if(!paseActual) return;
+  const r=paseActual.r;
+  const msg=`🟢 *AGRIPAC S.A. — Pase de Ingreso*\n\n🆔 ID: AG-${String(paseActual.uid).padStart(4,'0')}\n👤 Chofer: ${campo(r,'chofer')}\n🚛 Placa: ${campo(r,'placa')}\n📦 Detalle: ${campo(r,'detalle')}\n📍 Área carga: ${campo(r,'areaCarga')}\n📍 Área descarga: ${campo(r,'areaDesc')}\n🕐 Hora ingreso: ${horaActual()}\n📅 Fecha: ${formatFechaDisplay(fechaSeleccionada)}\n\n_Válido únicamente para el día de hoy_`;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────
-function horaActual() { const n = new Date(); return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0'); }
-function mostrarMsg(id, tipo, txt) {
-  const el = document.getElementById(id);
-  const icon = tipo==='success'?'ti-check':tipo==='warning'?'ti-alert-triangle':'ti-info-circle';
-  el.className='alert alert-'+tipo; el.innerHTML=`<i class="ti ${icon}"></i> ${txt}`;
-  el.style.display='flex'; clearTimeout(el._t); el._t = setTimeout(()=>{ el.style.display='none'; }, 4000);
+function horaActual(){const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
+function mostrarMsg(id,tipo,txt){
+  const el=document.getElementById(id);
+  const icon=tipo==='success'?'ti-check':tipo==='warning'?'ti-alert-triangle':'ti-info-circle';
+  el.className='alert alert-'+tipo;
+  el.innerHTML=`<i class="ti ${icon}"></i> ${txt}`;
+  el.style.display='flex';
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>{el.style.display='none';},3500);
 }
-function showTab(tab) {
+function showTab(tab){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('sec-'+tab).classList.add('active');
@@ -918,11 +924,14 @@ function showTab(tab) {
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────
-irHoy(); // Inicia filtrando el día de hoy
 renderAndenes();
+// Establecer fecha de hoy en el selector
+document.getElementById('fecha-filtro').value = fechaHoy();
+fechaSeleccionada = fechaHoy();
+// Cargar datos
 cargarCSV();
-setInterval(cargarCSV, 5 * 60 * 1000);
-
+// Auto-refresh cada 5 minutos
+setInterval(cargarCSV, 5*60*1000);
 </script>
 </body>
 </html>
