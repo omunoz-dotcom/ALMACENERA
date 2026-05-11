@@ -1,340 +1,985 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agripac Logística | Smart Dashboard</title>
-    
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <style>
-        :root {
-            --primary: #1a237e;
-            --accent: #d32f2f;
-            --success: #2e7d32;
-            --surface: #ffffff;
-            --bg: #f8f9fa;
-            --text: #2c3e50;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AGRIPAC — Control de Ingreso a Planta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --surface2: #f0efe9;
+      --border: #e0dfd8;
+      --border2: #c8c7be;
+      --text: #1a1a18;
+      --text2: #5a5a54;
+      --text3: #9a9a92;
+      --green: #1D9E75;
+      --green-bg: #e1f5ee;
+      --green-text: #085041;
+      --red: #D85A30;
+      --red-bg: #faece7;
+      --red-text: #4A1B0C;
+      --amber: #BA7517;
+      --amber-bg: #faeeda;
+      --amber-text: #412402;
+      --blue: #185FA5;
+      --blue-bg: #e6f1fb;
+      --blue-text: #042C53;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --font: 'IBM Plex Sans', system-ui, sans-serif;
+      --mono: 'IBM Plex Mono', monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a18;
+        --surface: #242422;
+        --surface2: #2e2e2a;
+        --border: #3a3a36;
+        --border2: #4e4e48;
+        --text: #f0efe9;
+        --text2: #a0a098;
+        --text3: #666660;
+        --green-bg: #04342c;
+        --green-text: #9fe1cb;
+        --red-bg: #4a1b0c;
+        --red-text: #f5c4b3;
+        --amber-bg: #412402;
+        --amber-text: #fac775;
+        --blue-bg: #042c53;
+        --blue-text: #b5d4f4;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 15px; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
 
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
-        
-        nav { 
-            background: var(--primary); 
-            padding: 0.8rem 1.5rem; 
-            display: flex; 
-            gap: 12px; 
-            overflow-x: auto; 
-            position: sticky; 
-            top: 0; 
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        nav button { 
-            background: rgba(255,255,255,0.1); 
-            color: white; 
-            border: none; 
-            padding: 10px 20px; 
-            border-radius: 20px; 
-            cursor: pointer; 
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.3s;
-        }
-        nav button.active { background: white; color: var(--primary); font-weight: 700; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    /* HEADER */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-badge {
+      background: var(--green);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .logo-name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .logo-sub { font-size: 12px; color: var(--text3); margin-left: 4px; }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    #clock { font-family: var(--mono); font-size: 15px; font-weight: 500; }
+    #fecha { font-size: 12px; color: var(--text2); }
 
-        .app-content { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
-        
-        .glass-card { 
-            background: var(--surface); 
-            border-radius: 16px; 
-            padding: 2rem; 
-            box-shadow: 0 8px 32px rgba(0,0,0,0.05); 
-            border: 1px solid rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
-            display: none;
-        }
-        .glass-card.active { display: block; animation: slideUp 0.4s ease-out; }
+    /* NAV */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      gap: 2px;
+      overflow-x: auto;
+    }
+    .nav-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 0 14px;
+      height: 44px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text2);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .nav-btn:hover { color: var(--text); }
+    .nav-btn.active { color: var(--green); border-bottom-color: var(--green); font-weight: 500; }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    /* LAYOUT */
+    main { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem; }
+    .section { display: none; }
+    .section.active { display: block; }
 
-        h2 { margin-top: 0; display: flex; align-items: center; gap: 10px; color: var(--primary); }
+    /* GRIDS */
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.25rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.25rem; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+    @media (max-width: 800px) {
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+      .grid-2 { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: 1fr; }
+      main { padding: 1rem; }
+    }
 
-        /* Filtro de Fecha */
-        .filter-bar {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: #f1f3f5;
-            padding: 12px 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        .filter-bar label { font-size: 13px; font-weight: 700; color: var(--primary); }
-        .filter-bar input[type="date"] {
-            padding: 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            outline: none;
-            font-family: inherit;
-        }
+    /* METRIC */
+    .metric {
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+    }
+    .metric-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); margin-bottom: 6px; }
+    .metric-value { font-size: 28px; font-weight: 600; font-family: var(--mono); }
+    .metric-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
 
-        .table-container { overflow-x: auto; border-radius: 12px; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th { background: #f1f3f5; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 1rem; text-align: left; }
-        td { padding: 1rem; border-bottom: 1px solid #f1f3f5; font-size: 14px; }
-        tr:hover { background: #f8fafc; }
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: 14px; font-weight: 500;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 1rem; padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap; gap: 8px;
+    }
+    .card-title-actions { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
-        .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .status-ok { background: #dcfce7; color: #166534; }
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); font-weight: 500; padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface2); }
+    .loading-cell { text-align: center; padding: 2.5rem; color: var(--text3); font-style: italic; }
 
-        #reader { width: 100%; max-width: 400px; margin: auto; border-radius: 12px; overflow: hidden; border: 4px solid #eee; }
-        
-        .btn { 
-            padding: 12px 24px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;
-            display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; font-size: 15px; margin-top: 1rem;
-        }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-outline { background: transparent; border: 2px solid #e2e8f0; color: #64748b; }
-        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    /* BADGE */
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+    .badge-pending { background: var(--amber-bg); color: var(--amber-text); }
+    .badge-in { background: var(--blue-bg); color: var(--blue-text); }
+    .badge-done { background: var(--green-bg); color: var(--green-text); }
+    .badge-out { background: var(--surface2); color: var(--text2); }
 
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; backdrop-filter: blur(4px); }
-        .ticket { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 201; background: white; border-radius: 24px; width: 360px; overflow: hidden; }
-        .ticket-qr-container { position: relative; padding: 2rem; display: flex; justify-content: center; background: white; }
-        .qr-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 45px; height: 45px; background: white; padding: 4px; border-radius: 8px; }
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: transparent; cursor: pointer;
+      font-size: 13px; font-family: var(--font); color: var(--text);
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .btn:hover { background: var(--surface2); border-color: var(--border2); }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .btn-primary:hover { opacity: 0.82; background: var(--text); }
+    .btn-success { background: var(--green-bg); color: var(--green-text); border-color: var(--green); }
+    .btn-danger { background: var(--red-bg); color: var(--red-text); border-color: var(--red); }
+    .btn-warning { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber); }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-        input, select { 
-            width: 100%; padding: 12px; border: 2px solid #f1f3f5; border-radius: 12px; font-size: 16px; margin-top: 8px; outline: none; transition: 0.2s;
-        }
-    </style>
+    /* INPUTS */
+    input[type=text], input[type=number], input[type=search], select, textarea {
+      font-family: var(--font); font-size: 13px;
+      background: var(--surface); color: var(--text);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 7px 10px; outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--green); }
+    .field-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; display: block; }
+    .field { margin-bottom: 10px; }
+    .field input, .field select { width: 100%; }
+
+    /* ALERT */
+    .alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .alert-success { background: var(--green-bg); color: var(--green-text); }
+    .alert-warning { background: var(--amber-bg); color: var(--amber-text); }
+    .alert-danger { background: var(--red-bg); color: var(--red-text); }
+    .alert-info { background: var(--blue-bg); color: var(--blue-text); }
+
+    /* TIMELINE */
+    .timeline-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+    .timeline-item:last-child { border-bottom: none; }
+    .tl-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+    .tl-in { background: var(--green); }
+    .tl-out { background: var(--red); }
+    .tl-peso { background: var(--amber); }
+    .tl-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .tl-time { font-size: 12px; color: var(--text3); font-family: var(--mono); white-space: nowrap; margin-left: auto; }
+
+    /* ANDENES */
+    .andenes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .anden {
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 1rem; text-align: center; cursor: pointer; transition: all 0.15s;
+    }
+    .anden:hover { border-color: var(--border2); }
+    .anden.libre { border-color: var(--green); background: var(--green-bg); }
+    .anden.ocupado { border-color: var(--amber); background: var(--amber-bg); }
+    .anden-num { font-size: 16px; font-weight: 600; font-family: var(--mono); }
+    .anden-icon { font-size: 22px; margin: 6px 0; }
+    .anden-label { font-size: 11px; color: var(--text3); }
+    .anden.libre .anden-label { color: var(--green-text); }
+    .anden.ocupado .anden-label { color: var(--amber-text); }
+
+    /* PASE MODAL */
+    #pase-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 200;
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    #pase-modal.open { display: flex; }
+    .modal-box {
+      background: var(--surface); border-radius: var(--radius-lg);
+      border: 1px solid var(--border); padding: 1.5rem;
+      width: 100%; max-width: 360px;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .pase-card {
+      border: 2px dashed var(--border2); border-radius: var(--radius-lg);
+      padding: 1.25rem; text-align: center; background: var(--surface2);
+    }
+    .pase-co { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); }
+    .pase-title { font-size: 16px; font-weight: 600; margin: 4px 0 12px; }
+    .pase-qr { width: 72px; height: 72px; margin: 0 auto 12px; background: var(--surface); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
+    .pase-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+    .pase-row:last-of-type { border: none; }
+    .pase-row span:first-child { color: var(--text2); }
+    .pase-row span:last-child { font-weight: 500; }
+    .pase-validity { font-size: 11px; color: var(--text3); margin-top: 8px; }
+
+    /* PROGRESS */
+    .progress-wrap { margin-top: 6px; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+    .progress-bar { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s; }
+
+    /* MONO TAG */
+    .mono-tag { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 2px 7px; border-radius: 5px; }
+  </style>
 </head>
 <body>
 
+<header>
+  <div class="logo">
+    <span class="logo-badge">AG</span>
+    <span class="logo-name">AGRIPAC</span>
+    <span class="logo-sub">Control de Ingreso a Planta</span>
+  </div>
+  <div class="header-right">
+    <div style="text-align:right;">
+      <div id="clock" style="font-family:var(--mono);font-size:15px;font-weight:500;"></div>
+      <div id="fecha" style="font-size:11px;color:var(--text3);"></div>
+    </div>
+    <button class="btn btn-sm" onclick="cargarCSV()" title="Actualizar planificación">
+      <i class="ti ti-refresh"></i>
+    </button>
+  </div>
+</header>
+
 <nav>
-    <button onclick="tab('tab-list')" class="active"><i class="fas fa-list"></i> Planificación</button>
-    <button onclick="tab('tab-garita')"><i class="fas fa-shield-alt"></i> Garita</button>
-    <button onclick="tab('tab-bascula')"><i class="fas fa-weight"></i> Báscula</button>
-    <button onclick="tab('tab-despacho')"><i class="fas fa-truck-loading"></i> Despacho</button>
+  <button class="nav-btn active" onclick="showTab('planificacion')" id="tab-planificacion">
+    <i class="ti ti-calendar"></i> Planificación
+  </button>
+  <button class="nav-btn" onclick="showTab('garita')" id="tab-garita">
+    <i class="ti ti-shield-check"></i> Garita
+  </button>
+  <button class="nav-btn" onclick="showTab('bascula')" id="tab-bascula">
+    <i class="ti ti-weight"></i> Báscula
+  </button>
+  <button class="nav-btn" onclick="showTab('despacho')" id="tab-despacho">
+    <i class="ti ti-truck"></i> Despacho
+  </button>
+  <button class="nav-btn" onclick="showTab('historial')" id="tab-historial">
+    <i class="ti ti-history"></i> Historial
+  </button>
 </nav>
 
-<div class="app-content">
+<main>
 
-    <div id="tab-list" class="glass-card active">
-        <h2><i class="fas fa-calendar-check"></i> Planificación</h2>
-        
-        <div class="filter-bar">
-            <label><i class="fas fa-filter"></i> FILTRAR POR FECHA:</label>
-            <input type="date" id="filter-date" onchange="refreshData()">
-            <button class="btn-outline" style="padding: 8px 15px; font-size: 12px; cursor: pointer; border-radius: 8px;" onclick="clearFilter()">Ver Todo</button>
+  <!-- ============ PLANIFICACIÓN ============ -->
+  <div class="section active" id="sec-planificacion">
+    <div class="grid-4">
+      <div class="metric">
+        <div class="metric-label">Programados</div>
+        <div class="metric-value" id="m-total">—</div>
+        <div class="metric-sub">vehículos hoy</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">En planta</div>
+        <div class="metric-value" id="m-dentro" style="color:var(--green);">—</div>
+        <div class="metric-sub">activos</div>
+        <div class="progress-wrap"><div class="progress-bar" id="pb-dentro" style="width:0%"></div></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Finalizados</div>
+        <div class="metric-value" id="m-done" style="color:var(--text2);">—</div>
+        <div class="metric-sub">completados</div>
+        <div class="progress-wrap"><div class="progress-bar" id="pb-done" style="width:0%;background:var(--text3)"></div></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Pendientes</div>
+        <div class="metric-value" id="m-pend" style="color:var(--amber);">—</div>
+        <div class="metric-sub">por ingresar</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <i class="ti ti-list-details"></i> Planificación del día
+        <div class="card-title-actions">
+          <input type="search" id="search-plan" placeholder="Buscar conductor o placa…" oninput="filtrarPlan()" style="width:200px;" />
+          <button class="btn" onclick="cargarCSV()"><i class="ti ti-refresh"></i> Actualizar</button>
         </div>
+      </div>
+      <div id="fuente-csv" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Conductor</th>
+              <th>Placa</th>
+              <th>Ruta / Origen</th>
+              <th>Hora prog.</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="plan-body">
+            <tr><td colspan="7" class="loading-cell"><i class="ti ti-loader"></i> Cargando planificación…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Conductor</th>
-                        <th>Vehículo</th>
-                        <th>Fecha</th>
-                        <th>Ruta Operativa</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="live-table">
-                    <tr><td colspan="5" style="text-align:center; padding:3rem;">Cargando base de datos...</td></tr>
-                </tbody>
-            </table>
+  <!-- ============ GARITA ============ -->
+  <div class="section" id="sec-garita">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-search"></i> Validar vehículo por placa</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input type="text" id="g-placa" placeholder="Ej: ABC-1234" style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')buscarVehiculo()" />
+          <button class="btn btn-primary" onclick="buscarVehiculo()"><i class="ti ti-search"></i> Buscar</button>
         </div>
+        <div id="g-resultado"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-activity"></i> Actividad reciente</div>
+        <div id="garita-timeline"><div class="timeline-item"><div class="tl-dot" style="background:var(--border2);"></div><div><div style="font-size:13px;color:var(--text3);">Sin actividad registrada</div></div></div></div>
+      </div>
     </div>
 
-    <div id="tab-garita" class="glass-card">
-        <h2><i class="fas fa-camera"></i> Control de Acceso</h2>
-        <button class="btn btn-outline" id="scan-btn" onclick="toggleCam()"><i class="fas fa-qrcode"></i> Encender Cámara</button>
-        <div id="reader" style="display:none; margin: 1rem auto;"></div>
-        
-        <div style="margin-top: 2rem;">
-            <label style="font-weight:600;">ID de Seguimiento</label>
-            <input type="text" id="main-id" placeholder="Escanee o ingrese ID">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <button class="btn btn-primary" onclick="sap('GARITA', 'ENTRADA')">Validar Entrada</button>
-                <button class="btn btn-outline" style="color:var(--accent)" onclick="sap('GARITA', 'SALIDA')">Salida Final</button>
-            </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-pencil"></i> Registro manual de ingreso / salida</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div class="field">
+          <span class="field-label">Conductor</span>
+          <input type="text" id="m-conductor" placeholder="Nombre completo" />
         </div>
-    </div>
-
-    <div id="tab-bascula" class="glass-card">
-        <h2><i class="fas fa-balance-scale"></i> Estación de Pesaje</h2>
-        <div style="background:#f8fafc; padding:1.5rem; border-radius:12px; border:1px dashed #cbd5e1;">
-            <label>Registro de Carga (KG)</label>
-            <input type="number" id="peso-val" placeholder="0.00">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <button class="btn btn-success" onclick="sap('BASCULA', 'PESO_IN', document.getElementById('peso-val').value)">Peso Inicial</button>
-                <button class="btn btn-primary" onclick="sap('BASCULA', 'PESO_OUT', document.getElementById('peso-val').value)">Peso Salida</button>
-            </div>
+        <div class="field">
+          <span class="field-label">Placa</span>
+          <input type="text" id="m-placa-in" placeholder="Placa" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" />
         </div>
-    </div>
-
-    <div id="tab-despacho" class="glass-card">
-        <h2><i class="fas fa-warehouse"></i> Gestión de Andenes</h2>
-        <label>Seleccionar Muelle de Carga</label>
-        <select id="anden-val">
-            <option value="MUELLE A1">Muelle A1</option>
-            <option value="MUELLE B2">Muelle B2</option>
-            <option value="RAMPA SUR">Rampa Sur</option>
-        </select>
-        <button class="btn btn-primary" onclick="waAnden()"><i class="fab fa-whatsapp"></i> Asignar y Notificar</button>
-    </div>
-
-</div>
-
-<div class="overlay" id="overlay" onclick="closeT()"></div>
-<div class="ticket" id="ticket">
-    <div style="background:var(--primary); color:white; padding:1.5rem; text-align:center;">
-        <h3 style="margin:0; letter-spacing:1px;">PASE DE INGRESO</h3>
-        <span style="font-size:10px; opacity:0.8;">SISTEMA DE TRAZABILIDAD AGRIPAC</span>
-    </div>
-    <div class="ticket-qr-container">
-        <div id="qr-code"></div>
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgdU9ENZe0xEEBIekcna9hIY1LQynypXsvGw&s" class="qr-logo">
-    </div>
-    <div style="padding:0 2rem 2rem; font-size:13px;">
-        <p><strong>CONDUCTOR:</strong> <span id="t-name"></span></p>
-        <p><strong>PLACA:</strong> <span id="t-plate"></span></p>
-        <div style="background:#fff5f5; color:var(--accent); padding:10px; border-radius:8px; text-align:center; font-weight:700;">
-            ID: <span id="t-id"></span>
+        <div class="field">
+          <span class="field-label">Ruta / Motivo</span>
+          <input type="text" id="m-ruta" placeholder="Destino o motivo" />
         </div>
-        <button class="btn btn-success" style="margin-top:1.5rem" onclick="shareWA()"><i class="fab fa-whatsapp"></i> Enviar al Conductor</button>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-success" onclick="registrarIngreso()"><i class="ti ti-login"></i> Registrar ingreso</button>
+        <button class="btn btn-danger" onclick="registrarSalida()"><i class="ti ti-logout"></i> Registrar salida</button>
+      </div>
+      <div id="g-msg" style="margin-top:10px;display:none;"></div>
     </div>
+  </div>
+
+  <!-- ============ BÁSCULA ============ -->
+  <div class="section" id="sec-bascula">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-weight"></i> Registro de pesaje</div>
+        <div class="field">
+          <span class="field-label">Placa del vehículo</span>
+          <input type="text" id="b-placa" placeholder="Placa" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="field">
+            <span class="field-label">Peso bruto (kg)</span>
+            <input type="number" id="b-bruto" placeholder="0" min="0" step="1" oninput="calcNeto()" />
+          </div>
+          <div class="field">
+            <span class="field-label">Peso tara (kg)</span>
+            <input type="number" id="b-tara" placeholder="0" min="0" step="1" oninput="calcNeto()" />
+          </div>
+        </div>
+        <div style="background:var(--surface2);border-radius:var(--radius);padding:1rem;margin:8px 0 12px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text3);margin-bottom:4px;">Peso neto calculado</div>
+          <div style="font-size:30px;font-weight:600;font-family:var(--mono);" id="b-neto">— kg</div>
+        </div>
+        <div class="field">
+          <span class="field-label">Producto / Descripción</span>
+          <input type="text" id="b-producto" placeholder="Descripción del producto" />
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="registrarPesaje()" style="flex:1;"><i class="ti ti-device-floppy"></i> Registrar pesaje</button>
+          <button class="btn" onclick="limpiarBascula()"><i class="ti ti-eraser"></i> Limpiar</button>
+        </div>
+        <div id="b-msg" style="margin-top:10px;display:none;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="ti ti-list-numbers"></i> Pesajes del día</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Placa</th><th>Producto</th><th>Bruto</th><th>Tara</th><th>Neto</th><th>Hora</th></tr>
+            </thead>
+            <tbody id="pesajes-body">
+              <tr><td colspan="6" class="loading-cell">Sin pesajes registrados</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:13px;">
+          <span style="color:var(--text2);">Total neto acumulado</span>
+          <span style="font-weight:600;font-family:var(--mono);" id="total-neto">0 kg</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ DESPACHO ============ -->
+  <div class="section" id="sec-despacho">
+    <div class="card">
+      <div class="card-title">
+        <i class="ti ti-building-warehouse"></i> Estado de andenes
+        <div class="card-title-actions">
+          <button class="btn btn-sm" onclick="agregarAnden()"><i class="ti ti-plus"></i> Agregar andén</button>
+        </div>
+      </div>
+      <div class="andenes-grid" id="andenes-grid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-transfer"></i> Asignar vehículo a andén</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;">
+        <div class="field">
+          <span class="field-label">Placa</span>
+          <input type="text" id="d-placa" placeholder="Placa" style="text-transform:uppercase;width:100%;" oninput="this.value=this.value.toUpperCase()" />
+        </div>
+        <div class="field">
+          <span class="field-label">Andén</span>
+          <select id="d-anden" style="width:100%;"></select>
+        </div>
+        <div class="field">
+          <span class="field-label">Observaciones</span>
+          <input type="text" id="d-obs" placeholder="Notas" style="width:100%;" />
+        </div>
+        <button class="btn btn-primary" onclick="asignarAnden()" style="margin-bottom:10px;"><i class="ti ti-check"></i> Asignar</button>
+      </div>
+      <div id="d-msg" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-truck-delivery"></i> Vehículos actualmente en planta</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Conductor</th><th>Placa</th><th>Ruta</th><th>Hora ingreso</th><th>Andén</th><th>Acción</th></tr></thead>
+          <tbody id="activos-body">
+            <tr><td colspan="6" class="loading-cell">Sin vehículos en planta</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ HISTORIAL ============ -->
+  <div class="section" id="sec-historial">
+    <div class="card">
+      <div class="card-title">
+        <i class="ti ti-history"></i> Historial de movimientos del día
+        <div class="card-title-actions">
+          <button class="btn btn-sm" onclick="exportarCSV()"><i class="ti ti-download"></i> Exportar CSV</button>
+          <button class="btn btn-sm" onclick="limpiarHistorial()"><i class="ti ti-trash"></i> Limpiar</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Hora</th><th>Tipo</th><th>Conductor</th><th>Placa</th><th>Ruta</th><th>Detalle</th></tr></thead>
+          <tbody id="hist-body">
+            <tr><td colspan="6" class="loading-cell">Sin movimientos registrados</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL PASE -->
+<div id="pase-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span style="font-size:15px;font-weight:600;">Pase de ingreso</span>
+      <button class="btn btn-sm" onclick="cerrarPase()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="pase-card">
+      <div class="pase-co">AGRIPAC S.A. — Control de Acceso</div>
+      <div class="pase-title">Pase de Ingreso</div>
+      <div class="pase-qr">
+        <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true" fill="var(--text)">
+          <rect x="1" y="1" width="22" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="6" y="6" width="12" height="12" rx="1"/>
+          <rect x="29" y="1" width="22" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="34" y="6" width="12" height="12" rx="1"/>
+          <rect x="1" y="29" width="22" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="6" y="34" width="12" height="12" rx="1"/>
+          <rect x="29" y="29" width="5" height="5"/><rect x="37" y="29" width="5" height="5"/>
+          <rect x="45" y="29" width="6" height="5"/><rect x="29" y="37" width="5" height="5"/>
+          <rect x="37" y="37" width="5" height="5"/><rect x="29" y="45" width="5" height="6"/>
+          <rect x="37" y="45" width="14" height="6"/>
+        </svg>
+      </div>
+      <div class="pase-row"><span>ID</span><span id="p-id">—</span></div>
+      <div class="pase-row"><span>Conductor</span><span id="p-cond">—</span></div>
+      <div class="pase-row"><span>Placa</span><span id="p-placa">—</span></div>
+      <div class="pase-row"><span>Ruta</span><span id="p-ruta">—</span></div>
+      <div class="pase-row"><span>Hora ingreso</span><span id="p-hora">—</span></div>
+      <div class="pase-validity">Válido únicamente el día de hoy</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:1rem;">
+      <button class="btn btn-success" onclick="enviarWhatsApp()" style="flex:1;"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
+      <button class="btn" onclick="cerrarPase()" style="flex:1;">Cerrar</button>
+    </div>
+  </div>
 </div>
 
 <script>
-    const SHEETS_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?gid=0&single=true&output=csv";
-    let scanner;
+// ─── CONFIGURACIÓN ────────────────────────────────────────────────────
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?output=csv';
 
-    // CARGA Y FILTRADO DE DATOS
-    async function refreshData() {
-        const selectedDate = document.getElementById('filter-date').value; // YYYY-MM-DD
-        const res = await fetch(SHEETS_CSV);
-        const data = await res.text();
-        const rows = data.split('\n').slice(1);
-        const table = document.getElementById('live-table');
-        table.innerHTML = '';
+// ─── ESTADO ──────────────────────────────────────────────────────────
+let planData = [];
+let estados = {};        // idx -> 'pendiente' | 'dentro' | 'done'
+let ingresos = {};       // idx -> { hora, conductor, placa, ruta }
+let pesajes = [];
+let historial = [];
+let andenes = [1,2,3].map(id => ({ id, libre: true, vehiculo: null, conductor: null, hora: null }));
+let paseActual = null;
 
-        rows.forEach(r => {
-            const c = r.split(',');
-            if (c.length < 12) return;
-            // 0:ID, 1:Carga, 2:Descarga, 4:Fecha (DD/MM/YYYY), 7:Chofer, 8:Placa, 11:Status
-            const [id, carga, descarga, , fechaOriginal, , , chofer, placa, , , status] = c;
+// ─── RELOJ ───────────────────────────────────────────────────────────
+function reloj() {
+  const n = new Date();
+  const pad = v => String(v).padStart(2,'0');
+  document.getElementById('clock').textContent = pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
+  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  document.getElementById('fecha').textContent = dias[n.getDay()]+' '+n.getDate()+' '+meses[n.getMonth()]+' '+n.getFullYear();
+}
+setInterval(reloj, 1000); reloj();
 
-            // Formatear fecha del Excel para comparar
-            // Si el Excel viene como DD/MM/YYYY y el input como YYYY-MM-DD
-            let matchDate = true;
-            if (selectedDate) {
-                const parts = fechaOriginal.split('/');
-                const formattedExcelDate = `${parts[2]}-${parts[1]}-${parts[0]}`; // YYYY-MM-DD
-                if (formattedExcelDate !== selectedDate) matchDate = false;
-            }
-
-            if (status.trim().toUpperCase() === "OK" && matchDate) {
-                table.innerHTML += `
-                    <tr>
-                        <td><strong>${chofer}</strong></td>
-                        <td><span class="status-pill status-ok">${placa}</span></td>
-                        <td><small>${fechaOriginal}</small></td>
-                        <td>${carga} &rarr; ${descarga}</td>
-                        <td><button class="btn-outline" style="padding:6px 12px; font-size:11px; cursor:pointer;" onclick="showT('${id}','${chofer}','${placa}')">GENERAR PASE</button></td>
-                    </tr>`;
-            }
-        });
-        
-        if(table.innerHTML === "") {
-            table.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:gray;">No hay planificaciones para esta fecha.</td></tr>';
-        }
+// ─── CSV ─────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''));
+  return lines.slice(1).map((line, i) => {
+    const cols = [];
+    let cur = '', inQ = false;
+    for (const ch of line) {
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+      else cur += ch;
     }
+    cols.push(cur.trim());
+    const obj = { _idx: i + 1 };
+    headers.forEach((h, j) => { obj[h] = cols[j] || ''; });
+    return obj;
+  }).filter(r => Object.values(r).some((v, i) => i > 0 && v));
+}
 
-    function clearFilter() {
-        document.getElementById('filter-date').value = "";
-        refreshData();
+function campoVal(row, ...keys) {
+  for (const k of keys) { if (row[k]) return row[k]; }
+  const vals = Object.values(row).filter((v,i) => i > 0 && typeof v === 'string');
+  return vals[keys.length - 1] || '—';
+}
+
+function cargarCSV() {
+  const body = document.getElementById('plan-body');
+  body.innerHTML = '<tr><td colspan="7" class="loading-cell"><i class="ti ti-loader"></i> Cargando planificación…</td></tr>';
+  fetch(CSV_URL + '&nocache=' + Date.now())
+    .then(r => { if (!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(text => {
+      planData = parseCSV(text);
+      if (!planData.length) throw new Error('vacío');
+      planData.forEach(r => { if (!estados[r._idx]) estados[r._idx] = 'pendiente'; });
+      document.getElementById('fuente-csv').textContent = '⟳ Actualizado desde Google Sheets — ' + new Date().toLocaleTimeString('es-EC');
+      renderPlan(); actualizarMetricas();
+    })
+    .catch(() => {
+      cargarDemo();
+      document.getElementById('fuente-csv').textContent = '⚠ Modo demo — datos de ejemplo (CORS bloqueado en navegador)';
+    });
+}
+
+function cargarDemo() {
+  planData = [
+    {_idx:1, Conductor:'Carlos Mendoza',  Placa:'ABC-1234', Ruta:'Guayaquil → Planta Norte',   Hora:'07:00'},
+    {_idx:2, Conductor:'Pedro Ramírez',   Placa:'XYZ-5678', Ruta:'Durán → Bodega 2',            Hora:'07:30'},
+    {_idx:3, Conductor:'Luis Torres',     Placa:'QRS-9012', Ruta:'Daule → Producción',           Hora:'08:00'},
+    {_idx:4, Conductor:'Mario Cevallos',  Placa:'LMN-3456', Ruta:'Milagro → Distribución',      Hora:'09:00'},
+    {_idx:5, Conductor:'Roberto Flores',  Placa:'TUV-7890', Ruta:'Samborondón → Almacén',       Hora:'10:00'},
+    {_idx:6, Conductor:'Javier Ortiz',    Placa:'DEF-2345', Ruta:'Guayaquil → Entrada principal',Hora:'11:00'},
+  ];
+  planData.forEach(r => { if (!estados[r._idx]) estados[r._idx] = 'pendiente'; });
+  renderPlan(); actualizarMetricas();
+}
+
+// ─── RENDER PLAN ──────────────────────────────────────────────────────
+function renderPlan() {
+  const body = document.getElementById('plan-body');
+  const q = (document.getElementById('search-plan').value || '').toLowerCase();
+  const filtered = planData.filter(r => {
+    const str = [r.Conductor, r.Placa, r.Ruta, campoVal(r,'Conductor','Conductor'), campoVal(r,'Placa','Placa')].join(' ').toLowerCase();
+    return !q || str.includes(q);
+  });
+  if (!filtered.length) { body.innerHTML = '<tr><td colspan="7" class="loading-cell">Sin resultados</td></tr>'; return; }
+  body.innerHTML = filtered.map(r => {
+    const cond = r.Conductor || '—';
+    const placa = r.Placa || '—';
+    const ruta = r.Ruta || '—';
+    const hora = r.Hora || r['Hora programada'] || '—';
+    const est = estados[r._idx] || 'pendiente';
+    const badge = est === 'pendiente' ? '<span class="badge badge-pending"><i class="ti ti-clock"></i> Pendiente</span>'
+      : est === 'dentro' ? '<span class="badge badge-in"><i class="ti ti-circle-check"></i> En planta</span>'
+      : '<span class="badge badge-done"><i class="ti ti-checks"></i> Finalizado</span>';
+    const acciones = est === 'pendiente'
+      ? `<button class="btn btn-success btn-sm" onclick="ingresoRapido(${r._idx})"><i class="ti ti-login"></i> Ingresar</button>`
+      : est === 'dentro'
+      ? `<button class="btn btn-danger btn-sm" onclick="salidaRapida(${r._idx})"><i class="ti ti-logout"></i> Salida</button>`
+      : `<span style="font-size:12px;color:var(--text3);">✓ Listo</span>`;
+    return `<tr>
+      <td><span class="mono-tag">${r._idx}</span></td>
+      <td>${cond}</td>
+      <td><span class="mono-tag">${placa}</span></td>
+      <td style="color:var(--text2);">${ruta}</td>
+      <td><span class="mono-tag">${hora}</span></td>
+      <td>${badge}</td>
+      <td>${acciones}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filtrarPlan() { renderPlan(); }
+
+function actualizarMetricas() {
+  const total = planData.length;
+  const dentro = planData.filter(r => estados[r._idx] === 'dentro').length;
+  const done = planData.filter(r => estados[r._idx] === 'done').length;
+  const pend = total - dentro - done;
+  document.getElementById('m-total').textContent = total;
+  document.getElementById('m-dentro').textContent = dentro;
+  document.getElementById('m-done').textContent = done;
+  document.getElementById('m-pend').textContent = pend;
+  if (total > 0) {
+    document.getElementById('pb-dentro').style.width = Math.round(dentro/total*100)+'%';
+    document.getElementById('pb-done').style.width = Math.round(done/total*100)+'%';
+  }
+  renderActivos();
+}
+
+// ─── INGRESO / SALIDA RÁPIDA ─────────────────────────────────────────
+function ingresoRapido(idx) {
+  const r = planData.find(x => x._idx === idx); if (!r) return;
+  const cond = r.Conductor || '—', placa = r.Placa || '—', ruta = r.Ruta || '—';
+  estados[idx] = 'dentro';
+  ingresos[idx] = { hora: horaActual(), conductor: cond, placa, ruta };
+  agregarLog('Ingreso', cond, placa, ruta, 'Planificado');
+  agregarTimeline('tl-in', 'Ingreso: '+cond, placa+' · '+ruta);
+  mostrarPase(idx, cond, placa, ruta);
+  renderPlan(); actualizarMetricas();
+}
+
+function salidaRapida(idx) {
+  const r = planData.find(x => x._idx === idx); if (!r) return;
+  const cond = r.Conductor || '—', placa = r.Placa || '—', ruta = r.Ruta || '—';
+  estados[idx] = 'done';
+  delete ingresos[idx];
+  andenes.forEach(a => { if (a.vehiculo === placa) { a.libre = true; a.vehiculo = null; a.conductor = null; a.hora = null; } });
+  agregarLog('Salida', cond, placa, ruta, 'Planificado');
+  agregarTimeline('tl-out', 'Salida: '+cond, placa);
+  renderPlan(); actualizarMetricas(); renderAndenes();
+}
+
+// ─── GARITA ──────────────────────────────────────────────────────────
+function buscarVehiculo() {
+  const q = document.getElementById('g-placa').value.trim().toUpperCase();
+  const el = document.getElementById('g-resultado');
+  if (!q) { el.innerHTML = ''; return; }
+  const found = planData.find(r => (r.Placa||'').toUpperCase().includes(q));
+  if (found) {
+    const est = estados[found._idx] || 'pendiente';
+    const badge = est === 'pendiente' ? '<span class="badge badge-pending">Pendiente ingreso</span>'
+      : est === 'dentro' ? '<span class="badge badge-in">Actualmente en planta</span>'
+      : '<span class="badge badge-done">Finalizado hoy</span>';
+    const btn = est === 'pendiente'
+      ? `<button class="btn btn-success btn-sm" onclick="ingresoRapido(${found._idx})"><i class="ti ti-login"></i> Autorizar ingreso</button>`
+      : est === 'dentro'
+      ? `<button class="btn btn-danger btn-sm" onclick="salidaRapida(${found._idx})"><i class="ti ti-logout"></i> Registrar salida</button>`
+      : '';
+    el.innerHTML = `<div class="alert alert-success" style="margin-bottom:10px;"><i class="ti ti-check"></i> Vehículo en planificación ${badge}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;margin-bottom:10px;">
+        <div><span style="color:var(--text3);font-size:11px;">CONDUCTOR</span><br><strong>${found.Conductor||'—'}</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;">PLACA</span><br><span class="mono-tag">${found.Placa||'—'}</span></div>
+        <div><span style="color:var(--text3);font-size:11px;">RUTA</span><br>${found.Ruta||'—'}</div>
+        <div style="display:flex;align-items:flex-end;">${btn}</div>
+      </div>`;
+  } else {
+    el.innerHTML = '<div class="alert alert-warning"><i class="ti ti-alert-triangle"></i> Placa no encontrada en planificación del día</div>';
+  }
+}
+
+function registrarIngreso() {
+  const cond = document.getElementById('m-conductor').value.trim();
+  const placa = document.getElementById('m-placa-in').value.trim();
+  const ruta = document.getElementById('m-ruta').value.trim();
+  if (!cond || !placa) { mostrarMsg('g-msg','warning','Complete conductor y placa'); return; }
+  agregarLog('Ingreso', cond, placa, ruta, 'Manual');
+  agregarTimeline('tl-in', 'Ingreso: '+cond, placa);
+  ['m-conductor','m-placa-in','m-ruta'].forEach(id => document.getElementById(id).value = '');
+  mostrarMsg('g-msg','success','Ingreso registrado correctamente');
+  renderActivos();
+}
+
+function registrarSalida() {
+  const placa = document.getElementById('m-placa-in').value.trim();
+  const cond = document.getElementById('m-conductor').value.trim();
+  if (!placa) { mostrarMsg('g-msg','warning','Ingrese la placa del vehículo'); return; }
+  andenes.forEach(a => { if (a.vehiculo === placa) { a.libre = true; a.vehiculo = null; a.conductor = null; a.hora = null; } });
+  agregarLog('Salida', cond||'—', placa, document.getElementById('m-ruta').value||'—', 'Manual');
+  agregarTimeline('tl-out', 'Salida: '+(cond||placa), placa);
+  ['m-conductor','m-placa-in','m-ruta'].forEach(id => document.getElementById(id).value = '');
+  mostrarMsg('g-msg','success','Salida registrada');
+  renderAndenes(); renderActivos();
+}
+
+// ─── TIMELINE ────────────────────────────────────────────────────────
+function agregarTimeline(cls, title, sub) {
+  const tl = document.getElementById('garita-timeline');
+  const item = document.createElement('div');
+  item.className = 'timeline-item';
+  item.innerHTML = `<div class="tl-dot ${cls}"></div><div style="flex:1;"><div style="font-size:13px;font-weight:500;">${title}</div><div class="tl-sub">${sub}</div></div><div class="tl-time">${horaActual()}</div>`;
+  tl.insertBefore(item, tl.firstChild);
+  while (tl.children.length > 10) tl.removeChild(tl.lastChild);
+}
+
+// ─── BÁSCULA ─────────────────────────────────────────────────────────
+function calcNeto() {
+  const br = parseFloat(document.getElementById('b-bruto').value) || 0;
+  const ta = parseFloat(document.getElementById('b-tara').value) || 0;
+  const n = br - ta;
+  document.getElementById('b-neto').textContent = n > 0 ? n.toLocaleString('es-EC') + ' kg' : '— kg';
+}
+
+function registrarPesaje() {
+  const placa = document.getElementById('b-placa').value.trim();
+  const bruto = parseFloat(document.getElementById('b-bruto').value);
+  const tara = parseFloat(document.getElementById('b-tara').value);
+  const prod = document.getElementById('b-producto').value.trim();
+  if (!placa || isNaN(bruto) || isNaN(tara)) { mostrarMsg('b-msg','warning','Complete todos los campos'); return; }
+  const neto = bruto - tara;
+  pesajes.push({ placa, bruto, tara, neto, prod, hora: horaActual() });
+  agregarLog('Pesaje', '—', placa, prod, bruto+'kg bruto / '+tara+'kg tara / '+neto+'kg neto');
+  agregarTimeline('tl-peso', 'Pesaje: '+placa, neto.toLocaleString('es-EC')+' kg neto');
+  limpiarBascula();
+  renderPesajes();
+  mostrarMsg('b-msg','success','Pesaje registrado: '+neto.toLocaleString('es-EC')+' kg neto');
+}
+
+function limpiarBascula() {
+  ['b-placa','b-bruto','b-tara','b-producto'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('b-neto').textContent = '— kg';
+}
+
+function renderPesajes() {
+  const body = document.getElementById('pesajes-body');
+  if (!pesajes.length) { body.innerHTML = '<tr><td colspan="6" class="loading-cell">Sin pesajes</td></tr>'; return; }
+  body.innerHTML = [...pesajes].reverse().map(p =>
+    `<tr><td><span class="mono-tag">${p.placa}</span></td><td>${p.prod||'—'}</td>
+    <td class="mono-tag">${p.bruto.toLocaleString('es-EC')}</td>
+    <td class="mono-tag">${p.tara.toLocaleString('es-EC')}</td>
+    <td style="font-weight:500;font-family:var(--mono);">${p.neto.toLocaleString('es-EC')}</td>
+    <td style="font-size:12px;color:var(--text3);">${p.hora}</td></tr>`
+  ).join('');
+  const total = pesajes.reduce((s,p) => s + p.neto, 0);
+  document.getElementById('total-neto').textContent = total.toLocaleString('es-EC') + ' kg';
+}
+
+// ─── DESPACHO / ANDENES ──────────────────────────────────────────────
+function renderAndenes() {
+  const grid = document.getElementById('andenes-grid');
+  const sel = document.getElementById('d-anden');
+  grid.innerHTML = andenes.map(a =>
+    `<div class="anden ${a.libre ? 'libre' : 'ocupado'}" onclick="clickAnden(${a.id})" title="${a.libre ? 'Libre' : 'Click para liberar'}">
+      <div class="anden-num">Andén ${a.id}</div>
+      <div class="anden-icon">${a.libre ? '<i class="ti ti-parking"></i>' : '<i class="ti ti-truck"></i>'}</div>
+      <div class="anden-label">${a.libre ? 'Libre' : (a.vehiculo || 'Ocupado')}</div>
+    </div>`
+  ).join('');
+  sel.innerHTML = andenes.filter(a => a.libre).map(a => `<option value="${a.id}">Andén ${a.id}</option>`).join('');
+}
+
+function clickAnden(id) {
+  const a = andenes.find(x => x.id === id);
+  if (a && !a.libre) {
+    if (confirm(`¿Liberar andén ${id} (${a.vehiculo||'vehículo'})?`)) {
+      a.libre = true; a.vehiculo = null; a.conductor = null; a.hora = null;
+      renderAndenes(); renderActivos();
     }
+  }
+}
 
-    // El resto de funciones (showT, closeT, shareWA, toggleCam, sap, waAnden, tab) permanecen iguales...
-    function showT(id, chofer, placa) {
-        document.getElementById('t-id').innerText = id;
-        document.getElementById('t-name').innerText = chofer;
-        document.getElementById('t-plate').innerText = placa;
-        const qrc = document.getElementById('qr-code');
-        qrc.innerHTML = "";
-        new QRCode(qrc, { text: id, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.H });
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById('ticket').style.display = 'block';
-    }
+function agregarAnden() {
+  const id = andenes.length + 1;
+  andenes.push({ id, libre: true, vehiculo: null, conductor: null, hora: null });
+  renderAndenes();
+}
 
-    function closeT() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('ticket').style.display = 'none';
-    }
+function asignarAnden() {
+  const placa = document.getElementById('d-placa').value.trim();
+  const aid = parseInt(document.getElementById('d-anden').value);
+  const obs = document.getElementById('d-obs').value.trim();
+  if (!placa || !aid) { mostrarMsg('d-msg','warning','Complete los campos requeridos'); return; }
+  const a = andenes.find(x => x.id === aid);
+  if (!a) return;
+  const pl = planData.find(r => (r.Placa||'').toUpperCase() === placa.toUpperCase());
+  a.libre = false; a.vehiculo = placa; a.conductor = pl ? pl.Conductor : '—'; a.hora = horaActual();
+  renderAndenes(); renderActivos();
+  document.getElementById('d-placa').value = '';
+  document.getElementById('d-obs').value = '';
+  mostrarMsg('d-msg','success', placa + ' asignado a andén ' + aid);
+  agregarLog('Despacho', a.conductor||'—', placa, 'Andén '+aid, obs||'Asignación de andén');
+}
 
-    function shareWA() {
-        const modal = document.getElementById('ticket');
-        html2canvas(modal, { useCORS: true }).then(canvas => {
-            canvas.toBlob(blob => {
-                const item = new ClipboardItem({ "image/png": blob });
-                navigator.clipboard.write([item]).then(() => {
-                    window.open(`https://wa.me/?text=${encodeURIComponent("*AGRIPAC S.A.*\nAdjunto pase de seguridad.")}`, '_blank');
-                    alert("¡Imagen copiada! Pégala en WhatsApp.");
-                });
-            });
-        });
-    }
+function renderActivos() {
+  const body = document.getElementById('activos-body');
+  const dentro = planData.filter(r => estados[r._idx] === 'dentro');
+  if (!dentro.length) { body.innerHTML = '<tr><td colspan="6" class="loading-cell">Sin vehículos activos en planta</td></tr>'; return; }
+  body.innerHTML = dentro.map(r => {
+    const cond = r.Conductor||'—', placa = r.Placa||'—', ruta = r.Ruta||'—';
+    const info = ingresos[r._idx] || {};
+    const and = andenes.find(a => a.vehiculo === placa);
+    return `<tr>
+      <td>${cond}</td>
+      <td><span class="mono-tag">${placa}</span></td>
+      <td style="color:var(--text2);">${ruta}</td>
+      <td><span class="mono-tag">${info.hora||'—'}</span></td>
+      <td>${and ? '<span class="badge badge-pending">Andén '+and.id+'</span>' : '<span style="color:var(--text3);font-size:12px;">Sin asignar</span>'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="salidaRapida(${r._idx})"><i class="ti ti-logout"></i> Salida</button></td>
+    </tr>`;
+  }).join('');
+}
 
-    function toggleCam() {
-        const r = document.getElementById('reader');
-        if (!scanner) {
-            r.style.display = 'block';
-            scanner = new Html5Qrcode("reader");
-            scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => {
-                document.getElementById('main-id').value = txt;
-                stopCam();
-            });
-            document.getElementById('scan-btn').innerText = "Apagar Cámara";
-        } else { stopCam(); }
-    }
+// ─── HISTORIAL ───────────────────────────────────────────────────────
+function agregarLog(tipo, cond, placa, ruta, detalle) {
+  historial.unshift({ hora: horaActual(), tipo, cond, placa, ruta, detalle });
+  renderHistorial();
+}
 
-    function stopCam() {
-        if (scanner) {
-            scanner.stop().then(() => {
-                scanner = null;
-                document.getElementById('reader').style.display = 'none';
-                document.getElementById('scan-btn').innerText = "Encender Cámara";
-            });
-        }
-    }
+function renderHistorial() {
+  const body = document.getElementById('hist-body');
+  if (!historial.length) { body.innerHTML = '<tr><td colspan="6" class="loading-cell">Sin movimientos</td></tr>'; return; }
+  body.innerHTML = historial.map(r => {
+    const badge = r.tipo === 'Ingreso' ? '<span class="badge badge-in">Ingreso</span>'
+      : r.tipo === 'Salida' ? '<span class="badge badge-out">Salida</span>'
+      : r.tipo === 'Pesaje' ? '<span class="badge badge-pending">Pesaje</span>'
+      : '<span class="badge badge-done">'+r.tipo+'</span>';
+    return `<tr>
+      <td><span class="mono-tag">${r.hora}</span></td>
+      <td>${badge}</td>
+      <td>${r.cond}</td>
+      <td><span class="mono-tag">${r.placa}</span></td>
+      <td style="color:var(--text2);">${r.ruta}</td>
+      <td style="font-size:12px;color:var(--text3);">${r.detalle}</td>
+    </tr>`;
+  }).join('');
+}
 
-    function tab(id) {
-        document.querySelectorAll('.glass-card').forEach(c => c.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        stopCam();
-    }
+function limpiarHistorial() {
+  if (confirm('¿Limpiar historial del día?')) { historial = []; renderHistorial(); }
+}
 
-    function sap(mod, ev, val = "") {
-        const id = document.getElementById('main-id').value;
-        if(!id) return alert("Falta ID.");
-        alert(`SAP AGRIPAC: ${mod} - ${ev} - ${val}`);
-    }
+function exportarCSV() {
+  const rows = [['Hora','Tipo','Conductor','Placa','Ruta','Detalle'],
+    ...historial.map(r => [r.hora, r.tipo, r.cond, r.placa, r.ruta, r.detalle])];
+  const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  a.download = 'agripac_movimientos_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
 
-    function waAnden() {
-        alert("Notificación enviada vía WhatsApp");
-    }
+// ─── PASE MODAL ──────────────────────────────────────────────────────
+function mostrarPase(idx, cond, placa, ruta) {
+  paseActual = { idx, cond, placa, ruta };
+  document.getElementById('p-id').textContent = 'AG-' + String(idx).padStart(4,'0');
+  document.getElementById('p-cond').textContent = cond;
+  document.getElementById('p-placa').textContent = placa;
+  document.getElementById('p-ruta').textContent = ruta;
+  document.getElementById('p-hora').textContent = horaActual();
+  document.getElementById('pase-modal').classList.add('open');
+}
 
-    refreshData();
-    setInterval(refreshData, 60000);
+function cerrarPase() { document.getElementById('pase-modal').classList.remove('open'); }
+
+function enviarWhatsApp() {
+  if (!paseActual) return;
+  const d = new Date().toLocaleDateString('es-EC');
+  const msg = `🟢 *AGRIPAC S.A. — Pase de Ingreso*\n\n📋 ID: AG-${String(paseActual.idx).padStart(4,'0')}\n👤 Conductor: ${paseActual.cond}\n🚛 Placa: ${paseActual.placa}\n📍 Ruta: ${paseActual.ruta}\n🕐 Hora: ${horaActual()}\n📅 Fecha: ${d}\n\n_Válido únicamente para el día de hoy_`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────
+function horaActual() {
+  const n = new Date();
+  return String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+}
+
+function mostrarMsg(id, tipo, txt) {
+  const el = document.getElementById(id);
+  const icon = tipo === 'success' ? 'ti-check' : tipo === 'warning' ? 'ti-alert-triangle' : 'ti-info-circle';
+  el.className = 'alert alert-' + tipo;
+  el.innerHTML = `<i class="ti ${icon}"></i> ${txt}`;
+  el.style.display = 'flex';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────
+renderAndenes();
+cargarCSV();
+// Auto-refresh cada 5 minutos
+setInterval(cargarCSV, 5 * 60 * 1000);
 </script>
 </body>
 </html>
