@@ -3,252 +3,304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AGRIPAC LOGÍSTICA - Sistema 360</title>
+    <title>Agripac Logística | Smart Dashboard</title>
     
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        :root { --blue: #1a237e; --red: #d32f2f; --green: #25d366; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; }
-        
-        nav { background: var(--blue); padding: 10px; display: flex; gap: 10px; overflow-x: auto; position: sticky; top: 0; z-index: 1000; }
-        nav button { background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
-        nav button.active { background: white; color: var(--blue); font-weight: bold; }
+        :root {
+            --primary: #1a237e;
+            --accent: #d32f2f;
+            --success: #2e7d32;
+            --surface: #ffffff;
+            --bg: #f8f9fa;
+            --text: #2c3e50;
+        }
 
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
         
-        .modulo { display: none; }
-        .modulo.active { display: block; }
+        /* Sidebar/Nav Horizontal */
+        nav { 
+            background: var(--primary); 
+            padding: 0.8rem 1.5rem; 
+            display: flex; 
+            gap: 12px; 
+            overflow-x: auto; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        nav button { 
+            background: rgba(255,255,255,0.1); 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        nav button.active { background: white; color: var(--primary); font-weight: 700; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
-        /* Tabla Estilizada */
-        .table-res { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: var(--blue); color: white; padding: 12px; font-size: 12px; }
-        td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; font-size: 14px; }
-
-        /* Scanner */
-        #reader { width: 100%; max-width: 400px; margin: 10px auto; display: none; border: 2px solid var(--blue); }
+        .app-content { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
         
-        /* Botones */
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px; }
-        .btn-blue { background: var(--blue); }
-        .btn-green { background: var(--green); }
-        .btn-red { background: var(--red); }
-        .btn-ticket { background: var(--blue); padding: 6px 10px; font-size: 11px; }
+        /* Cards Estilo Claude */
+        .glass-card { 
+            background: var(--surface); 
+            border-radius: 16px; 
+            padding: 2rem; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05); 
+            border: 1px solid rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+            display: none;
+        }
+        .glass-card.active { display: block; animation: slideUp 0.4s ease-out; }
 
-        input, select { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* MODAL DEL TICKET */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1100; backdrop-filter: blur(4px); }
-        .ticket-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1101; background: white; border-radius: 15px; width: 350px; overflow: hidden; }
-        .ticket-header { background: var(--blue); color: white; padding: 15px; text-align: center; }
+        h2 { margin-top: 0; display: flex; align-items: center; gap: 10px; color: var(--primary); }
+
+        /* Tabla Moderna */
+        .table-container { overflow-x: auto; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th { background: #f1f3f5; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 1rem; text-align: left; }
+        td { padding: 1rem; border-bottom: 1px solid #f1f3f5; font-size: 14px; }
+        tr:hover { background: #f8fafc; }
+
+        .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-ok { background: #dcfce7; color: #166534; }
+
+        /* Módulo Garita con Scanner */
+        #reader { width: 100%; max-width: 400px; margin: auto; border-radius: 12px; overflow: hidden; border: 4px solid #eee; }
         
-        #qrcode-wrapper { position: relative; display: flex; justify-content: center; margin: 20px 0; }
-        .qr-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 45px; height: 45px; background: white; padding: 2px; border-radius: 5px; }
-        
-        .ticket-details { padding: 0 20px 20px; text-align: left; font-size: 13px; border-top: 1px dashed #ccc; padding-top: 15px; }
+        /* Botones Acción */
+        .btn { 
+            padding: 12px 24px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; font-size: 15px; margin-top: 1rem;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-outline { background: transparent; border: 2px solid #e2e8f0; color: #64748b; }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+        /* Modal del Pase */
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; backdrop-filter: blur(4px); }
+        .ticket { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 201; background: white; border-radius: 24px; width: 360px; overflow: hidden; }
+        .ticket-qr-container { position: relative; padding: 2rem; display: flex; justify-content: center; background: white; }
+        .qr-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 45px; height: 45px; background: white; padding: 4px; border-radius: 8px; }
+
+        input, select { 
+            width: 100%; padding: 12px; border: 2px solid #f1f3f5; border-radius: 12px; font-size: 16px; margin-top: 8px; outline: none; transition: 0.2s;
+        }
+        input:focus { border-color: var(--primary); }
     </style>
 </head>
 <body>
 
 <nav>
-    <button onclick="switchTab('tab-planif')" id="btn-tab-planif" class="active">📋 Planificación</button>
-    <button onclick="switchTab('tab-garita')">👮 Garita</button>
-    <button onclick="switchTab('tab-bascula')">⚖️ Báscula</button>
-    <button onclick="switchTab('tab-despacho')">🚛 Despacho</button>
+    <button onclick="tab('tab-list')" class="active"><i class="fas fa-list"></i> Planificación</button>
+    <button onclick="tab('tab-garita')"><i class="fas fa-shield-alt"></i> Garita</button>
+    <button onclick="tab('tab-bascula')"><i class="fas fa-weight"></i> Báscula</button>
+    <button onclick="tab('tab-despacho')"><i class="fas fa-truck-loading"></i> Despacho</button>
 </nav>
 
-<div class="container">
+<div class="app-content">
 
-    <div id="tab-planif" class="modulo active">
-        <div class="card">
-            <h2>Planificación del Día</h2>
-            <div class="table-res">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Conductor</th>
-                            <th>Placa</th>
-                            <th>Ruta</th>
-                            <th>Pase QR</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                        <tr><td colspan="4">Conectando con base de datos Agripac...</td></tr>
-                    </tbody>
-                </table>
+    <div id="tab-list" class="glass-card active">
+        <h2><i class="fas fa-calendar-check"></i> Planificación del Día</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Conductor</th>
+                        <th>Vehículo</th>
+                        <th>Ruta Operativa</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="live-table">
+                    <tr><td colspan="4" style="text-align:center; padding:3rem;">Cargando base de datos...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="tab-garita" class="glass-card">
+        <h2><i class="fas fa-camera"></i> Control de Acceso</h2>
+        <button class="btn btn-outline" id="scan-btn" onclick="toggleCam()"><i class="fas fa-qrcode"></i> Encender Cámara</button>
+        <div id="reader" style="display:none; margin: 1rem auto;"></div>
+        
+        <div style="margin-top: 2rem;">
+            <label style="font-weight:600;">ID de Seguimiento</label>
+            <input type="text" id="main-id" placeholder="Escanee o ingrese ID">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <button class="btn btn-primary" onclick="sap('GARITA', 'ENTRADA')">Validar Entrada</button>
+                <button class="btn btn-outline" style="color:var(--accent)" onclick="sap('GARITA', 'SALIDA')">Salida Final</button>
             </div>
         </div>
     </div>
 
-    <div id="tab-garita" class="modulo">
-        <div class="card">
-            <h2>Control de Garita</h2>
-            <button class="btn" style="background:#546e7a" onclick="toggleScanner()">📷 Activar Escáner</button>
-            <div id="reader"></div>
-            <input type="text" id="id-input" placeholder="ID del camión">
-            <button class="btn btn-blue" onclick="registrarSAP('GARITA', 'ENTRADA')">Validar Ingreso</button>
-            <button class="btn btn-red" onclick="registrarSAP('GARITA', 'SALIDA')">Salida Final</button>
+    <div id="tab-bascula" class="glass-card">
+        <h2><i class="fas fa-balance-scale"></i> Estación de Pesaje</h2>
+        <div style="background:#f8fafc; padding:1.5rem; border-radius:12px; border:1px dashed #cbd5e1;">
+            <label>Registro de Carga (KG)</label>
+            <input type="number" id="peso-val" placeholder="0.00">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <button class="btn btn-success" onclick="sap('BASCULA', 'PESO_IN', document.getElementById('peso-val').value)">Peso Inicial</button>
+                <button class="btn btn-primary" onclick="sap('BASCULA', 'PESO_OUT', document.getElementById('peso-val').value)">Peso Salida</button>
+            </div>
         </div>
     </div>
 
-    <div id="tab-bascula" class="modulo">
-        <div class="card">
-            <h2>Módulo Báscula</h2>
-            <input type="number" id="peso-input" placeholder="Ingrese Peso en KG">
-            <button class="btn btn-green" onclick="registrarSAP('BASCULA', 'PESO_IN')">Peso Inicial</button>
-            <button class="btn btn-blue" onclick="registrarSAP('BASCULA', 'PESO_OUT')">Peso Final</button>
-        </div>
-    </div>
-
-    <div id="tab-despacho" class="modulo">
-        <div class="card">
-            <h2>Despacho de Unidades</h2>
-            <select id="anden-select">
-                <option value="ANDEN 1">Andén 1</option>
-                <option value="ANDEN 2">Andén 2</option>
-                <option value="ANDEN 3">Andén 3</option>
-            </select>
-            <button class="btn btn-blue" onclick="asignarAndenWA()">Notificar por WhatsApp</button>
-        </div>
+    <div id="tab-despacho" class="glass-card">
+        <h2><i class="fas fa-warehouse"></i> Gestión de Andenes</h2>
+        <label>Seleccionar Muelle de Carga</label>
+        <select id="anden-val">
+            <option value="MUELLE A1">Muelle A1</option>
+            <option value="MUELLE B2">Muelle B2</option>
+            <option value="RAMPA SUR">Rampa Sur</option>
+        </select>
+        <button class="btn btn-primary" onclick="waAnden()"><i class="fab fa-whatsapp"></i> Asignar y Notificar</button>
     </div>
 
 </div>
 
-<div class="modal-overlay" id="overlay" onclick="closeTicket()"></div>
-<div class="ticket-modal" id="ticket-modal">
-    <div id="capture-area" style="background: white;">
-        <div class="ticket-header">
-            <h3 style="margin:0">PASE DE INGRESO</h3>
-            <small>AGRIPAC S.A. - TRAZABILIDAD</small>
-        </div>
-        <div id="qrcode-wrapper">
-            <div id="qrcode"></div>
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgdU9ENZe0xEEBIekcna9hIY1LQynypXsvGw&s" class="qr-logo">
-        </div>
-        <div class="ticket-details">
-            <p><strong>ID:</strong> <span id="t-id"></span></p>
-            <p><strong>CONDUCTOR:</strong> <span id="t-chofer"></span></p>
-            <p><strong>PLACA:</strong> <span id="t-placa"></span></p>
-            <p style="text-align:center; color:red; font-weight:bold; margin-top:10px; font-size:10px;">VÁLIDO SOLO PARA EL DÍA DE HOY</p>
-        </div>
+<div class="overlay" id="overlay" onclick="closeT()"></div>
+<div class="ticket" id="ticket">
+    <div style="background:var(--primary); color:white; padding:1.5rem; text-align:center;">
+        <h3 style="margin:0; letter-spacing:1px;">PASE DE INGRESO</h3>
+        <span style="font-size:10px; opacity:0.8;">SISTEMA DE TRAZABILIDAD AGRIPAC</span>
     </div>
-    <div style="padding: 15px; background: #f9f9f9; display: flex; flex-direction: column; gap: 8px;">
-        <button class="btn btn-green" onclick="sendWAImage()">🟢 Enviar a WhatsApp</button>
-        <button onclick="closeTicket()" style="border:none; background:none; cursor:pointer; color:#777;">Cerrar</button>
+    <div class="ticket-qr-container">
+        <div id="qr-code"></div>
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgdU9ENZe0xEEBIekcna9hIY1LQynypXsvGw&s" class="qr-logo">
+    </div>
+    <div style="padding:0 2rem 2rem; font-size:13px;">
+        <p><strong>CONDUCTOR:</strong> <span id="t-name"></span></p>
+        <p><strong>PLACA:</strong> <span id="t-plate"></span></p>
+        <div style="background:#fff5f5; color:var(--accent); padding:10px; border-radius:8px; text-align:center; font-weight:700;">
+            ID: <span id="t-id"></span>
+        </div>
+        <button class="btn btn-success" style="margin-top:1.5rem" onclick="shareWA()"><i class="fab fa-whatsapp"></i> Enviar al Conductor</button>
     </div>
 </div>
 
 <script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?gid=0&single=true&output=csv";
-    let html5QrCode;
+    const SHEETS_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?gid=0&single=true&output=csv";
+    let scanner;
 
-    // CARGAR DATOS EXCEL
-    async function fetchPlanif() {
-        const res = await fetch(CSV_URL);
-        const csv = await res.text();
-        const rows = csv.split('\n').slice(1);
-        const tbody = document.getElementById('table-body');
-        tbody.innerHTML = '';
+    // CARGA DE DATOS
+    async function refreshData() {
+        const res = await fetch(SHEETS_CSV);
+        const data = await res.text();
+        const rows = data.split('\n').slice(1);
+        const table = document.getElementById('live-table');
+        table.innerHTML = '';
 
-        rows.forEach(row => {
-            const col = row.split(',');
-            if (col.length < 12) return;
-            const [id, carga, descarga, , , , , chofer, placa, , , status] = col;
+        rows.forEach(r => {
+            const c = r.split(',');
+            if (c.length < 12) return;
+            const [id, carga, descarga, , , , , chofer, placa, , , status] = c;
 
             if (status.trim().toUpperCase() === "OK") {
-                tbody.innerHTML += `<tr>
-                    <td>${chofer}</td>
-                    <td>${placa}</td>
-                    <td>${carga}</td>
-                    <td><button class="btn btn-ticket" onclick="openTicket('${id}','${chofer}','${placa}')">GENERAR QR</button></td>
-                </tr>`;
+                table.innerHTML += `
+                    <tr>
+                        <td><strong>${chofer}</strong></td>
+                        <td><span class="status-pill status-ok">${placa}</span></td>
+                        <td>${carga} &rarr; ${descarga}</td>
+                        <td><button class="btn-outline" style="padding:6px 12px; font-size:11px; cursor:pointer;" onclick="showT('${id}','${chofer}','${placa}')">GENERAR PASE</button></td>
+                    </tr>`;
             }
         });
     }
 
-    // MODAL QR
-    function openTicket(id, chofer, placa) {
+    // MODAL
+    function showT(id, chofer, placa) {
         document.getElementById('t-id').innerText = id;
-        document.getElementById('t-chofer').innerText = chofer;
-        document.getElementById('t-placa').innerText = placa;
+        document.getElementById('t-name').innerText = chofer;
+        document.getElementById('t-plate').innerText = placa;
         
-        const qrDiv = document.getElementById('qrcode');
-        qrDiv.innerHTML = "";
-        new QRCode(qrDiv, { text: id, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.H });
+        const qrc = document.getElementById('qr-code');
+        qrc.innerHTML = "";
+        new QRCode(qrc, { text: id, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.H });
 
         document.getElementById('overlay').style.display = 'block';
-        document.getElementById('ticket-modal').style.display = 'block';
+        document.getElementById('ticket').style.display = 'block';
     }
 
-    function closeTicket() {
+    function closeT() {
         document.getElementById('overlay').style.display = 'none';
-        document.getElementById('ticket-modal').style.display = 'none';
+        document.getElementById('ticket').style.display = 'none';
     }
 
-    // WHATSAPP: COPIAR IMAGEN Y ABRIR CHAT
-    function sendWAImage() {
-        const area = document.getElementById('capture-area');
-        html2canvas(area, { useCORS: true }).then(canvas => {
+    // WHATSAPP PASE
+    function shareWA() {
+        const modal = document.getElementById('ticket');
+        html2canvas(modal, { useCORS: true }).then(canvas => {
             canvas.toBlob(blob => {
                 const item = new ClipboardItem({ "image/png": blob });
                 navigator.clipboard.write([item]).then(() => {
-                    const chofer = document.getElementById('t-chofer').innerText;
-                    const msg = encodeURIComponent(`*AGRIPAC S.A.*\nHola ${chofer}, adjunto su pase de ingreso. Por favor péguelo a continuación.`);
+                    const msg = encodeURIComponent(`*AGRIPAC S.A. - PASE DE SEGURIDAD*\nAdjunto su credencial de ingreso. Favor pegarla aquí.`);
                     window.open(`https://wa.me/?text=${msg}`, '_blank');
-                    alert("Pase copiado. Pégalo en el chat de WhatsApp del conductor.");
+                    alert("¡Imagen copiada! Pégala en el chat de WhatsApp.");
                 });
             });
         });
     }
 
-    // CONTROL ESCÁNER
-    function toggleScanner() {
-        const reader = document.getElementById('reader');
-        if (!html5QrCode) {
-            reader.style.display = 'block';
-            html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
-                document.getElementById('id-input').value = text;
-                stopScanner();
+    // SCANNER
+    function toggleCam() {
+        const r = document.getElementById('reader');
+        if (!scanner) {
+            r.style.display = 'block';
+            scanner = new Html5Qrcode("reader");
+            scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => {
+                document.getElementById('main-id').value = txt;
+                stopCam();
             });
-        } else { stopScanner(); }
+            document.getElementById('scan-btn').innerText = "Apagar Cámara";
+        } else { stopCam(); }
     }
 
-    function stopScanner() {
-        if (html5QrCode) {
-            html5QrCode.stop().then(() => {
-                html5QrCode = null;
+    function stopCam() {
+        if (scanner) {
+            scanner.stop().then(() => {
+                scanner = null;
                 document.getElementById('reader').style.display = 'none';
+                document.getElementById('scan-btn').innerText = "Encender Cámara";
             });
         }
     }
 
     // NAVEGACIÓN
-    function switchTab(tabId) {
-        document.querySelectorAll('.modulo').forEach(m => m.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
+    function tab(id) {
+        document.querySelectorAll('.glass-card').forEach(c => c.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
         event.currentTarget.classList.add('active');
-        stopScanner();
+        stopCam();
     }
 
-    function registrarSAP(mod, ev) {
-        const id = document.getElementById('id-input').value;
-        if(!id) return alert("Escanee un QR primero.");
-        alert(`MOVIMIENTO SAP: ${mod} - ${ev} - ID: ${id}`);
+    function sap(mod, ev, val = "") {
+        const id = document.getElementById('main-id').value;
+        if(!id) return alert("Falta ID de seguimiento.");
+        alert(`SAP AGRIPAC:\nRegistro enviado desde ${mod}\nAcción: ${ev}\nDetalle: ${val}`);
     }
 
-    function asignarAndenWA() {
-        const anden = document.getElementById('anden-select').value;
-        const msg = encodeURIComponent(`*AGRIPAC*\nUnidad autorizada. Proceda al *${anden}*.`);
-        window.open(`https://wa.me/?text=${msg}`, '_blank');
+    function waAnden() {
+        const a = document.getElementById('anden-val').value;
+        window.open(`https://wa.me/?text=${encodeURIComponent("*AGRIPAC:* Su unidad al *" + a + "*.")}`, '_blank');
     }
 
-    fetchPlanif();
+    refreshData();
+    setInterval(refreshData, 60000);
 </script>
 </body>
 </html>
