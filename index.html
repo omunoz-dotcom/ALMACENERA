@@ -1,218 +1,257 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>AGRIPAC — Control de Planta</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-  <style>
-    :root{
-      --bg:#f5f4f0;--surface:#fff;--surface2:#f0efe9;--border:#e0dfd8;--border2:#c8c7be;
-      --text:#1a1a18;--text2:#5a5a54;--text3:#9a9a92;
-      --green:#1D9E75;--green-bg:#e1f5ee;--green-text:#085041;
-      --red:#D85A30;--red-bg:#faece7;--red-text:#4A1B0C;
-      --amber:#BA7517;--amber-bg:#faeeda;--amber-text:#412402;
-      --blue:#185FA5;--blue-bg:#e6f1fb;--blue-text:#042C53;
-      --purple:#6B3FA0;--purple-bg:#f0e9fb;--purple-text:#2E1060;
-      --r:8px;--rl:12px;
-      --font:'IBM Plex Sans',system-ui,sans-serif;
-      --mono:'IBM Plex Mono',monospace;
-    }
-    @media(prefers-color-scheme:dark){
-      :root{--bg:#1a1a18;--surface:#242422;--surface2:#2e2e2a;--border:#3a3a36;--border2:#4e4e48;
-        --text:#f0efe9;--text2:#a0a098;--text3:#666660;
-        --green-bg:#04342c;--green-text:#9fe1cb;--red-bg:#4a1b0c;--red-text:#f5c4b3;
-        --amber-bg:#412402;--amber-text:#fac775;--blue-bg:#042c53;--blue-text:#b5d4f4;
-        --purple-bg:#2E1060;--purple-text:#d4b8f8;}
-    }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AGRIPAC — Sistema Logístico Integral</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<!-- QR generator -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#f5f4f0;--sf:#fff;--sf2:#f0efe9;--bd:#e0dfd8;--bd2:#c8c7be;
+  --tx:#1a1a18;--tx2:#5a5a54;--tx3:#9a9a92;
+  --gr:#1D9E75;--grb:#e1f5ee;--grt:#085041;
+  --rd:#D85A30;--rdb:#faece7;--rdt:#4A1B0C;
+  --am:#BA7517;--amb:#faeeda;--amt:#412402;
+  --bl:#185FA5;--blb:#e6f1fb;--blt:#042C53;
+  --pu:#6B3FA0;--pub:#f0e9fb;--put:#2E1060;
+  --r:8px;--rl:12px;
+  --font:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1a1a18;--sf:#242422;--sf2:#2e2e2a;--bd:#3a3a36;--bd2:#4e4e48;
+  --tx:#f0efe9;--tx2:#a0a098;--tx3:#666660;
+  --grb:#04342c;--grt:#9fe1cb;--rdb:#4a1b0c;--rdt:#f5c4b3;
+  --amb:#412402;--amt:#fac775;--blb:#042c53;--blt:#b5d4f4;
+  --pub:#2E1060;--put:#d4b8f8;
+}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:14px;}
+body{font-family:var(--font);background:var(--bg);color:var(--tx);min-height:100vh;}
 
-    /* HEADER */
-    header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;
-      display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:60;}
-    .logo{display:flex;align-items:center;gap:10px;}
-    .logo-badge{background:var(--green);color:#fff;font-size:11px;font-weight:600;letter-spacing:.06em;padding:3px 8px;border-radius:4px;}
-    .logo-name{font-size:15px;font-weight:600;}
-    .logo-sub{font-size:12px;color:var(--text3);margin-left:4px;}
+/* ── HEADER ── */
+header{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;height:52px;
+  position:sticky;top:0;z-index:60;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-badge{background:var(--gr);color:#fff;font-size:11px;font-weight:600;
+  letter-spacing:.06em;padding:3px 8px;border-radius:4px;}
+.logo-name{font-size:15px;font-weight:600;}
+.logo-sub{font-size:12px;color:var(--tx3);margin-left:4px;}
+.conn-dot{width:7px;height:7px;border-radius:50%;background:var(--bd2);display:inline-block;margin-right:4px;}
+.conn-dot.on{background:var(--gr);}
 
-    /* NAV */
-    nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;overflow-x:auto;}
-    .nav-btn{display:flex;align-items:center;gap:6px;padding:0 14px;height:44px;font-size:13px;
-      font-family:var(--font);color:var(--text2);background:transparent;border:none;
-      border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all .15s;}
-    .nav-btn:hover{color:var(--text);}
-    .nav-btn.active{color:var(--green);border-bottom-color:var(--green);font-weight:500;}
-    .nav-badge{background:var(--amber-bg);color:var(--amber-text);font-size:10px;font-weight:600;
-      padding:1px 6px;border-radius:100px;margin-left:2px;}
+/* ── NAV ── */
+nav{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 1.5rem;
+  display:flex;overflow-x:auto;gap:0;}
+.nb{display:flex;align-items:center;gap:5px;padding:0 12px;height:42px;
+  font-size:12px;font-family:var(--font);color:var(--tx2);background:transparent;
+  border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;
+  transition:all .15s;}
+.nb:hover{color:var(--tx);}
+.nb.active{color:var(--gr);border-bottom-color:var(--gr);font-weight:500;}
+.nb-cnt{background:var(--amb);color:var(--amt);font-size:10px;font-weight:600;
+  padding:1px 5px;border-radius:100px;min-width:16px;text-align:center;}
+.nb-cnt.red{background:var(--rdb);color:var(--rdt);}
+.nb-cnt.green{background:var(--grb);color:var(--grt);}
 
-    main{max-width:1350px;margin:0 auto;padding:1.5rem;}
-    .section{display:none;} .section.active{display:block;}
+/* ── LAYOUT ── */
+main{max-width:1400px;margin:0 auto;padding:1.25rem 1.5rem;}
+.sec{display:none;}.sec.active{display:block;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem;}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:1rem;}
+@media(max-width:1000px){.g4{grid-template-columns:repeat(2,1fr);}.g6{grid-template-columns:repeat(3,1fr);}.g2,.g3{grid-template-columns:1fr;}}
 
-    /* GRIDS */
-    .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem;}
-    .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.25rem;}
-    .g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
-    @media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr);}.g2{grid-template-columns:1fr;}.g3{grid-template-columns:1fr;}}
+/* ── METRIC ── */
+.metric{background:var(--sf2);border-radius:var(--r);padding:.9rem 1.1rem;}
+.metric-label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);margin-bottom:4px;}
+.metric-value{font-size:24px;font-weight:600;font-family:var(--mono);}
+.metric-sub{font-size:11px;color:var(--tx3);margin-top:1px;}
+.pb-wrap{margin-top:5px;height:3px;background:var(--bd);border-radius:2px;overflow:hidden;}
+.pb{height:100%;border-radius:2px;transition:width .4s;}
 
-    /* METRIC */
-    .metric{background:var(--surface2);border-radius:var(--r);padding:1rem 1.25rem;}
-    .metric-label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:5px;}
-    .metric-value{font-size:26px;font-weight:600;font-family:var(--mono);}
-    .metric-sub{font-size:12px;color:var(--text3);margin-top:2px;}
-    .progress-wrap{margin-top:6px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
-    .progress-bar{height:100%;background:var(--green);border-radius:2px;transition:width .4s;}
+/* ── CARD ── */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);
+  padding:1.1rem;margin-bottom:1rem;}
+.ct{font-size:13px;font-weight:500;display:flex;align-items:center;gap:7px;
+  margin-bottom:.9rem;padding-bottom:.7rem;border-bottom:1px solid var(--bd);flex-wrap:wrap;}
+.ca{margin-left:auto;display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
 
-    /* CARD */
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1.25rem;margin-bottom:1rem;}
-    .card-title{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;
-      margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border);flex-wrap:wrap;}
-    .card-actions{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+/* ── TABLE ── */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);
+  font-weight:500;padding:7px 9px;text-align:left;border-bottom:1px solid var(--bd);white-space:nowrap;}
+td{padding:8px 9px;border-bottom:1px solid var(--bd);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--sf2);}
+.ec{text-align:center;padding:2rem;color:var(--tx3);font-style:italic;}
 
-    /* TABLE */
-    .tw{overflow-x:auto;}
-    table{width:100%;border-collapse:collapse;font-size:13px;}
-    th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:500;
-      padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
-    td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
-    tr:last-child td{border-bottom:none;}
-    tbody tr:hover td{background:var(--surface2);}
-    .ec{text-align:center;padding:2.5rem;color:var(--text3);font-style:italic;}
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;
+  border-radius:100px;font-size:10px;font-weight:500;white-space:nowrap;}
+.b-pend{background:var(--amb);color:var(--amt);}
+.b-garita{background:var(--blb);color:var(--blt);}
+.b-bascula{background:var(--pub);color:var(--put);}
+.b-desp{background:var(--amb);color:var(--amt);}
+.b-carga{background:var(--rdb);color:var(--rdt);}
+.b-salida{background:var(--grb);color:var(--grt);}
+.b-ok{background:var(--grb);color:var(--grt);}
+.b-used{background:var(--sf2);color:var(--tx3);}
 
-    /* BADGE */
-    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:500;white-space:nowrap;}
-    .b-pend{background:var(--amber-bg);color:var(--amber-text);}
-    .b-garita{background:var(--blue-bg);color:var(--blue-text);}
-    .b-bascula{background:var(--purple-bg);color:var(--purple-text);}
-    .b-despacho{background:var(--amber-bg);color:var(--amber-text);}
-    .b-cargando{background:var(--red-bg);color:var(--red-text);}
-    .b-salida{background:var(--green-bg);color:var(--green-text);}
-    .b-ok{background:var(--green-bg);color:var(--green-text);}
+/* ── STEP FLOW VISUAL ── */
+.flow-bar{display:flex;align-items:center;gap:0;padding:.75rem 0;overflow-x:auto;margin-bottom:1rem;}
+.fs{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;width:90px;}
+.fs-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--bd2);
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+  background:var(--sf2);color:var(--tx3);font-weight:600;transition:all .3s;}
+.fs-dot.done{background:var(--gr);border-color:var(--gr);color:#fff;}
+.fs-dot.current{background:var(--bl);border-color:var(--bl);color:#fff;
+  box-shadow:0 0 0 3px var(--blb);}
+.fs-dot.pending{opacity:.4;}
+.fs-label{font-size:10px;color:var(--tx3);text-align:center;line-height:1.3;}
+.fs-label.done{color:var(--gr);}
+.fs-label.current{color:var(--bl);font-weight:500;}
+.fs-line{flex:1;height:2px;background:var(--bd);min-width:8px;flex-shrink:0;transition:background .3s;}
+.fs-line.done{background:var(--gr);}
 
-    /* FLUJO STEPS */
-    .flujo{display:flex;align-items:center;gap:0;margin-bottom:1.5rem;overflow-x:auto;padding-bottom:4px;}
-    .flujo-step{display:flex;align-items:center;gap:0;flex-shrink:0;}
-    .step-box{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 14px;
-      border-radius:var(--r);border:1.5px solid var(--border);background:var(--surface2);cursor:default;min-width:110px;text-align:center;}
-    .step-box.done{border-color:var(--green);background:var(--green-bg);}
-    .step-box.active-step{border-color:var(--blue);background:var(--blue-bg);}
-    .step-box.pending{opacity:.5;}
-    .step-num{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);}
-    .step-box.done .step-num{color:var(--green-text);}
-    .step-box.active-step .step-num{color:var(--blue-text);}
-    .step-name{font-size:12px;font-weight:500;}
-    .step-box.done .step-name{color:var(--green-text);}
-    .step-box.active-step .step-name{color:var(--blue-text);}
-    .step-arrow{font-size:18px;color:var(--text3);padding:0 4px;}
+/* ── BTN ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r);
+  border:1px solid var(--bd);background:transparent;cursor:pointer;font-size:12px;
+  font-family:var(--font);color:var(--tx);transition:all .15s;white-space:nowrap;}
+.btn:hover{background:var(--sf2);border-color:var(--bd2);}
+.btn:active{transform:scale(.98);}
+.btn-primary{background:var(--tx);color:var(--bg);border-color:var(--tx);}
+.btn-primary:hover{opacity:.82;background:var(--tx);}
+.btn-success{background:var(--grb);color:var(--grt);border-color:var(--gr);}
+.btn-danger{background:var(--rdb);color:var(--rdt);border-color:var(--rd);}
+.btn-warn{background:var(--amb);color:var(--amt);border-color:var(--am);}
+.btn-blue{background:var(--blb);color:var(--blt);border-color:var(--bl);}
+.btn-purple{background:var(--pub);color:var(--put);border-color:var(--pu);}
+.btn-sm{padding:3px 9px;font-size:11px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
 
-    /* BUTTONS */
-    .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);
-      border:1px solid var(--border);background:transparent;cursor:pointer;font-size:13px;
-      font-family:var(--font);color:var(--text);transition:all .15s;white-space:nowrap;}
-    .btn:hover{background:var(--surface2);border-color:var(--border2);}
-    .btn:active{transform:scale(.98);}
-    .btn-primary{background:var(--text);color:var(--bg);border-color:var(--text);}
-    .btn-primary:hover{opacity:.82;background:var(--text);}
-    .btn-success{background:var(--green-bg);color:var(--green-text);border-color:var(--green);}
-    .btn-danger{background:var(--red-bg);color:var(--red-text);border-color:var(--red);}
-    .btn-warning{background:var(--amber-bg);color:var(--amber-text);border-color:var(--amber);}
-    .btn-purple{background:var(--purple-bg);color:var(--purple-text);border-color:var(--purple);}
-    .btn-sm{padding:4px 10px;font-size:12px;}
-    .btn:disabled{opacity:.4;cursor:not-allowed;}
+/* ── INPUT ── */
+input,select,textarea{font-family:var(--font);font-size:12px;background:var(--sf);
+  color:var(--tx);border:1px solid var(--bd);border-radius:var(--r);
+  padding:6px 9px;outline:none;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--gr);}
+.field{margin-bottom:9px;}
+.fl{font-size:11px;color:var(--tx2);margin-bottom:3px;display:block;}
+.field input,.field select,.field textarea{width:100%;}
 
-    /* INPUTS */
-    input,select,textarea{font-family:var(--font);font-size:13px;background:var(--surface);color:var(--text);
-      border:1px solid var(--border);border-radius:var(--r);padding:7px 10px;outline:none;transition:border-color .15s;}
-    input:focus,select:focus{border-color:var(--green);}
-    .field{margin-bottom:10px;}
-    .field-label{font-size:12px;color:var(--text2);margin-bottom:4px;display:block;}
-    .field input,.field select,.field textarea{width:100%;}
+/* ── ALERT ── */
+.alert{padding:9px 12px;border-radius:var(--r);font-size:12px;
+  display:flex;align-items:flex-start;gap:7px;margin-bottom:9px;}
+.a-ok{background:var(--grb);color:var(--grt);}
+.a-warn{background:var(--amb);color:var(--amt);}
+.a-err{background:var(--rdb);color:var(--rdt);}
+.a-info{background:var(--blb);color:var(--blt);}
 
-    /* ALERTS */
-    .alert{padding:10px 14px;border-radius:var(--r);font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-    .a-success{background:var(--green-bg);color:var(--green-text);}
-    .a-warning{background:var(--amber-bg);color:var(--amber-text);}
-    .a-danger{background:var(--red-bg);color:var(--red-text);}
-    .a-info{background:var(--blue-bg);color:var(--blue-text);}
+/* ── TIMELINE ── */
+.tl-item{display:flex;gap:9px;padding:7px 0;border-bottom:1px solid var(--bd);align-items:flex-start;}
+.tl-item:last-child{border-bottom:none;}
+.tl-dot{width:7px;height:7px;border-radius:50%;margin-top:3px;flex-shrink:0;}
+.tl-t{font-size:10px;color:var(--tx3);font-family:var(--mono);white-space:nowrap;margin-left:auto;}
 
-    /* TIMELINE */
-    .tl-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
-    .tl-item:last-child{border-bottom:none;}
-    .tl-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;}
-    .tl-time{font-size:11px;color:var(--text3);font-family:var(--mono);white-space:nowrap;margin-left:auto;}
+/* ── QR ── */
+.qr-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:1rem;background:var(--sf2);border-radius:var(--r);border:1px solid var(--bd);}
+#qr-canvas{background:#fff;padding:6px;border-radius:4px;}
 
-    /* CRONÓMETRO */
-    .crono-display{font-family:var(--mono);font-size:36px;font-weight:600;text-align:center;
-      padding:1rem;background:var(--surface2);border-radius:var(--r);letter-spacing:.05em;}
-    .crono-display.running{color:var(--green);}
-    .crono-display.stopped{color:var(--amber);}
+/* ── ANDENES ── */
+.andenes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:.75rem;}
+.anden{border:1px solid var(--bd);border-radius:var(--rl);padding:.75rem;
+  text-align:center;cursor:pointer;transition:all .15s;}
+.anden:hover{border-color:var(--bd2);}
+.anden.libre{border-color:var(--gr);background:var(--grb);}
+.anden.cargando{border-color:var(--am);background:var(--amb);animation:pulse 2s ease-in-out infinite;}
+.anden.ocupado{border-color:var(--rd);background:var(--rdb);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.75}}
+.anden-num{font-size:13px;font-weight:600;font-family:var(--mono);}
+.anden-sub{font-size:10px;margin-top:3px;}
+.anden.libre .anden-sub{color:var(--grt);}
+.anden.cargando .anden-sub{color:var(--amt);}
+.anden.ocupado .anden-sub{color:var(--rdt);}
 
-    /* ANDENES */
-    .andenes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:1rem;}
-    .anden{border:1px solid var(--border);border-radius:var(--rl);padding:1rem;text-align:center;cursor:pointer;transition:all .15s;}
-    .anden:hover{border-color:var(--border2);}
-    .anden.libre{border-color:var(--green);background:var(--green-bg);}
-    .anden.cargando{border-color:var(--amber);background:var(--amber-bg);}
-    .anden.ocupado{border-color:var(--red);background:var(--red-bg);}
-    .anden-num{font-size:15px;font-weight:600;font-family:var(--mono);}
-    .anden-icon{font-size:22px;margin:5px 0;}
-    .anden-sub{font-size:11px;}
-    .anden.libre .anden-sub{color:var(--green-text);}
-    .anden.cargando .anden-sub{color:var(--amber-text);}
-    .anden.ocupado .anden-sub{color:var(--red-text);}
+/* ── CRONO ── */
+.crono{font-family:var(--mono);font-size:32px;font-weight:600;text-align:center;
+  padding:.75rem;background:var(--sf2);border-radius:var(--r);letter-spacing:.08em;}
+.crono.run{color:var(--gr);}
+.crono.stop{color:var(--am);}
 
-    /* DATE BAR */
-    .date-bar{display:flex;align-items:center;gap:10px;margin-bottom:1rem;background:var(--surface);
-      border:1px solid var(--border);border-radius:var(--rl);padding:10px 16px;flex-wrap:wrap;}
-    .date-nav{padding:4px 10px;border-radius:var(--r);border:1px solid var(--border);background:transparent;
-      cursor:pointer;font-size:18px;color:var(--text2);line-height:1;}
-    .date-nav:hover{background:var(--surface2);}
-    .today-pill{display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);color:var(--green-text);
-      font-size:11px;font-weight:500;padding:3px 9px;border-radius:100px;}
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:200;
+  align-items:center;justify-content:center;padding:1rem;}
+.overlay.open{display:flex;}
+.modal{background:var(--sf);border-radius:var(--rl);border:1px solid var(--bd);
+  padding:1.4rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
 
-    /* MONO TAG */
-    .mono-tag{font-family:var(--mono);font-size:12px;background:var(--surface2);padding:2px 7px;border-radius:5px;}
+/* ── PASE ── */
+.pase{border:2px dashed var(--bd2);border-radius:var(--rl);padding:1.1rem;
+  text-align:center;background:var(--sf2);}
+.pase-co{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);}
+.pase-title{font-size:15px;font-weight:600;margin:3px 0 10px;}
+.pase-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;
+  border-bottom:1px solid var(--bd);text-align:left;}
+.pase-row:last-of-type{border:none;}
+.pase-row span:first-child{color:var(--tx2);}
+.pase-row span:last-child{font-weight:500;max-width:220px;text-align:right;word-break:break-all;}
 
-    /* MODAL */
-    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;
-      align-items:center;justify-content:center;padding:1rem;}
-    .modal-overlay.open{display:flex;}
-    .modal-box{background:var(--surface);border-radius:var(--rl);border:1px solid var(--border);
-      padding:1.5rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;}
-    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+/* ── DATE BAR ── */
+.date-bar{display:flex;align-items:center;gap:8px;margin-bottom:1rem;
+  background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);
+  padding:9px 14px;flex-wrap:wrap;}
+.date-nav{padding:3px 8px;border-radius:var(--r);border:1px solid var(--bd);
+  background:transparent;cursor:pointer;font-size:16px;color:var(--tx2);line-height:1;}
+.date-nav:hover{background:var(--sf2);}
+.today-pill{display:inline-flex;align-items:center;gap:3px;background:var(--grb);
+  color:var(--grt);font-size:10px;font-weight:500;padding:2px 8px;border-radius:100px;}
 
-    /* PASE */
-    .pase-card{border:2px dashed var(--border2);border-radius:var(--rl);padding:1.25rem;text-align:center;background:var(--surface2);}
-    .pase-co{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);}
-    .pase-title{font-size:16px;font-weight:600;margin:4px 0 12px;}
-    .pase-qr{width:72px;height:72px;margin:0 auto 12px;background:var(--surface);border-radius:var(--r);
-      display:flex;align-items:center;justify-content:center;border:1px solid var(--border);}
-    .pase-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;
-      border-bottom:1px solid var(--border);text-align:left;}
-    .pase-row:last-of-type{border:none;}
-    .pase-row span:first-child{color:var(--text2);}
-    .pase-row span:last-child{font-weight:500;max-width:220px;text-align:right;}
+/* ── MONO TAG ── */
+.mt{font-family:var(--mono);font-size:11px;background:var(--sf2);
+  padding:1px 6px;border-radius:4px;word-break:break-all;}
 
-    /* FOTO */
-    .foto-area{border:2px dashed var(--border);border-radius:var(--r);padding:2rem;text-align:center;
-      cursor:pointer;transition:border-color .15s;margin-bottom:10px;}
-    .foto-area:hover{border-color:var(--green);}
-    .foto-preview{width:100%;border-radius:var(--r);margin-top:8px;display:none;}
+/* ── FOTO ── */
+.foto-area{border:2px dashed var(--bd);border-radius:var(--r);padding:1.5rem;
+  text-align:center;cursor:pointer;transition:border-color .15s;}
+.foto-area:hover{border-color:var(--gr);}
+.foto-preview{width:100%;border-radius:var(--r);margin-top:8px;display:none;}
 
-    /* STEP TRACKER */
-    .tracker{display:flex;flex-direction:column;gap:0;}
-    .tracker-step{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
-    .tracker-step:last-child{border:none;}
-    .tracker-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0;border:2px solid var(--border2);}
-    .tracker-dot.done{background:var(--green);border-color:var(--green);}
-    .tracker-dot.current{background:var(--blue);border-color:var(--blue);}
-    .tracker-dot.pending{background:transparent;}
-    .tracker-time{font-size:11px;font-family:var(--mono);color:var(--text3);white-space:nowrap;}
+/* ── DASHBOARD LIVE ── */
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--gr);
+  animation:blink 1.5s ease-in-out infinite;display:inline-block;margin-right:5px;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-    .divider{height:1px;background:var(--border);margin:1rem 0;}
-    .section-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px;}
-  </style>
+/* ── REPORT CHART ── */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px;padding:0 4px;}
+.bar{flex:1;background:var(--bl);border-radius:3px 3px 0 0;min-width:12px;
+  opacity:.75;transition:opacity .2s;cursor:pointer;position:relative;}
+.bar:hover{opacity:1;}
+.bar-label{font-size:9px;color:var(--tx3);text-align:center;margin-top:3px;}
+
+/* ── SCANNER MOCK ── */
+.scanner-frame{border:3px solid var(--gr);border-radius:var(--rl);
+  width:180px;height:180px;display:flex;align-items:center;justify-content:center;
+  position:relative;margin:0 auto 10px;}
+.scanner-line{position:absolute;left:10px;right:10px;height:2px;background:var(--gr);
+  opacity:.7;animation:scan 2s linear infinite;}
+@keyframes scan{0%{top:10px}100%{top:160px}}
+.corner{position:absolute;width:20px;height:20px;border-color:var(--gr);border-style:solid;}
+.c-tl{top:-3px;left:-3px;border-width:3px 0 0 3px;border-radius:4px 0 0 0;}
+.c-tr{top:-3px;right:-3px;border-width:3px 3px 0 0;border-radius:0 4px 0 0;}
+.c-bl{bottom:-3px;left:-3px;border-width:0 0 3px 3px;border-radius:0 0 0 4px;}
+.c-br{bottom:-3px;right:-3px;border-width:0 3px 3px 0;border-radius:0 0 4px 0;}
+
+.divider{height:1px;background:var(--bd);margin:.9rem 0;}
+.sl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:6px;}
+</style>
 </head>
 <body>
 
@@ -220,114 +259,208 @@
   <div class="logo">
     <span class="logo-badge">AG</span>
     <span class="logo-name">AGRIPAC</span>
-    <span class="logo-sub">Control de Planta</span>
+    <span class="logo-sub">Sistema Logístico Integral</span>
   </div>
-  <div style="display:flex;align-items:center;gap:14px;">
-    <div style="text-align:right;">
-      <div id="clock" style="font-family:var(--mono);font-size:15px;font-weight:500;"></div>
-      <div id="fecha-hdr" style="font-size:11px;color:var(--text3);"></div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div style="display:flex;align-items:center;gap:6px;font-size:11px;">
+      <span class="conn-dot" id="csv-dot"></span>
+      <span id="csv-status" style="color:var(--tx3);">Conectando…</span>
     </div>
-    <button class="btn btn-sm" onclick="cargarCSV()"><i class="ti ti-refresh"></i></button>
+    <div style="text-align:right;">
+      <div id="clock" style="font-family:var(--mono);font-size:13px;font-weight:500;"></div>
+      <div id="fhdr" style="font-size:10px;color:var(--tx3);"></div>
+    </div>
+    <button class="btn btn-sm" onclick="cargarCSV()" title="Actualizar datos"><i class="ti ti-refresh"></i> <span id="countdown"></span></button>
   </div>
 </header>
 
 <nav>
-  <button class="nav-btn active" onclick="showTab('planificacion')" id="tab-planificacion"><i class="ti ti-calendar"></i> Planificación</button>
-  <button class="nav-btn" onclick="showTab('garita-entrada')" id="tab-garita-entrada"><i class="ti ti-shield-check"></i> Garita Entrada <span class="nav-badge" id="nb-garita-entrada">0</span></button>
-  <button class="nav-btn" onclick="showTab('bascula-entrada')" id="tab-bascula-entrada"><i class="ti ti-weight"></i> Báscula Entrada <span class="nav-badge" id="nb-bascula-entrada">0</span></button>
-  <button class="nav-btn" onclick="showTab('despacho')" id="tab-despacho"><i class="ti ti-building-warehouse"></i> Despacho <span class="nav-badge" id="nb-despacho">0</span></button>
-  <button class="nav-btn" onclick="showTab('bascula-salida')" id="tab-bascula-salida"><i class="ti ti-weight"></i> Báscula Salida <span class="nav-badge" id="nb-bascula-salida">0</span></button>
-  <button class="nav-btn" onclick="showTab('garita-salida')" id="tab-garita-salida"><i class="ti ti-shield"></i> Garita Salida <span class="nav-badge" id="nb-garita-salida">0</span></button>
-  <button class="nav-btn" onclick="showTab('historial')" id="tab-historial"><i class="ti ti-history"></i> Historial</button>
+  <button class="nb active" onclick="showTab('dashboard')" id="tab-dashboard"><i class="ti ti-dashboard"></i> Dashboard</button>
+  <button class="nb" onclick="showTab('planificacion')" id="tab-planificacion"><i class="ti ti-calendar"></i> Planificación</button>
+  <button class="nb" onclick="showTab('qr')" id="tab-qr"><i class="ti ti-qrcode"></i> QR <span class="nb-cnt" id="nb-qr">0</span></button>
+  <button class="nb" onclick="showTab('garita-e')" id="tab-garita-e"><i class="ti ti-login"></i> Garita Entrada <span class="nb-cnt" id="nb-ge">0</span></button>
+  <button class="nb" onclick="showTab('bascula-e')" id="tab-bascula-e"><i class="ti ti-weight"></i> Báscula Entrada <span class="nb-cnt" id="nb-be">0</span></button>
+  <button class="nb" onclick="showTab('despacho')" id="tab-despacho"><i class="ti ti-building-warehouse"></i> Despacho <span class="nb-cnt red" id="nb-d">0</span></button>
+  <button class="nb" onclick="showTab('bascula-s')" id="tab-bascula-s"><i class="ti ti-weight"></i> Báscula Salida <span class="nb-cnt" id="nb-bs">0</span></button>
+  <button class="nb" onclick="showTab('garita-s')" id="tab-garita-s"><i class="ti ti-logout"></i> Garita Salida <span class="nb-cnt green" id="nb-gs">0</span></button>
+  <button class="nb" onclick="showTab('reportes')" id="tab-reportes"><i class="ti ti-chart-bar"></i> Reportes</button>
+  <button class="nb" onclick="showTab('auditoria')" id="tab-auditoria"><i class="ti ti-shield"></i> Auditoría</button>
 </nav>
 
 <main>
 
-<!-- ═══════════════ PLANIFICACIÓN ═══════════════ -->
-<div class="section active" id="sec-planificacion">
-  <div class="date-bar">
-    <label style="font-size:13px;color:var(--text2);"><i class="ti ti-calendar-event" style="vertical-align:-2px;"></i> Fecha:</label>
-    <button class="date-nav" onclick="cambiarDia(-1)">&#8249;</button>
-    <input type="date" id="fecha-filtro" onchange="aplicarFiltroFecha()" style="font-family:var(--mono);"/>
-    <button class="date-nav" onclick="cambiarDia(1)">&#8250;</button>
-    <button class="btn btn-sm" onclick="irHoy()"><i class="ti ti-home"></i> Hoy</button>
-    <span id="hoy-pill" class="today-pill" style="display:none;"><i class="ti ti-circle-check"></i> Hoy</span>
-    <span id="fecha-count" style="font-size:13px;color:var(--text3);margin-left:auto;"></span>
-    <button class="btn btn-sm" onclick="cargarCSV()"><i class="ti ti-refresh"></i> Actualizar</button>
+<!-- ═══ DASHBOARD ═══ -->
+<div class="sec active" id="sec-dashboard">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem;">
+    <span class="live-dot"></span>
+    <span style="font-size:12px;color:var(--tx2);">Tiempo real</span>
+    <span style="font-size:11px;color:var(--tx3);margin-left:4px;" id="dash-ts"></span>
+  </div>
+  <div class="g6">
+    <div class="metric"><div class="metric-label">Programados hoy</div><div class="metric-value" id="d-total">—</div><div class="metric-sub">vehículos</div></div>
+    <div class="metric"><div class="metric-label">Pendientes</div><div class="metric-value" id="d-pend" style="color:var(--tx3);">—</div><div class="metric-sub">sin ingresar</div></div>
+    <div class="metric"><div class="metric-label">En planta</div><div class="metric-value" id="d-dentro" style="color:var(--am);">—</div><div class="metric-sub">activos<div class="pb-wrap"><div class="pb" id="pb-dentro" style="width:0%;background:var(--am)"></div></div></div></div>
+    <div class="metric"><div class="metric-label">Cargando</div><div class="metric-value" id="d-cargando" style="color:var(--rd);">—</div><div class="metric-sub">operación activa<div class="pb-wrap"><div class="pb" id="pb-carg" style="width:0%;background:var(--rd)"></div></div></div></div>
+    <div class="metric"><div class="metric-label">Completados</div><div class="metric-value" id="d-done" style="color:var(--gr);">—</div><div class="metric-sub">salieron hoy<div class="pb-wrap"><div class="pb" id="pb-done" style="width:0%;background:var(--gr)"></div></div></div></div>
+    <div class="metric"><div class="metric-label">Peso neto total</div><div class="metric-value" id="d-neto" style="font-size:18px;">—</div><div class="metric-sub">kg cargados</div></div>
   </div>
 
-  <div class="g4">
-    <div class="metric"><div class="metric-label">Programados</div><div class="metric-value" id="m-total">—</div><div class="metric-sub">vehículos</div></div>
-    <div class="metric"><div class="metric-label">En proceso</div><div class="metric-value" id="m-proceso" style="color:var(--amber);">—</div><div class="metric-sub">en planta</div><div class="progress-wrap"><div class="progress-bar" id="pb-proceso" style="width:0%;background:var(--amber)"></div></div></div>
-    <div class="metric"><div class="metric-label">Completados</div><div class="metric-value" id="m-done" style="color:var(--green);">—</div><div class="metric-sub">salieron</div><div class="progress-wrap"><div class="progress-bar" id="pb-done" style="width:0%"></div></div></div>
-    <div class="metric"><div class="metric-label">Pendientes</div><div class="metric-value" id="m-pend" style="color:var(--text3);">—</div><div class="metric-sub">sin iniciar</div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">
-      <i class="ti ti-list-details"></i> Planificación del día
-      <div class="card-actions">
-        <input type="search" id="search-plan" placeholder="Buscar ID, chofer, placa, detalle…" oninput="renderPlan()" style="width:220px;"/>
-      </div>
-    </div>
-    <div id="fuente-csv" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
-    <div class="tw">
-      <table>
-        <thead><tr>
-          <th>ID Único</th><th>Área Carga</th><th>Área Descarga</th><th>Detalle</th>
-          <th>Tipo Carro</th><th>Chofer</th><th>Placa</th><th>Hora</th><th>Aprobación</th><th>Estado</th><th>Flujo</th>
-        </tr></thead>
-        <tbody id="plan-body"><tr><td colspan="11" class="ec"><i class="ti ti-loader"></i> Cargando…</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════ GARITA ENTRADA ═══════════════ -->
-<div class="section" id="sec-garita-entrada">
   <div class="g2">
     <div class="card">
-      <div class="card-title"><i class="ti ti-login"></i> Buscar por ID Único o Placa</div>
-      <div style="display:flex;gap:8px;margin-bottom:10px;">
-        <input type="text" id="ge-buscar" placeholder="ID-UNICO o Placa…" style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')geSearch()"/>
-        <button class="btn btn-primary" onclick="geSearch()"><i class="ti ti-search"></i> Buscar</button>
-      </div>
-      <div id="ge-resultado"></div>
+      <div class="ct"><i class="ti ti-building-warehouse"></i> Estado de andenes</div>
+      <div class="andenes-grid" id="dash-andenes"></div>
     </div>
     <div class="card">
-      <div class="card-title"><i class="ti ti-activity"></i> Actividad garita entrada</div>
-      <div id="ge-timeline"><div class="tl-item"><div class="tl-dot" style="background:var(--border2);"></div><div style="font-size:13px;color:var(--text3);">Sin actividad</div></div></div>
+      <div class="ct"><i class="ti ti-activity"></i> Actividad reciente</div>
+      <div id="dash-tl"><div class="tl-item"><div class="tl-dot" style="background:var(--bd2)"></div><div style="font-size:12px;color:var(--tx3);">Sin actividad</div></div></div>
     </div>
   </div>
+
   <div class="card">
-    <div class="card-title"><i class="ti ti-clock"></i> Pendientes de ingreso hoy</div>
+    <div class="ct"><i class="ti ti-alert-triangle"></i> Alertas operativas <span id="alertas-cnt" class="badge b-pend" style="margin-left:4px;">0</span></div>
+    <div id="alertas-body"><div style="font-size:12px;color:var(--tx3);text-align:center;padding:1rem;">Sin alertas activas</div></div>
+  </div>
+
+  <div class="card">
+    <div class="ct"><i class="ti ti-list-details"></i> Vehículos en planta ahora</div>
     <div class="tw"><table>
-      <thead><tr><th>ID Único</th><th>Chofer</th><th>Placa</th><th>Detalle</th><th>Hora prog.</th><th>Aprobación</th><th>Acción</th></tr></thead>
-      <tbody id="ge-pendientes"><tr><td colspan="7" class="ec">Sin pendientes</td></tr></tbody>
+      <thead><tr><th>ID Único</th><th>Chofer</th><th>Placa</th><th>Detalle</th><th>Paso actual</th><th>Andén</th><th>Tiempo en planta</th></tr></thead>
+      <tbody id="dash-en-planta"><tr><td colspan="7" class="ec">Sin vehículos en planta</td></tr></tbody>
     </table></div>
   </div>
 </div>
 
-<!-- ═══════════════ BÁSCULA ENTRADA ═══════════════ -->
-<div class="section" id="sec-bascula-entrada">
+<!-- ═══ PLANIFICACIÓN ═══ -->
+<div class="sec" id="sec-planificacion">
+  <div class="date-bar">
+    <label style="font-size:12px;color:var(--tx2);"><i class="ti ti-calendar-event" style="vertical-align:-2px;"></i> Fecha:</label>
+    <button class="date-nav" onclick="cambiarDia(-1)">&#8249;</button>
+    <input type="date" id="fecha-filtro" onchange="aplicarFiltro()" style="font-family:var(--mono);font-size:12px;"/>
+    <button class="date-nav" onclick="cambiarDia(1)">&#8250;</button>
+    <button class="btn btn-sm" onclick="irHoy()"><i class="ti ti-home"></i> Hoy</button>
+    <span id="hoy-pill" class="today-pill" style="display:none;"><i class="ti ti-circle-check"></i> Hoy</span>
+    <span id="f-count" style="font-size:12px;color:var(--tx3);margin-left:auto;"></span>
+  </div>
+
+  <div class="g4">
+    <div class="metric"><div class="metric-label">Programados</div><div class="metric-value" id="m-tot">—</div><div class="metric-sub">vehículos</div></div>
+    <div class="metric"><div class="metric-label">En proceso</div><div class="metric-value" id="m-proc" style="color:var(--am);">—</div><div class="metric-sub">en planta</div></div>
+    <div class="metric"><div class="metric-label">Completados</div><div class="metric-value" id="m-done" style="color:var(--gr);">—</div><div class="metric-sub">finalizados</div></div>
+    <div class="metric"><div class="metric-label">Pendientes</div><div class="metric-value" id="m-pend" style="color:var(--tx3);">—</div><div class="metric-sub">sin iniciar</div></div>
+  </div>
+
+  <div class="card">
+    <div class="ct"><i class="ti ti-list-details"></i> Planificación
+      <div class="ca">
+        <input type="search" id="sp" placeholder="Buscar ID, chofer, placa…" oninput="renderPlan()" style="width:190px;"/>
+        <button class="btn btn-sm" onclick="cargarCSV()"><i class="ti ti-refresh"></i></button>
+        <button class="btn btn-sm btn-purple" onclick="generarTodosQR()"><i class="ti ti-qrcode"></i> Generar QRs</button>
+      </div>
+    </div>
+    <div id="fuente" style="font-size:10px;color:var(--tx3);margin-bottom:7px;"></div>
+    <div class="tw"><table>
+      <thead><tr>
+        <th>ID Único</th><th>Área Carga</th><th>Área Descarga</th><th>Detalle</th>
+        <th>Tipo</th><th>Chofer</th><th>Placa</th><th>Hora</th><th>Aprobación</th>
+        <th>QR</th><th>Estado</th><th>Acción</th>
+      </tr></thead>
+      <tbody id="plan-body"><tr><td colspan="12" class="ec"><i class="ti ti-loader"></i> Cargando…</td></tr></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ═══ QR ═══ -->
+<div class="sec" id="sec-qr">
   <div class="g2">
     <div class="card">
-      <div class="card-title"><i class="ti ti-weight"></i> Registro peso de entrada</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <input type="text" id="be-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')beBuscar()"/>
-        <button class="btn btn-primary" onclick="beBuscar()"><i class="ti ti-search"></i> Buscar</button>
+      <div class="ct"><i class="ti ti-qrcode"></i> Generar QR individual</div>
+      <div class="field"><span class="fl">ID Único</span>
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="qr-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')generarQR()"/>
+          <button class="btn btn-primary" onclick="generarQR()"><i class="ti ti-qrcode"></i> Generar</button>
+        </div>
       </div>
-      <div id="be-info" style="display:none;margin-bottom:12px;"></div>
-      <div class="field"><span class="field-label">Peso bruto entrada (kg)</span><input type="number" id="be-peso" placeholder="Kg" min="0" step="1"/></div>
-      <div style="background:var(--surface2);border-radius:var(--r);padding:1rem;margin-bottom:12px;">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">PESO INGRESADO</div>
-        <div style="font-size:28px;font-weight:600;font-family:var(--mono);" id="be-display">— kg</div>
+      <div id="qr-info" style="margin-bottom:10px;"></div>
+      <div class="qr-wrap" style="display:none;" id="qr-display">
+        <div id="qr-canvas"></div>
+        <div id="qr-data" style="font-size:11px;color:var(--tx2);text-align:center;max-width:200px;"></div>
+        <div style="display:flex;gap:6px;margin-top:4px;">
+          <button class="btn btn-success btn-sm" onclick="enviarWhatsApp()"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
+          <button class="btn btn-sm" onclick="descargarQR()"><i class="ti ti-download"></i> Descargar</button>
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="beRegistrar()" style="width:100%;"><i class="ti ti-device-floppy"></i> Registrar peso de entrada</button>
-      <div id="be-msg" style="margin-top:10px;display:none;"></div>
     </div>
     <div class="card">
-      <div class="card-title"><i class="ti ti-list"></i> Pesos de entrada registrados hoy</div>
+      <div class="ct"><i class="ti ti-list"></i> QRs generados hoy <span id="qr-count" class="badge b-ok">0</span></div>
+      <div class="tw"><table>
+        <thead><tr><th>ID Único</th><th>Chofer</th><th>Placa</th><th>Estado QR</th><th>Generado</th><th>Enviado</th></tr></thead>
+        <tbody id="qr-tabla"><tr><td colspan="6" class="ec">Sin QRs generados</td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ GARITA ENTRADA ═══ -->
+<div class="sec" id="sec-garita-e">
+  <div class="g2">
+    <div class="card">
+      <div class="ct"><i class="ti ti-scan"></i> Escáner / Validación QR</div>
+      <!-- Mock scanner visual -->
+      <div class="scanner-frame" id="scanner-frame">
+        <div class="corner c-tl"></div><div class="corner c-tr"></div>
+        <div class="corner c-bl"></div><div class="corner c-br"></div>
+        <div class="scanner-line" id="scanner-line"></div>
+        <i class="ti ti-qrcode" style="font-size:48px;color:var(--bd2);"></i>
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--tx3);margin-bottom:10px;">
+        Cámara QR — apunte el código al recuadro verde
+      </div>
+      <div class="divider"></div>
+      <div class="sl">O ingrese el ID manualmente</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" id="ge-id" placeholder="ID-UNICO o PLACA" style="flex:1;text-transform:uppercase;"
+          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')geSearch()"/>
+        <button class="btn btn-primary" onclick="geSearch()"><i class="ti ti-search"></i></button>
+      </div>
+      <div id="ge-result"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-clock"></i> Pendientes de ingreso</div>
+      <div class="tw"><table>
+        <thead><tr><th>ID Único</th><th>Chofer</th><th>Placa</th><th>Detalle</th><th>Hora</th><th>QR</th><th></th></tr></thead>
+        <tbody id="ge-pend"><tr><td colspan="7" class="ec">Sin pendientes</td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-activity"></i> Actividad garita entrada</div>
+    <div id="ge-tl"><div class="tl-item"><div class="tl-dot" style="background:var(--bd2)"></div><div style="font-size:12px;color:var(--tx3);">Sin actividad</div></div></div>
+  </div>
+</div>
+
+<!-- ═══ BÁSCULA ENTRADA ═══ -->
+<div class="sec" id="sec-bascula-e">
+  <div class="g2">
+    <div class="card">
+      <div class="ct"><i class="ti ti-weight"></i> Registro de peso de entrada</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" id="be-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;"
+          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')beBuscar()"/>
+        <button class="btn btn-primary" onclick="beBuscar()"><i class="ti ti-search"></i></button>
+      </div>
+      <div id="be-info"></div>
+      <div class="field"><span class="fl">Peso bruto entrada (kg)</span>
+        <input type="number" id="be-peso" placeholder="0" min="0" step="1" oninput="beDisplay()"/>
+      </div>
+      <div style="background:var(--sf2);border-radius:var(--r);padding:.9rem;margin-bottom:10px;">
+        <div style="font-size:10px;color:var(--tx3);margin-bottom:3px;">PESO INGRESADO</div>
+        <div style="font-size:26px;font-weight:600;font-family:var(--mono);" id="be-display">— kg</div>
+      </div>
+      <button class="btn btn-primary" onclick="beRegistrar()" style="width:100%;"><i class="ti ti-device-floppy"></i> Registrar peso entrada</button>
+      <div id="be-msg" style="margin-top:8px;display:none;"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-list"></i> Pesos de entrada hoy</div>
       <div class="tw"><table>
         <thead><tr><th>ID Único</th><th>Chofer</th><th>Placa</th><th>Peso entrada</th><th>Hora</th></tr></thead>
         <tbody id="be-tabla"><tr><td colspan="5" class="ec">Sin registros</td></tr></tbody>
@@ -336,887 +469,1211 @@
   </div>
 </div>
 
-<!-- ═══════════════ DESPACHO ═══════════════ -->
-<div class="section" id="sec-despacho">
+<!-- ═══ DESPACHO ═══ -->
+<div class="sec" id="sec-despacho">
   <div class="g2">
     <div class="card">
-      <div class="card-title"><i class="ti ti-search"></i> Buscar orden por ID Único</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <input type="text" id="d-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')dBuscar()"/>
+      <div class="ct"><i class="ti ti-search"></i> Buscar orden por ID</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" id="d-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;"
+          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')dBuscar()"/>
         <button class="btn btn-primary" onclick="dBuscar()"><i class="ti ti-search"></i></button>
       </div>
       <div id="d-info"></div>
     </div>
     <div class="card">
-      <div class="card-title"><i class="ti ti-building-warehouse"></i> Andenes</div>
+      <div class="ct"><i class="ti ti-building-warehouse"></i> Andenes
+        <div class="ca"><button class="btn btn-sm" onclick="agregarAnden()"><i class="ti ti-plus"></i></button></div>
+      </div>
       <div class="andenes-grid" id="andenes-grid"></div>
-      <button class="btn btn-sm" onclick="agregarAnden()" style="margin-top:4px;"><i class="ti ti-plus"></i> Agregar andén</button>
     </div>
   </div>
-
   <div class="card">
-    <div class="card-title"><i class="ti ti-truck-loading"></i> Cargas en proceso</div>
+    <div class="ct"><i class="ti ti-truck-loading"></i> Cargas en proceso</div>
     <div class="tw"><table>
-      <thead><tr><th>ID Único</th><th>Chofer</th><th>Placa</th><th>Detalle</th><th>Andén</th><th>Despachador</th><th>Docs. entregados</th><th>Tiempo carga</th><th>Estado</th><th>Acción</th></tr></thead>
+      <thead><tr><th>ID Único</th><th>Chofer</th><th>Placa</th><th>Detalle</th><th>Andén</th><th>Despachador</th><th>Docs</th><th>Tiempo carga</th><th>Estado</th><th></th></tr></thead>
       <tbody id="d-activos"><tr><td colspan="10" class="ec">Sin cargas activas</td></tr></tbody>
     </table></div>
   </div>
 </div>
 
-<!-- ═══════════════ BÁSCULA SALIDA ═══════════════ -->
-<div class="section" id="sec-bascula-salida">
+<!-- ═══ BÁSCULA SALIDA ═══ -->
+<div class="sec" id="sec-bascula-s">
   <div class="g2">
     <div class="card">
-      <div class="card-title"><i class="ti ti-weight"></i> Registro peso de salida</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <input type="text" id="bs-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')bsBuscar()"/>
-        <button class="btn btn-primary" onclick="bsBuscar()"><i class="ti ti-search"></i> Buscar</button>
+      <div class="ct"><i class="ti ti-weight"></i> Registro de peso de salida</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" id="bs-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;"
+          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')bsBuscar()"/>
+        <button class="btn btn-primary" onclick="bsBuscar()"><i class="ti ti-search"></i></button>
       </div>
-      <div id="bs-info" style="display:none;margin-bottom:12px;"></div>
-      <div class="field"><span class="field-label">Peso tara salida (kg)</span><input type="number" id="bs-peso" placeholder="Kg" min="0" step="1"/></div>
-      <div style="background:var(--surface2);border-radius:var(--r);padding:1rem;margin-bottom:12px;">
+      <div id="bs-info"></div>
+      <div class="field"><span class="fl">Peso tara salida (kg)</span>
+        <input type="number" id="bs-peso" placeholder="0" min="0" step="1" oninput="bsCalc()"/>
+      </div>
+      <div style="background:var(--sf2);border-radius:var(--r);padding:.9rem;margin-bottom:10px;">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-          <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;">PESO ENTRADA</div><div style="font-size:18px;font-weight:600;font-family:var(--mono);" id="bs-entrada">— kg</div></div>
-          <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;">PESO SALIDA</div><div style="font-size:18px;font-weight:600;font-family:var(--mono);" id="bs-salida">— kg</div></div>
-          <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;">PESO NETO</div><div style="font-size:18px;font-weight:600;font-family:var(--mono);color:var(--green);" id="bs-neto">— kg</div></div>
+          <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;">ENTRADA</div><div style="font-size:16px;font-weight:600;font-family:var(--mono);" id="bs-ent">—</div></div>
+          <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;">SALIDA</div><div style="font-size:16px;font-weight:600;font-family:var(--mono);" id="bs-sal">—</div></div>
+          <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;">NETO</div><div style="font-size:16px;font-weight:600;font-family:var(--mono);color:var(--gr);" id="bs-net">—</div></div>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="bsRegistrar()" style="width:100%;"><i class="ti ti-device-floppy"></i> Registrar peso de salida</button>
-      <div id="bs-msg" style="margin-top:10px;display:none;"></div>
+      <button class="btn btn-primary" onclick="bsRegistrar()" style="width:100%;"><i class="ti ti-device-floppy"></i> Registrar peso salida</button>
+      <div id="bs-msg" style="margin-top:8px;display:none;"></div>
     </div>
     <div class="card">
-      <div class="card-title"><i class="ti ti-list"></i> Pesos de salida registrados</div>
+      <div class="ct"><i class="ti ti-list"></i> Pesos registrados</div>
       <div class="tw"><table>
-        <thead><tr><th>ID Único</th><th>Placa</th><th>Peso entrada</th><th>Peso salida</th><th>Neto</th><th>Hora</th></tr></thead>
+        <thead><tr><th>ID Único</th><th>Placa</th><th>Entrada</th><th>Salida</th><th>Neto</th><th>Hora</th></tr></thead>
         <tbody id="bs-tabla"><tr><td colspan="6" class="ec">Sin registros</td></tr></tbody>
       </table></div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-size:12px;">
+        <span style="color:var(--tx2);">Total neto acumulado</span>
+        <span style="font-weight:600;font-family:var(--mono);" id="bs-total">0 kg</span>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════ GARITA SALIDA ═══════════════ -->
-<div class="section" id="sec-garita-salida">
+<!-- ═══ GARITA SALIDA ═══ -->
+<div class="sec" id="sec-garita-s">
   <div class="g2">
     <div class="card">
-      <div class="card-title"><i class="ti ti-logout"></i> Autorización de salida</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <input type="text" id="gs-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')gsBuscar()"/>
-        <button class="btn btn-primary" onclick="gsBuscar()"><i class="ti ti-search"></i> Buscar</button>
+      <div class="ct"><i class="ti ti-shield-check"></i> Autorización de salida</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" id="gs-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;"
+          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')gsBuscar()"/>
+        <button class="btn btn-primary" onclick="gsBuscar()"><i class="ti ti-search"></i></button>
       </div>
       <div id="gs-info"></div>
     </div>
     <div class="card">
-      <div class="card-title"><i class="ti ti-activity"></i> Actividad garita salida</div>
-      <div id="gs-timeline"><div class="tl-item"><div class="tl-dot" style="background:var(--border2);"></div><div style="font-size:13px;color:var(--text3);">Sin actividad</div></div></div>
+      <div class="ct"><i class="ti ti-activity"></i> Actividad garita salida</div>
+      <div id="gs-tl"><div class="tl-item"><div class="tl-dot" style="background:var(--bd2)"></div><div style="font-size:12px;color:var(--tx3);">Sin actividad</div></div></div>
     </div>
   </div>
   <div class="card">
-    <div class="card-title"><i class="ti ti-checks"></i> Salidas autorizadas hoy</div>
+    <div class="ct"><i class="ti ti-checks"></i> Salidas autorizadas hoy</div>
     <div class="tw"><table>
-      <thead><tr><th>ID Único</th><th>Chofer</th><th>Placa</th><th>Precintos</th><th>Guías</th><th>Peso neto</th><th>Hora salida</th><th>Autorizado por</th></tr></thead>
-      <tbody id="gs-tabla"><tr><td colspan="8" class="ec">Sin salidas</td></tr></tbody>
+      <thead><tr><th>ID Único</th><th>Chofer</th><th>Placa</th><th>Precintos</th><th>Guías</th><th>Neto</th><th>Tiempo total</th><th>Hora salida</th><th>Autorizado</th></tr></thead>
+      <tbody id="gs-tabla"><tr><td colspan="9" class="ec">Sin salidas</td></tr></tbody>
     </table></div>
   </div>
 </div>
 
-<!-- ═══════════════ HISTORIAL ═══════════════ -->
-<div class="section" id="sec-historial">
+<!-- ═══ REPORTES ═══ -->
+<div class="sec" id="sec-reportes">
+  <div class="g4">
+    <div class="metric"><div class="metric-label">Tiempo prom. en planta</div><div class="metric-value" id="r-tprom">—</div><div class="metric-sub">minutos</div></div>
+    <div class="metric"><div class="metric-label">Tiempo prom. carga</div><div class="metric-value" id="r-tcarga">—</div><div class="metric-sub">minutos</div></div>
+    <div class="metric"><div class="metric-label">Productividad andenes</div><div class="metric-value" id="r-andprod">—</div><div class="metric-sub">op/andén hoy</div></div>
+    <div class="metric"><div class="metric-label">Peso total cargado</div><div class="metric-value" id="r-pesotot" style="font-size:18px;">—</div><div class="metric-sub">kg</div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct"><i class="ti ti-chart-bar"></i> Operaciones por hora</div>
+      <div class="bar-chart" id="r-barchart"></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);padding:0 4px;margin-top:2px;">
+        <span>6am</span><span>9am</span><span>12pm</span><span>3pm</span><span>6pm</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-users"></i> Productividad por despachador</div>
+      <div class="tw"><table>
+        <thead><tr><th>Despachador</th><th>Operaciones</th><th>T. prom.</th><th>Kg totales</th></tr></thead>
+        <tbody id="r-desp-tabla"><tr><td colspan="4" class="ec">Sin datos</td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct"><i class="ti ti-truck"></i> Historial por conductor</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <input type="text" id="r-cond-filter" placeholder="Buscar conductor…" oninput="renderRptConductor()" style="flex:1;"/>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Chofer</th><th>Placa</th><th>Viajes</th><th>Último ingreso</th><th>Kg totales</th></tr></thead>
+        <tbody id="r-cond-tabla"><tr><td colspan="5" class="ec">Sin datos</td></tr></tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-download"></i> Exportar reportes</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn btn-success" onclick="exportarCSV('historial')"><i class="ti ti-download"></i> Historial completo CSV</button>
+        <button class="btn" onclick="exportarCSV('pesos')"><i class="ti ti-download"></i> Reporte de pesos CSV</button>
+        <button class="btn" onclick="exportarCSV('conductores')"><i class="ti ti-download"></i> Reporte por conductor</button>
+        <button class="btn" onclick="exportarCSV('andenes')"><i class="ti ti-download"></i> Productividad por andén</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ AUDITORÍA ═══ -->
+<div class="sec" id="sec-auditoria">
   <div class="card">
-    <div class="card-title">
-      <i class="ti ti-history"></i> Historial completo de movimientos
-      <div class="card-actions">
-        <button class="btn btn-sm" onclick="exportarHistorial()"><i class="ti ti-download"></i> Exportar CSV</button>
+    <div class="ct"><i class="ti ti-shield"></i> Registro de auditoría completo
+      <div class="ca">
+        <input type="search" id="aud-q" placeholder="Buscar…" oninput="renderAud()" style="width:160px;"/>
+        <button class="btn btn-sm" onclick="exportarCSV('auditoria')"><i class="ti ti-download"></i> Exportar</button>
       </div>
     </div>
     <div class="tw"><table>
-      <thead><tr><th>Hora</th><th>Módulo</th><th>ID Único</th><th>Chofer</th><th>Placa</th><th>Evento</th><th>Detalle</th></tr></thead>
-      <tbody id="hist-body"><tr><td colspan="7" class="ec">Sin movimientos</td></tr></tbody>
+      <thead><tr><th>Timestamp</th><th>Módulo</th><th>ID Único</th><th>Chofer</th><th>Placa</th><th>Evento</th><th>Detalle</th><th>Usuario</th></tr></thead>
+      <tbody id="aud-body"><tr><td colspan="8" class="ec">Sin registros</td></tr></tbody>
     </table></div>
   </div>
 </div>
 
 </main>
 
-<!-- MODAL GARITA ENTRADA -->
-<div class="modal-overlay" id="modal-ge">
-  <div class="modal-box">
-    <div class="modal-header"><span style="font-size:15px;font-weight:600;"><i class="ti ti-login"></i> Registrar Ingreso</span><button class="btn btn-sm" onclick="cerrarModal('modal-ge')"><i class="ti ti-x"></i></button></div>
-    <div id="modal-ge-body"></div>
-    <div style="display:flex;gap:8px;margin-top:1rem;">
-      <button class="btn btn-success" onclick="geConfirmarIngreso()" style="flex:1;"><i class="ti ti-check"></i> Confirmar ingreso</button>
-      <button class="btn" onclick="cerrarModal('modal-ge')" style="flex:1;">Cancelar</button>
+<!-- ═══ MODALES ═══ -->
+
+<!-- Modal ingreso garita -->
+<div class="overlay" id="m-ge">
+  <div class="modal">
+    <div class="mh"><span style="font-size:14px;font-weight:500;"><i class="ti ti-login"></i> Confirmar ingreso</span><button class="btn btn-sm" onclick="cerrar('m-ge')"><i class="ti ti-x"></i></button></div>
+    <div id="m-ge-body"></div>
+    <div style="display:flex;gap:6px;margin-top:1rem;">
+      <button class="btn btn-success" onclick="geConfirmar()" style="flex:1;"><i class="ti ti-check"></i> Autorizar ingreso</button>
+      <button class="btn" onclick="cerrar('m-ge')" style="flex:1;">Cancelar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL DESPACHO -->
-<div class="modal-overlay" id="modal-despacho">
-  <div class="modal-box">
-    <div class="modal-header"><span style="font-size:15px;font-weight:600;"><i class="ti ti-building-warehouse"></i> Configurar Despacho</span><button class="btn btn-sm" onclick="cerrarModal('modal-despacho')"><i class="ti ti-x"></i></button></div>
-    <div id="modal-despacho-body"></div>
-    <div id="modal-despacho-actions" style="margin-top:1rem;"></div>
+<!-- Modal despacho config -->
+<div class="overlay" id="m-desp">
+  <div class="modal">
+    <div class="mh"><span style="font-size:14px;font-weight:500;"><i class="ti ti-building-warehouse"></i> Configurar despacho</span><button class="btn btn-sm" onclick="cerrar('m-desp')"><i class="ti ti-x"></i></button></div>
+    <div id="m-desp-body"></div>
+    <div id="m-desp-actions" style="margin-top:1rem;"></div>
   </div>
 </div>
 
-<!-- MODAL GARITA SALIDA -->
-<div class="modal-overlay" id="modal-gs">
-  <div class="modal-box">
-    <div class="modal-header"><span style="font-size:15px;font-weight:600;"><i class="ti ti-logout"></i> Autorizar Salida</span><button class="btn btn-sm" onclick="cerrarModal('modal-gs')"><i class="ti ti-x"></i></button></div>
-    <div id="modal-gs-body"></div>
-    <div style="display:flex;gap:8px;margin-top:1rem;">
-      <button class="btn btn-success" onclick="gsConfirmarSalida()" style="flex:1;"><i class="ti ti-shield-check"></i> Autorizar salida</button>
-      <button class="btn" onclick="cerrarModal('modal-gs')" style="flex:1;">Cancelar</button>
+<!-- Modal garita salida -->
+<div class="overlay" id="m-gs">
+  <div class="modal">
+    <div class="mh"><span style="font-size:14px;font-weight:500;"><i class="ti ti-logout"></i> Autorizar salida</span><button class="btn btn-sm" onclick="cerrar('m-gs')"><i class="ti ti-x"></i></button></div>
+    <div id="m-gs-body"></div>
+    <div style="display:flex;gap:6px;margin-top:1rem;">
+      <button class="btn btn-success" onclick="gsConfirmar()" style="flex:1;"><i class="ti ti-shield-check"></i> Autorizar salida</button>
+      <button class="btn" onclick="cerrar('m-gs')" style="flex:1;">Cancelar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL PASE INGRESO -->
-<div class="modal-overlay" id="modal-pase">
-  <div class="modal-box" style="max-width:360px;">
-    <div class="modal-header"><span style="font-size:15px;font-weight:600;">Pase de ingreso</span><button class="btn btn-sm" onclick="cerrarModal('modal-pase')"><i class="ti ti-x"></i></button></div>
-    <div class="pase-card">
+<!-- Modal pase QR -->
+<div class="overlay" id="m-pase">
+  <div class="modal" style="max-width:360px;">
+    <div class="mh"><span style="font-size:14px;font-weight:500;">Pase de ingreso</span><button class="btn btn-sm" onclick="cerrar('m-pase')"><i class="ti ti-x"></i></button></div>
+    <div class="pase">
       <div class="pase-co">AGRIPAC S.A. — Control de Acceso</div>
       <div class="pase-title">Pase de Ingreso</div>
-      <div class="pase-qr"><svg width="52" height="52" viewBox="0 0 52 52" fill="var(--text)"><rect x="1" y="1" width="22" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="6" y="6" width="12" height="12" rx="1"/><rect x="29" y="1" width="22" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="34" y="6" width="12" height="12" rx="1"/><rect x="1" y="29" width="22" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="6" y="34" width="12" height="12" rx="1"/><rect x="29" y="29" width="5" height="5"/><rect x="37" y="29" width="5" height="5"/><rect x="45" y="29" width="6" height="5"/><rect x="29" y="37" width="5" height="5"/><rect x="37" y="37" width="5" height="5"/><rect x="29" y="45" width="5" height="6"/><rect x="37" y="45" width="14" height="6"/></svg></div>
-      <div class="pase-row"><span>ID Único</span><span id="p-id">—</span></div>
-      <div class="pase-row"><span>Chofer</span><span id="p-chofer">—</span></div>
-      <div class="pase-row"><span>Placa</span><span id="p-placa">—</span></div>
-      <div class="pase-row"><span>Tipo carro</span><span id="p-tipo">—</span></div>
-      <div class="pase-row"><span>Detalle</span><span id="p-detalle">—</span></div>
-      <div class="pase-row"><span>Área carga</span><span id="p-areac">—</span></div>
-      <div class="pase-row"><span>Área descarga</span><span id="p-aread">—</span></div>
-      <div class="pase-row"><span>Hora ingreso</span><span id="p-hora">—</span></div>
-      <div style="font-size:11px;color:var(--text3);margin-top:8px;">Válido únicamente el día de hoy</div>
+      <div id="m-pase-qr" style="display:flex;justify-content:center;margin-bottom:10px;"><div style="background:#fff;padding:6px;border-radius:4px;" id="pase-qr-canvas"></div></div>
+      <div id="pase-rows"></div>
+      <div style="font-size:10px;color:var(--tx3);margin-top:8px;">Válido únicamente el día de hoy · Un solo uso</div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:1rem;">
-      <button class="btn btn-success" onclick="paseWhatsApp()" style="flex:1;"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
-      <button class="btn" onclick="cerrarModal('modal-pase')" style="flex:1;">Cerrar</button>
+    <div style="display:flex;gap:6px;margin-top:1rem;">
+      <button class="btn btn-success" onclick="paseWA()" style="flex:1;"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
+      <button class="btn" onclick="cerrar('m-pase')" style="flex:1;">Cerrar</button>
     </div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // CONFIGURACIÓN
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQIIx21a0sA1DmXaVSt9kkq0p6H-ptdOiMBLF69kPQS7RMnQELm8XObYvp3nlr1kdm9ef7ZxlqHHO6-/pub?output=csv';
+const APPS_SCRIPT_URL = ''; // Pega aquí tu URL de Apps Script para conexión garantizada
+const REFRESH_SEC = 60;
 
 const COL = {
-  id:        ['ID-UNICO','ID UNICO'],
-  areaCarga: ['ÁREA DE CARGA','AREA DE CARGA'],
-  areaDesc:  ['ÁREA DE DESCARGA','AREA DE DESCARGA'],
-  detalle:   ['DETALLE CARGA'],
-  fecha:     ['FECHA'],
-  tipoCarro: ['TIPO CARRO'],
-  operador:  ['OPERADOR LOGÍSTICO','OPERADOR LOGISTICO'],
-  chofer:    ['CHOFER'],
-  placa:     ['PLACA'],
-  telefono:  ['TELEFONO','TELÉFONO'],
-  hora:      ['HORA SOLICITADA','HORA'],
-  aprobacion:['APROBACION CARGA','APROBACION'],
+  id:['ID-UNICO','ID UNICO'],areaCarga:['ÁREA DE CARGA','AREA DE CARGA'],
+  areaDesc:['ÁREA DE DESCARGA','AREA DE DESCARGA'],detalle:['DETALLE CARGA'],
+  fecha:['FECHA'],tipo:['TIPO CARRO'],operador:['OPERADOR LOGÍSTICO','OPERADOR LOGISTICO'],
+  chofer:['CHOFER'],placa:['PLACA'],tel:['TELEFONO','TELÉFONO'],
+  hora:['HORA SOLICITADA','HORA'],apro:['APROBACION CARGA','APROBACION']
 };
 
-// ═══════════════════════════════════════════════════════════
-// ESTADO GLOBAL
-// ═══════════════════════════════════════════════════════════
-let todosLosDatos = [];
-let planData = [];
-let fechaSeleccionada = '';
+// ══════════════════════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════════════════════
+let todos=[], planData=[], fechaSel='';
+// reg[uid] = { estado, pasos, pesos, tiempos, docs, qr, ... }
+let reg={}, auditoria=[], andenes=[1,2,3].map(i=>({id:i,libre:true,uid:null,lbl:''}));
+let cronos={}, modalData={}, paseActual=null;
+let cntDown=REFRESH_SEC, cntInt=null;
 
-// Estado por ID-UNICO (mandante)
-// estados posibles: 'pendiente' | 'garita-entrada' | 'bascula-entrada' | 'despacho' | 'cargando' | 'bascula-salida' | 'garita-salida' | 'completado'
-const PASOS = ['pendiente','garita-entrada','bascula-entrada','despacho','cargando','bascula-salida','garita-salida','completado'];
-let registros = {};  // uid -> { estado, datos de cada paso }
-let historial = [];
-let andenes = [1,2,3].map(id=>({id,libre:true,uid:null,label:''}));
-let cronos = {};  // uid -> { start, elapsed, running, interval }
-let modalData = {};  // datos temporales para modales
-let paseActual = null;
+const PASOS=['pendiente','garita-entrada','bascula-entrada','despacho','cargando','bascula-salida','garita-salida','completado'];
+const PNOMBRES=['Pendiente','Garita E.','Báscula E.','Despacho','Cargando','Báscula S.','Garita S.','Completado'];
 
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // RELOJ
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 function reloj(){
-  const n=new Date(), p=v=>String(v).padStart(2,'0');
+  const n=new Date(),p=v=>String(v).padStart(2,'0');
   document.getElementById('clock').textContent=p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());
-  const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  document.getElementById('fecha-hdr').textContent=dias[n.getDay()]+' '+n.getDate()+' '+meses[n.getMonth()]+' '+n.getFullYear();
+  const D=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],M=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  document.getElementById('fhdr').textContent=D[n.getDay()]+' '+n.getDate()+' '+M[n.getMonth()]+' '+n.getFullYear();
 }
 setInterval(reloj,1000);reloj();
 
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // FECHA
-// ═══════════════════════════════════════════════════════════
-function fechaHoy(){
-  const n=new Date();
-  return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+// ══════════════════════════════════════════════════════════
+function hoy(){const n=new Date();return n.getFullYear()+'-'+pad(n.getMonth()+1)+'-'+pad(n.getDate());}
+function pad(v){return String(v).padStart(2,'0');}
+function normFecha(s){
+  if(!s)return'';s=s.trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m)return m[3]+'-'+pad(m[2])+'-'+pad(m[1]);
+  return s;
 }
-function normalizarFecha(str){
-  if(!str) return '';
-  str=str.trim();
-  if(/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-  const m1=str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if(m1) return m1[3]+'-'+m1[2].padStart(2,'0')+'-'+m1[1].padStart(2,'0');
-  const m2=str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-  if(m2) return m2[3]+'-'+m2[1].padStart(2,'0')+'-'+m2[2].padStart(2,'0');
-  return str;
+function fmtFecha(y){if(!y)return'';const[a,m,d]=y.split('-');return d+'/'+m+'/'+a;}
+function irHoy(){fechaSel=hoy();document.getElementById('fecha-filtro').value=fechaSel;aplicarFiltro();}
+function cambiarDia(d){
+  const c=document.getElementById('fecha-filtro').value||hoy();
+  const dt=new Date(c+'T12:00:00');dt.setDate(dt.getDate()+d);
+  fechaSel=dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());
+  document.getElementById('fecha-filtro').value=fechaSel;aplicarFiltro();
 }
-function formatDisplay(y_m_d){
-  if(!y_m_d) return '';
-  const [y,m,d]=y_m_d.split('-');
-  return d+'/'+m+'/'+y;
-}
-function irHoy(){fechaSeleccionada=fechaHoy();document.getElementById('fecha-filtro').value=fechaSeleccionada;aplicarFiltroFecha();}
-function cambiarDia(delta){
-  const cur=document.getElementById('fecha-filtro').value||fechaHoy();
-  const d=new Date(cur+'T12:00:00'); d.setDate(d.getDate()+delta);
-  fechaSeleccionada=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  document.getElementById('fecha-filtro').value=fechaSeleccionada;
-  aplicarFiltroFecha();
-}
-function aplicarFiltroFecha(){
-  fechaSeleccionada=document.getElementById('fecha-filtro').value;
-  document.getElementById('hoy-pill').style.display=fechaSeleccionada===fechaHoy()?'inline-flex':'none';
-  planData=todosLosDatos.filter(r=>normalizarFecha(campo(r,'fecha'))===fechaSeleccionada);
-  planData.forEach(r=>{const uid=campo(r,'id');if(uid&&!registros[uid])registros[uid]={estado:'pendiente',uid,chofer:campo(r,'chofer'),placa:campo(r,'placa'),detalle:campo(r,'detalle'),areaCarga:campo(r,'areaCarga'),areaDesc:campo(r,'areaDesc'),tipoCarro:campo(r,'tipoCarro'),hora:campo(r,'hora'),aprobacion:campo(r,'aprobacion'),row:r,tsGaritaEntrada:null,pesoEntrada:null,anden:null,despachador:null,docsEntrega:null,tsInicioC:null,tsFinC:null,precintos:null,guias:null,pesoSalida:null,tsGaritaSalida:null,autorizadoPor:null,foto:null};});
-  renderPlan(); actualizarMetricas(); renderPendientesGarita();
+function aplicarFiltro(){
+  fechaSel=document.getElementById('fecha-filtro').value;
+  document.getElementById('hoy-pill').style.display=fechaSel===hoy()?'inline-flex':'none';
+  planData=todos.filter(r=>normFecha(campo(r,'fecha'))===fechaSel);
+  planData.forEach(r=>{const uid=campo(r,'id');if(uid&&!reg[uid])initReg(uid,r);});
+  renderPlan();calcMetrics();renderGePend();renderDashboard();
   const c=planData.length;
-  document.getElementById('fecha-count').textContent=c+' vehículo'+(c!==1?'s':'')+' — '+formatDisplay(fechaSeleccionada);
+  document.getElementById('f-count').textContent=c+' vehículo'+(c!==1?'s':'')+' — '+fmtFecha(fechaSel);
 }
 
-// ═══════════════════════════════════════════════════════════
-// CSV
-// ═══════════════════════════════════════════════════════════
-function campo(row,key){
-  for(const k of(COL[key]||[])){if(row&&row[k]!==undefined&&row[k]!=='')return row[k];}
-  return '';
-}
-function parseCSV(text){
-  const lines=text.trim().split('\n');
-  if(lines.length<2)return[];
-  const headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
-  return lines.slice(1).map((line,i)=>{
+// ══════════════════════════════════════════════════════════
+// CSV / DATOS
+// ══════════════════════════════════════════════════════════
+function campo(row,key){for(const k of(COL[key]||[])){if(row&&row[k]!==undefined&&row[k]!=='')return row[k];}return'';}
+function parseCSV(txt){
+  const lines=txt.trim().split('\n');if(lines.length<2)return[];
+  const hdrs=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
+  return lines.slice(1).map((l,i)=>{
     const cols=[];let cur='',inQ=false;
-    for(const ch of line){if(ch==='"'){inQ=!inQ;}else if(ch===','&&!inQ){cols.push(cur.trim());cur='';}else cur+=ch;}
+    for(const ch of l){if(ch==='"'){inQ=!inQ;}else if(ch===','&&!inQ){cols.push(cur.trim());cur='';}else cur+=ch;}
     cols.push(cur.trim());
-    const obj={};
-    headers.forEach((h,j)=>{obj[h]=(cols[j]||'').replace(/^"|"$/g,'');});
-    obj._uid=i+1;
-    return obj;
-  }).filter(r=>Object.keys(r).some(k=>k!=='_uid'&&r[k]));
+    const o={};hdrs.forEach((h,j)=>{o[h]=(cols[j]||'').replace(/^"|"$/g,'');});
+    return o;
+  }).filter(r=>Object.values(r).some(v=>v));
 }
-function cargarCSV(){
-  fetch(CSV_URL+'&t='+Date.now()).then(r=>{if(!r.ok)throw r;return r.text();})
-    .then(text=>{todosLosDatos=parseCSV(text);document.getElementById('fuente-csv').textContent='⟳ Actualizado — '+new Date().toLocaleTimeString('es-EC');aplicarFiltroFecha();})
-    .catch(()=>{cargarDemo();document.getElementById('fuente-csv').textContent='⚠ Modo demo (CORS — funciona en GitHub Pages)';});
+
+const PROXIES=[
+  u=>u,
+  u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
+];
+
+async function cargarCSV(){
+  setConStatus('loading');
+  if(APPS_SCRIPT_URL){
+    try{
+      const r=await fetch(APPS_SCRIPT_URL+'?t='+Date.now(),{cache:'no-store'});
+      const d=await r.json();
+      if(d&&d.csv){procCSV(d.csv,'Apps Script');return;}
+    }catch(e){}
+  }
+  for(let i=0;i<PROXIES.length;i++){
+    try{
+      const r=await fetch(PROXIES[i](CSV_URL+'&t='+Date.now()),{cache:'no-store'});
+      if(!r.ok)throw new Error();
+      const txt=await r.text();
+      if(!txt.includes(','))throw new Error();
+      procCSV(txt,i===0?'Directo':'Proxy '+i);return;
+    }catch(e){continue;}
+  }
+  cargarDemo();setConStatus('demo');
 }
+
+function procCSV(txt,fuente){
+  todos=parseCSV(txt);
+  document.getElementById('fuente').innerHTML=`<span style="color:var(--grt);background:var(--grb);padding:1px 7px;border-radius:3px;font-size:10px;"><i class="ti ti-circle-check"></i> ${fuente} — ${new Date().toLocaleTimeString('es-EC')}</span>`;
+  setConStatus('ok');
+  aplicarFiltro();
+  iniciarContador();
+}
+
+function setConStatus(s){
+  const dot=document.getElementById('csv-dot'),lbl=document.getElementById('csv-status');
+  if(s==='ok'){dot.className='conn-dot on';lbl.textContent='Google Sheets conectado';}
+  else if(s==='loading'){dot.className='conn-dot';lbl.textContent='Actualizando…';}
+  else{dot.className='conn-dot';lbl.textContent='Modo demo';}
+}
+
+function iniciarContador(){
+  clearInterval(cntInt);cntDown=REFRESH_SEC;
+  cntInt=setInterval(()=>{
+    cntDown--;
+    const el=document.getElementById('countdown');
+    if(el)el.textContent=cntDown+'s';
+    if(cntDown<=0){cntDown=REFRESH_SEC;cargarCSV();}
+  },1000);
+}
+
 function cargarDemo(){
-  const hoy=fechaHoy().split('-').reverse().join('/');
-  todosLosDatos=[
-    {'ID-UNICO':'AL-M460I-DTC0-V1.1','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'T5432','FECHA':hoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
-    {'ID-UNICO':'AL-X8VLJ-759F-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'AVENA','FECHA':hoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
-    {'ID-UNICO':'AL-PN15L-YE2L-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'TRIGO','FECHA':hoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
-    {'ID-UNICO':'AL-RAHIK-BP3M-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'PASTA SOYA','FECHA':hoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
-    {'ID-UNICO':'AL-VB2G8-2MTM-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'PASTA SOYA 3','FECHA':hoy,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'19:00','APROBACION CARGA':'OK'},
-    {'ID-UNICO':'AL-VB2G8-2MTM-V2.0','ÁREA DE CARGA':'ANDY PUERTO','ÁREA DE DESCARGA':'STORE OCEAN','DETALLE CARGA':'MAIZ','FECHA':'11/05/2026','TIPO CARRO':'BAÑERA','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'WILLIAM','PLACA':'AAA-1334','TELEFONO':'939745803','HORA SOLICITADA':'14:00','APROBACION CARGA':'OK'},
+  const h=hoy().split('-').reverse().join('/');
+  todos=[
+    {'ID-UNICO':'AL-M460I-DTC0-V1.1','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'T5432','FECHA':h,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'07:00','APROBACION CARGA':'OK'},
+    {'ID-UNICO':'AL-X8VLJ-759F-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'AVENA','FECHA':h,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'08:00','APROBACION CARGA':'OK'},
+    {'ID-UNICO':'AL-PN15L-YE2L-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'TRIGO','FECHA':h,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'09:00','APROBACION CARGA':'OK'},
+    {'ID-UNICO':'AL-RAHIK-BP3M-V1.0','ÁREA DE CARGA':'STORE OCEAN','ÁREA DE DESCARGA':'BALANFARINA','DETALLE CARGA':'PASTA SOYA','FECHA':h,'TIPO CARRO':'CONTENEDOR','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'OSCAR MUÑOZ','PLACA':'BBB-3333','TELEFONO':'939745803','HORA SOLICITADA':'10:00','APROBACION CARGA':'OK'},
+    {'ID-UNICO':'AL-VB2G8-2MTM-V2.0','ÁREA DE CARGA':'ANDY PUERTO','ÁREA DE DESCARGA':'STORE OCEAN','DETALLE CARGA':'MAIZ','FECHA':h,'TIPO CARRO':'BAÑERA','OPERADOR LOGÍSTICO':'CORREA','CHOFER':'WILLIAM','PLACA':'AAA-1334','TELEFONO':'939745803','HORA SOLICITADA':'14:00','APROBACION CARGA':'OK'},
   ];
-  aplicarFiltroFecha();
+  document.getElementById('fuente').innerHTML=`<span style="color:var(--amt);background:var(--amb);padding:1px 7px;border-radius:3px;font-size:10px;">⚠ Modo demo — datos de ejemplo</span>`;
+  aplicarFiltro();iniciarContador();
 }
 
-// ═══════════════════════════════════════════════════════════
-// HELPERS ESTADO
-// ═══════════════════════════════════════════════════════════
-function getReg(uid){return registros[uid]||null;}
-function estadoLabel(est){
-  const m={'pendiente':'Pendiente','garita-entrada':'En garita','bascula-entrada':'En báscula','despacho':'En despacho','cargando':'Cargando','bascula-salida':'Báscula salida','garita-salida':'Aut. salida','completado':'Completado'};
-  return m[est]||est;
-}
-function estadoBadge(est){
-  const m={'pendiente':'b-pend','garita-entrada':'b-garita','bascula-entrada':'b-bascula','despacho':'b-despacho','cargando':'b-cargando','bascula-salida':'b-bascula','garita-salida':'b-garita','completado':'b-salida'};
-  return `<span class="badge ${m[est]||'b-pend'}">${estadoLabel(est)}</span>`;
-}
-function avanzarEstado(uid,nuevoEstado){
-  if(!registros[uid])return;
-  registros[uid].estado=nuevoEstado;
-  actualizarMetricas();renderPlan();renderPendientesGarita();renderCargasActivas();renderAndenes();actualizarBadgesNav();
-}
-function actualizarBadgesNav(){
-  const enGaritaE=Object.values(registros).filter(r=>planData.some(p=>campo(p,'id')===r.uid)&&r.estado==='garita-entrada').length;
-  const enBasculaE=Object.values(registros).filter(r=>planData.some(p=>campo(p,'id')===r.uid)&&r.estado==='bascula-entrada').length;
-  const enDesp=Object.values(registros).filter(r=>planData.some(p=>campo(p,'id')===r.uid)&&['despacho','cargando'].includes(r.estado)).length;
-  const enBasculaS=Object.values(registros).filter(r=>planData.some(p=>campo(p,'id')===r.uid)&&r.estado==='bascula-salida').length;
-  const enGaritaS=Object.values(registros).filter(r=>planData.some(p=>campo(p,'id')===r.uid)&&r.estado==='garita-salida').length;
-  [['nb-garita-entrada',enGaritaE],['nb-bascula-entrada',enBasculaE],['nb-despacho',enDesp],['nb-bascula-salida',enBasculaS],['nb-garita-salida',enGaritaS]].forEach(([id,v])=>{document.getElementById(id).textContent=v;});
+// ══════════════════════════════════════════════════════════
+// REGISTRO POR ID
+// ══════════════════════════════════════════════════════════
+function initReg(uid,row){
+  reg[uid]={
+    uid,estado:'pendiente',row,
+    chofer:campo(row,'chofer'),placa:campo(row,'placa'),
+    detalle:campo(row,'detalle'),areaCarga:campo(row,'areaCarga'),
+    areaDesc:campo(row,'areaDesc'),tipo:campo(row,'tipo'),
+    hora:campo(row,'hora'),apro:campo(row,'apro'),tel:campo(row,'tel'),
+    qrGenerado:false,qrEnviado:false,tsQR:null,
+    tsGE:null,condicion:null,operGE:null,
+    peBruto:null,tsBE:null,
+    anden:null,despachador:null,docs:false,obsDesp:'',tsDesp:null,
+    tsIniC:null,tsFinC:null,tiempoC:null,
+    peSalida:null,peNeto:null,tsBS:null,
+    precintos:'',guias:'',foto:null,autorizadoPor:'',obsSal:'',tsGS:null,
+    tsIngreso:null
+  };
 }
 
-// ═══════════════════════════════════════════════════════════
-// PLANIFICACIÓN
-// ═══════════════════════════════════════════════════════════
-function renderPlan(){
-  const body=document.getElementById('plan-body');
-  const q=(document.getElementById('search-plan').value||'').toLowerCase();
-  const filtered=planData.filter(r=>{
-    if(!q)return true;
-    return[campo(r,'id'),campo(r,'chofer'),campo(r,'placa'),campo(r,'detalle')].join(' ').toLowerCase().includes(q);
-  });
-  if(!filtered.length){body.innerHTML='<tr><td colspan="11" class="ec">Sin vehículos para la fecha seleccionada</td></tr>';return;}
-  body.innerHTML=filtered.map(r=>{
-    const uid=campo(r,'id'),chofer=campo(r,'chofer'),placa=campo(r,'placa'),det=campo(r,'detalle'),hora=campo(r,'hora');
-    const apro=campo(r,'aprobacion');
-    const aproBadge=apro.toLowerCase()==='ok'?'<span class="badge b-ok"><i class="ti ti-check"></i> OK</span>':'<span class="badge b-pend">'+apro+'</span>';
-    const reg=registros[uid];
-    const est=reg?reg.estado:'pendiente';
-    const flujoBtn=est==='pendiente'?`<button class="btn btn-success btn-sm" onclick="geAbrirModal('${uid}')"><i class="ti ti-login"></i> Ingresar</button>`:
-      est==='garita-entrada'?`<button class="btn btn-purple btn-sm" onclick="showTab('bascula-entrada')"><i class="ti ti-weight"></i> Báscula</button>`:
-      est==='bascula-entrada'?`<button class="btn btn-warning btn-sm" onclick="showTab('despacho')"><i class="ti ti-building-warehouse"></i> Despacho</button>`:
-      ['despacho','cargando'].includes(est)?`<button class="btn btn-sm" onclick="showTab('despacho')"><i class="ti ti-eye"></i> Ver carga</button>`:
-      est==='bascula-salida'?`<button class="btn btn-sm" onclick="showTab('garita-salida')"><i class="ti ti-logout"></i> Autorizar</button>`:
-      est==='completado'?`<span style="font-size:12px;color:var(--text3);">✓ Completado</span>`:'';
-    return`<tr>
-      <td><span class="mono-tag" style="font-size:11px;">${uid}</span></td>
-      <td style="font-size:12px;color:var(--text2);">${campo(r,'areaCarga')}</td>
-      <td style="font-size:12px;color:var(--text2);">${campo(r,'areaDesc')}</td>
-      <td><strong>${det}</strong></td>
-      <td style="font-size:12px;color:var(--text2);">${campo(r,'tipoCarro')}</td>
-      <td>${chofer}</td>
-      <td><span class="mono-tag">${placa}</span></td>
-      <td><span class="mono-tag">${hora}</span></td>
-      <td>${aproBadge}</td>
-      <td>${estadoBadge(est)}</td>
-      <td>${flujoBtn}</td>
-    </tr>`;
-  }).join('');
+function avanzar(uid,estado){
+  if(!reg[uid])return;
+  reg[uid].estado=estado;
+  actualizarBadges();calcMetrics();renderPlan();renderGePend();
+  renderDashboard();renderBeTabla();renderBsTabla();renderGsTabla();renderCargasActivas();renderAndenes();
+  checkAlertas();
 }
-function actualizarMetricas(){
+
+function actualizarBadges(){
+  const inPlan=uid=>planData.some(r=>campo(r,'id')===uid);
+  const cnt=s=>Object.values(reg).filter(r=>inPlan(r.uid)&&r.estado===s).length;
+  const qrc=Object.values(reg).filter(r=>inPlan(r.uid)&&r.qrGenerado&&r.estado==='pendiente').length;
+  document.getElementById('nb-qr').textContent=qrc;
+  document.getElementById('nb-ge').textContent=cnt('pendiente')+cnt('garita-entrada');
+  document.getElementById('nb-be').textContent=cnt('garita-entrada');
+  document.getElementById('nb-d').textContent=cnt('bascula-entrada')+cnt('despacho')+cnt('cargando');
+  document.getElementById('nb-bs').textContent=cnt('cargando');
+  document.getElementById('nb-gs').textContent=cnt('bascula-salida')+cnt('garita-salida');
+}
+
+// ══════════════════════════════════════════════════════════
+// MÉTRICAS Y DASHBOARD
+// ══════════════════════════════════════════════════════════
+function calcMetrics(){
   const uids=planData.map(r=>campo(r,'id'));
   const total=uids.length;
-  const proceso=uids.filter(u=>registros[u]&&!['pendiente','completado'].includes(registros[u].estado)).length;
-  const done=uids.filter(u=>registros[u]&&registros[u].estado==='completado').length;
-  const pend=uids.filter(u=>!registros[u]||registros[u].estado==='pendiente').length;
-  document.getElementById('m-total').textContent=total;
-  document.getElementById('m-proceso').textContent=proceso;
-  document.getElementById('m-done').textContent=done;
-  document.getElementById('m-pend').textContent=pend;
+  const pend=uids.filter(u=>!reg[u]||reg[u].estado==='pendiente').length;
+  const dentro=uids.filter(u=>reg[u]&&!['pendiente','completado'].includes(reg[u].estado)).length;
+  const carg=uids.filter(u=>reg[u]&&reg[u].estado==='cargando').length;
+  const done=uids.filter(u=>reg[u]&&reg[u].estado==='completado').length;
+  const neto=Object.values(reg).filter(r=>r.peNeto).reduce((s,r)=>s+r.peNeto,0);
+  ['m-tot','d-total'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=total;});
+  ['m-pend','d-pend'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=pend;});
+  ['m-proc','d-dentro'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=dentro;});
+  ['m-done','d-done'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=done;});
+  const dca=document.getElementById('d-cargando');if(dca)dca.textContent=carg;
+  const dn=document.getElementById('d-neto');if(dn)dn.textContent=neto>0?neto.toLocaleString('es-EC')+' kg':'—';
+  const rn=document.getElementById('r-pesotot');if(rn)rn.textContent=neto>0?neto.toLocaleString('es-EC'):' —';
   if(total>0){
-    document.getElementById('pb-proceso').style.width=Math.round(proceso/total*100)+'%';
-    document.getElementById('pb-done').style.width=Math.round(done/total*100)+'%';
+    pbarSet('pb-dentro',dentro/total*100);
+    pbarSet('pb-carg',carg/total*100);
+    pbarSet('pb-done',done/total*100);
   }
+  const ts=document.getElementById('dash-ts');if(ts)ts.textContent='— '+new Date().toLocaleTimeString('es-EC');
+  actualizarBadges();
+  renderReportes();
+}
+function pbarSet(id,pct){const el=document.getElementById(id);if(el)el.style.width=Math.round(pct)+'%';}
+
+function renderDashboard(){
+  // Vehículos en planta
+  const body=document.getElementById('dash-en-planta');
+  if(!body)return;
+  const activos=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&!['pendiente','completado'].includes(r.estado));
+  if(!activos.length){body.innerHTML='<tr><td colspan="7" class="ec">Sin vehículos en planta</td></tr>';return;}
+  body.innerHTML=activos.map(r=>{
+    const and=andenes.find(a=>a.uid===r.uid);
+    const tsIn=r.tsIngreso;
+    let elapsed='—';
+    if(tsIn){
+      const [h,m]=tsIn.split(':').map(Number);
+      const start=new Date();start.setHours(h,m,0,0);
+      const min=Math.round((Date.now()-start.getTime())/60000);
+      if(min>=0)elapsed=min+'m';
+    }
+    return`<tr>
+      <td><span class="mt">${r.uid}</span></td>
+      <td>${r.chofer}</td><td><span class="mt">${r.placa}</span></td>
+      <td>${r.detalle}</td><td>${estadoBadge(r.estado)}</td>
+      <td>${and?'Andén '+and.id:'—'}</td>
+      <td style="font-family:var(--mono);font-size:11px;">${elapsed}</td>
+    </tr>`;
+  }).join('');
+
+  // Andenes dashboard
+  const dg=document.getElementById('dash-andenes');
+  if(dg)dg.innerHTML=andenes.map(a=>`<div class="anden ${a.libre?'libre':cronos[a.uid]?.running?'cargando':'ocupado'}">
+    <div class="anden-num">A-${a.id}</div>
+    <div style="font-size:18px;margin:4px 0;">${a.libre?'<i class="ti ti-parking"></i>':cronos[a.uid]?.running?'<i class="ti ti-loader"></i>':'<i class="ti ti-truck"></i>'}</div>
+    <div class="anden-sub">${a.libre?'Libre':(a.lbl||'Ocupado')}</div>
+  </div>`).join('');
 }
 
-// ═══════════════════════════════════════════════════════════
-// GARITA ENTRADA
-// ═══════════════════════════════════════════════════════════
-function geSearch(){
-  const q=document.getElementById('ge-buscar').value.trim().toUpperCase();
-  const el=document.getElementById('ge-resultado');
-  if(!q){el.innerHTML='';return;}
-  const found=todosLosDatos.find(r=>(campo(r,'id')||'').toUpperCase()===q||(campo(r,'placa')||'').toUpperCase().includes(q));
-  if(found){
-    const uid=campo(found,'id'),reg=registros[uid]||{};
-    const est=reg.estado||'pendiente';
-    el.innerHTML=`<div class="alert a-success" style="margin-bottom:10px;"><i class="ti ti-check"></i> Encontrado — ${estadoBadge(est)}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;margin-bottom:10px;">
-        <div><div style="font-size:11px;color:var(--text3);">ID ÚNICO</div><span class="mono-tag" style="font-size:11px;">${uid}</span></div>
-        <div><div style="font-size:11px;color:var(--text3);">PLACA</div><span class="mono-tag">${campo(found,'placa')}</span></div>
-        <div><div style="font-size:11px;color:var(--text3);">CHOFER</div><strong>${campo(found,'chofer')}</strong></div>
-        <div><div style="font-size:11px;color:var(--text3);">TIPO CARRO</div>${campo(found,'tipoCarro')}</div>
-        <div><div style="font-size:11px;color:var(--text3);">DETALLE</div>${campo(found,'detalle')}</div>
-        <div><div style="font-size:11px;color:var(--text3);">HORA PROG.</div><span class="mono-tag">${campo(found,'hora')}</span></div>
-      </div>
-      ${est==='pendiente'?`<button class="btn btn-success" onclick="geAbrirModal('${uid}')"><i class="ti ti-login"></i> Registrar ingreso</button>`:''}`;
-  } else {
-    el.innerHTML='<div class="alert a-warning"><i class="ti ti-alert-triangle"></i> ID o placa no encontrado en la planificación</div>';
-  }
+function checkAlertas(){
+  const alertas=[];
+  // Vehículos fuera de horario
+  planData.forEach(r=>{
+    const uid=campo(r,'id');const rv=reg[uid];if(!rv||rv.estado!=='pendiente')return;
+    const hp=campo(r,'hora');if(!hp)return;
+    const[h,m]=hp.split(':').map(Number);
+    const prog=new Date();prog.setHours(h,m,0,0);
+    if(Date.now()>prog.getTime()+30*60000){
+      alertas.push({tipo:'warn',msg:`<strong>${uid}</strong> — ${campo(r,'chofer')} aún no ha ingresado (programado ${hp})`});
+    }
+  });
+  const el=document.getElementById('alertas-body');
+  const cnt=document.getElementById('alertas-cnt');
+  if(cnt)cnt.textContent=alertas.length;
+  if(!el)return;
+  el.innerHTML=alertas.length?alertas.map(a=>`<div class="alert a-${a.tipo||'warn'}">${a.msg}</div>`).join('')
+    :'<div style="font-size:12px;color:var(--tx3);text-align:center;padding:.75rem;">Sin alertas activas</div>';
 }
-function geAbrirModal(uid){
-  const reg=registros[uid];
-  if(!reg){return;}
-  modalData.uid=uid;
-  document.getElementById('modal-ge-body').innerHTML=`
-    <div style="background:var(--surface2);border-radius:var(--r);padding:1rem;margin-bottom:12px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
-        <div><div class="section-label">ID ÚNICO</div><span class="mono-tag" style="font-size:11px;">${uid}</span></div>
-        <div><div class="section-label">PLACA</div><span class="mono-tag">${reg.placa}</span></div>
-        <div><div class="section-label">CHOFER</div><strong>${reg.chofer}</strong></div>
-        <div><div class="section-label">TIPO CARRO</div>${reg.tipoCarro}</div>
-        <div><div class="section-label">DETALLE</div>${reg.detalle}</div>
-        <div><div class="section-label">APROBACIÓN</div><span class="badge b-ok">${reg.aprobacion}</span></div>
-      </div>
-    </div>
-    <div class="field"><span class="field-label">Operador garita (quien registra)</span><input type="text" id="ge-operador" placeholder="Nombre del operador" /></div>
-    <div class="field"><span class="field-label">Observaciones de entrada</span><textarea id="ge-obs" rows="2" placeholder="Condición del vehículo, documentos, etc."></textarea></div>`;
-  abrirModal('modal-ge');
+
+// ══════════════════════════════════════════════════════════
+// PLANIFICACIÓN
+// ══════════════════════════════════════════════════════════
+function estadoBadge(est){
+  const m={pendiente:'b-pend',garita:' b-garita','garita-entrada':'b-garita','bascula-entrada':'b-bascula',despacho:'b-desp',cargando:'b-carga','bascula-salida':'b-bascula','garita-salida':'b-garita',completado:'b-salida'};
+  const n={pendiente:'Pendiente','garita-entrada':'Garita E.','bascula-entrada':'Báscula E.',despacho:'Despacho',cargando:'⟳ Cargando','bascula-salida':'Báscula S.','garita-salida':'Aut. salida',completado:'Completado'};
+  return`<span class="badge ${m[est]||'b-pend'}">${n[est]||est}</span>`;
 }
-function geConfirmarIngreso(){
-  const uid=modalData.uid;
-  const reg=registros[uid];
-  if(!reg)return;
-  reg.tsGaritaEntrada=horaActual();
-  reg.operadorGarita=document.getElementById('ge-operador').value||'Garita';
-  reg.obsEntrada=document.getElementById('ge-obs').value||'';
-  avanzarEstado(uid,'garita-entrada');
-  agregarLog('Garita Entrada',uid,reg.chofer,reg.placa,'Ingreso autorizado');
-  agregarTl('ge-timeline','#1D9E75','Ingreso: '+reg.chofer,reg.placa+' · '+reg.detalle);
-  cerrarModal('modal-ge');
-  // Mostrar pase
-  paseActual=uid;
-  document.getElementById('p-id').textContent=uid;
-  document.getElementById('p-chofer').textContent=reg.chofer;
-  document.getElementById('p-placa').textContent=reg.placa;
-  document.getElementById('p-tipo').textContent=reg.tipoCarro;
-  document.getElementById('p-detalle').textContent=reg.detalle;
-  document.getElementById('p-areac').textContent=reg.areaCarga;
-  document.getElementById('p-aread').textContent=reg.areaDesc;
-  document.getElementById('p-hora').textContent=horaActual();
-  abrirModal('modal-pase');
-}
-function renderPendientesGarita(){
-  const body=document.getElementById('ge-pendientes');
-  const pend=planData.filter(r=>{const uid=campo(r,'id');const reg=registros[uid];return !reg||reg.estado==='pendiente';});
-  if(!pend.length){body.innerHTML='<tr><td colspan="7" class="ec">Sin pendientes para hoy</td></tr>';return;}
-  body.innerHTML=pend.map(r=>{
-    const uid=campo(r,'id'),apro=campo(r,'aprobacion');
-    const aproBadge=apro.toLowerCase()==='ok'?'<span class="badge b-ok"><i class="ti ti-check"></i> OK</span>':'<span class="badge b-pend">'+apro+'</span>';
+
+function renderPlan(){
+  const body=document.getElementById('plan-body');if(!body)return;
+  const q=(document.getElementById('sp').value||'').toLowerCase();
+  const f=planData.filter(r=>!q||[campo(r,'id'),campo(r,'chofer'),campo(r,'placa'),campo(r,'detalle')].join(' ').toLowerCase().includes(q));
+  if(!f.length){body.innerHTML='<tr><td colspan="12" class="ec">Sin vehículos</td></tr>';return;}
+  body.innerHTML=f.map(r=>{
+    const uid=campo(r,'id'),rv=reg[uid],est=rv?rv.estado:'pendiente';
+    const apro=campo(r,'apro');
+    const aproBadge=apro.toLowerCase()==='ok'?`<span class="badge b-ok"><i class="ti ti-check"></i> OK</span>`:`<span class="badge b-pend">${apro}</span>`;
+    const qrBadge=rv?.qrGenerado?`<span class="badge b-ok"><i class="ti ti-qrcode"></i>${rv.qrEnviado?' Enviado':' Listo'}</span>`:`<span class="badge b-pend">Sin QR</span>`;
+    const accion=est==='pendiente'?`<button class="btn btn-success btn-sm" onclick="geAbrirModal('${uid}')"><i class="ti ti-login"></i></button>`:
+      est==='garita-entrada'?`<button class="btn btn-purple btn-sm" onclick="showTab('bascula-e')"><i class="ti ti-weight"></i></button>`:
+      ['bascula-entrada'].includes(est)?`<button class="btn btn-warn btn-sm" onclick="showTab('despacho')"><i class="ti ti-building-warehouse"></i></button>`:
+      ['despacho','cargando'].includes(est)?`<button class="btn btn-sm" onclick="showTab('despacho')"><i class="ti ti-eye"></i></button>`:
+      est==='bascula-salida'?`<button class="btn btn-sm" onclick="showTab('garita-s')"><i class="ti ti-logout"></i></button>`:
+      est==='completado'?`<span style="font-size:11px;color:var(--tx3);">✓</span>`:'';
     return`<tr>
-      <td><span class="mono-tag" style="font-size:11px;">${uid}</span></td>
+      <td><span class="mt" style="font-size:10px;">${uid}</span></td>
+      <td style="font-size:11px;color:var(--tx2);">${campo(r,'areaCarga')}</td>
+      <td style="font-size:11px;color:var(--tx2);">${campo(r,'areaDesc')}</td>
+      <td><strong style="font-size:12px;">${campo(r,'detalle')}</strong></td>
+      <td style="font-size:11px;color:var(--tx2);">${campo(r,'tipo')}</td>
       <td>${campo(r,'chofer')}</td>
-      <td><span class="mono-tag">${campo(r,'placa')}</span></td>
-      <td>${campo(r,'detalle')}</td>
-      <td><span class="mono-tag">${campo(r,'hora')}</span></td>
+      <td><span class="mt">${campo(r,'placa')}</span></td>
+      <td><span class="mt">${campo(r,'hora')}</span></td>
       <td>${aproBadge}</td>
-      <td><button class="btn btn-success btn-sm" onclick="geAbrirModal('${uid}')"><i class="ti ti-login"></i> Ingresar</button></td>
+      <td>${qrBadge}</td>
+      <td>${estadoBadge(est)}</td>
+      <td>${accion} <button class="btn btn-sm" onclick="genQRSingle('${uid}')" title="QR"><i class="ti ti-qrcode"></i></button></td>
     </tr>`;
   }).join('');
 }
 
-// ═══════════════════════════════════════════════════════════
-// BÁSCULA ENTRADA
-// ═══════════════════════════════════════════════════════════
-let beUID=null;
-function beBuscar(){
-  const id=document.getElementById('be-id').value.trim().toUpperCase();
-  const reg=registros[id];
-  const el=document.getElementById('be-info');
-  beUID=null;
-  if(!reg){el.style.display='block';el.className='alert a-warning';el.innerHTML='<i class="ti ti-alert-triangle"></i> ID no encontrado. Debe registrar primero en garita de entrada.';return;}
-  if(reg.estado==='pendiente'){el.style.display='block';el.className='alert a-warning';el.innerHTML='<i class="ti ti-alert-triangle"></i> Este vehículo aún no ha pasado por garita de entrada.';return;}
-  if(reg.pesoEntrada){el.style.display='block';el.className='alert a-info';el.innerHTML=`<i class="ti ti-info-circle"></i> Peso de entrada ya registrado: <strong>${reg.pesoEntrada} kg</strong>`;return;}
-  beUID=id;
-  el.style.display='block';el.className='alert a-success';
-  el.innerHTML=`<i class="ti ti-check"></i> <strong>${id}</strong> — ${reg.chofer} · ${reg.placa} · ${reg.detalle}`;
-  document.getElementById('be-peso').focus();
-  document.getElementById('be-display').textContent='— kg';
+// ══════════════════════════════════════════════════════════
+// QR
+// ══════════════════════════════════════════════════════════
+function makeQRData(uid){
+  return JSON.stringify({id:uid,fecha:fechaSel,ts:Date.now(),v:1});
 }
-document.addEventListener('DOMContentLoaded',()=>{
-  const bep=document.getElementById('be-peso');
-  if(bep) bep.addEventListener('input',()=>{
-    const v=parseFloat(bep.value);
-    document.getElementById('be-display').textContent=v>0?v.toLocaleString('es-EC')+' kg':'— kg';
-  });
-  const bsp=document.getElementById('bs-peso');
-  if(bsp) bsp.addEventListener('input',calcPesoNeto);
-});
-function beRegistrar(){
-  if(!beUID){mostrarMsg('be-msg','warning','Busque y seleccione un ID primero');return;}
-  const p=parseFloat(document.getElementById('be-peso').value);
-  if(isNaN(p)||p<=0){mostrarMsg('be-msg','warning','Ingrese un peso válido');return;}
-  const reg=registros[beUID];
-  reg.pesoEntrada=p;
-  reg.tsBasculaEntrada=horaActual();
-  avanzarEstado(beUID,'bascula-entrada');
-  agregarLog('Báscula Entrada',beUID,reg.chofer,reg.placa,p+' kg bruto entrada');
-  renderBeTabla();
-  document.getElementById('be-id').value='';document.getElementById('be-peso').value='';
-  document.getElementById('be-info').style.display='none';
-  document.getElementById('be-display').textContent='— kg';
-  beUID=null;
-  mostrarMsg('be-msg','success','Peso de entrada registrado: '+p.toLocaleString('es-EC')+' kg — Vehículo listo para despacho');
+
+function generarQR(){
+  const uid=document.getElementById('qr-id').value.trim().toUpperCase();
+  const rv=reg[uid];
+  const el=document.getElementById('qr-info');
+  if(!rv){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> ID no encontrado en la planificación de hoy</div>';return;}
+  el.innerHTML='';
+  genQRSingle(uid,true);
 }
-function renderBeTabla(){
-  const body=document.getElementById('be-tabla');
-  const items=planData.map(r=>{const uid=campo(r,'id');return registros[uid];}).filter(r=>r&&r.pesoEntrada);
-  if(!items.length){body.innerHTML='<tr><td colspan="5" class="ec">Sin registros</td></tr>';return;}
+
+function genQRSingle(uid,show=false){
+  const rv=reg[uid];if(!rv)return;
+  rv.qrGenerado=true;rv.tsQR=horaActual();
+  const qrData=makeQRData(uid);
+  // Si show=true mostrar en módulo QR
+  if(show){
+    const wrap=document.getElementById('qr-display');
+    const canvas=document.getElementById('qr-canvas');
+    canvas.innerHTML='';
+    try{new QRCode(canvas,{text:qrData,width:160,height:160,colorDark:'#000',colorLight:'#fff'});}catch(e){canvas.innerHTML='<div style="width:160px;height:160px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:11px;">QR generado</div>';}
+    wrap.style.display='flex';
+    document.getElementById('qr-data').textContent=uid+' · '+rv.chofer+' · '+rv.placa;
+    paseActual=uid;
+  }
+  renderQRTabla();renderPlan();actualizarBadges();
+  audit('QR',uid,rv.chofer,rv.placa,'QR generado');
+}
+
+function generarTodosQR(){
+  planData.forEach(r=>{const uid=campo(r,'id');if(uid&&reg[uid])genQRSingle(uid);});
+  renderQRTabla();
+}
+
+function renderQRTabla(){
+  const body=document.getElementById('qr-tabla');if(!body)return;
+  const items=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.qrGenerado);
+  document.getElementById('qr-count').textContent=items.length;
+  if(!items.length){body.innerHTML='<tr><td colspan="6" class="ec">Sin QRs</td></tr>';return;}
   body.innerHTML=items.map(r=>`<tr>
-    <td><span class="mono-tag" style="font-size:11px;">${r.uid}</span></td>
-    <td>${r.chofer}</td>
-    <td><span class="mono-tag">${r.placa}</span></td>
-    <td style="font-weight:600;font-family:var(--mono);">${r.pesoEntrada.toLocaleString('es-EC')} kg</td>
-    <td><span class="mono-tag">${r.tsBasculaEntrada||'—'}</span></td>
+    <td><span class="mt" style="font-size:10px;">${r.uid}</span></td>
+    <td>${r.chofer}</td><td><span class="mt">${r.placa}</span></td>
+    <td>${r.estado==='completado'?'<span class="badge b-used">Usado</span>':'<span class="badge b-ok">Activo</span>'}</td>
+    <td style="font-family:var(--mono);font-size:11px;">${r.tsQR||'—'}</td>
+    <td>${r.qrEnviado?'<span class="badge b-ok"><i class="ti ti-check"></i> Enviado</span>':'<button class="btn btn-success btn-sm" onclick="enviarWAQR(\''+r.uid+'\')"><i class="ti ti-brand-whatsapp"></i></button>'}</td>
   </tr>`).join('');
 }
 
-// ═══════════════════════════════════════════════════════════
+function descargarQR(){
+  const canvas=document.querySelector('#qr-canvas canvas');if(!canvas)return;
+  const a=document.createElement('a');a.href=canvas.toDataURL('image/png');
+  a.download='QR-'+paseActual+'.png';a.click();
+}
+
+function enviarWhatsApp(){paseActual&&enviarWAQR(paseActual);}
+
+function enviarWAQR(uid){
+  const rv=reg[uid];if(!rv)return;
+  rv.qrEnviado=true;
+  const msg=`🟢 *AGRIPAC S.A. — Pase de Ingreso*\n\n🆔 ID: ${uid}\n👤 Chofer: ${rv.chofer}\n🚛 Placa: ${rv.placa}\n📦 Carga: ${rv.detalle}\n📍 Carga: ${rv.areaCarga}\n📍 Descarga: ${rv.areaDesc}\n🕐 Hora programada: ${rv.hora}\n📅 ${fmtFecha(fechaSel)}\n\n_Presente este código QR en garita de entrada_\n_Válido solo para hoy_`;
+  const tel=rv.tel?rv.tel.replace(/\D/g,''):'';
+  window.open('https://wa.me/'+(tel?'593'+tel.slice(-9):'')+`?text=${encodeURIComponent(msg)}`,'_blank');
+  renderQRTabla();audit('WhatsApp',uid,rv.chofer,rv.placa,'QR enviado por WhatsApp');
+}
+
+// ══════════════════════════════════════════════════════════
+// GARITA ENTRADA
+// ══════════════════════════════════════════════════════════
+function geSearch(){
+  const q=document.getElementById('ge-id').value.trim().toUpperCase();
+  const el=document.getElementById('ge-result');
+  if(!q){el.innerHTML='';return;}
+  const row=todos.find(r=>(campo(r,'id')||'').toUpperCase()===q||(campo(r,'placa')||'').toUpperCase().includes(q));
+  if(!row){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> No encontrado en planificación</div>';return;}
+  const uid=campo(row,'id'),rv=reg[uid];
+  const est=rv?rv.estado:'pendiente';
+  // Validar QR
+  let qrValid='Sin QR generado';let qrClass='a-warn';
+  if(rv?.qrGenerado){qrValid='QR válido ✓';qrClass='a-ok';}
+  if(est==='completado'){qrValid='QR ya utilizado';qrClass='a-err';}
+  el.innerHTML=`
+    <div class="alert ${qrClass}" style="margin-bottom:8px;"><i class="ti ti-qrcode"></i> ${qrValid} · ${estadoBadge(est)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;margin-bottom:10px;">
+      <div><div class="sl">ID ÚNICO</div><span class="mt" style="font-size:10px;">${uid}</span></div>
+      <div><div class="sl">PLACA</div><span class="mt">${campo(row,'placa')}</span></div>
+      <div><div class="sl">CHOFER</div><strong>${campo(row,'chofer')}</strong></div>
+      <div><div class="sl">TIPO CARRO</div>${campo(row,'tipo')}</div>
+      <div><div class="sl">DETALLE</div>${campo(row,'detalle')}</div>
+      <div><div class="sl">HORA PROG.</div><span class="mt">${campo(row,'hora')}</span></div>
+    </div>
+    ${est==='pendiente'?`<button class="btn btn-success" onclick="geAbrirModal('${uid}')" style="width:100%;"><i class="ti ti-login"></i> Autorizar ingreso</button>`:''}
+    ${est==='garita-entrada'?'<div class="alert a-info"><i class="ti ti-info-circle"></i> Ya registrado en garita — proceder a báscula</div>':''}`;
+}
+
+function geAbrirModal(uid){
+  const rv=reg[uid];if(!rv)return;
+  modalData.uid=uid;
+  document.getElementById('m-ge-body').innerHTML=`
+    <div style="background:var(--sf2);border-radius:var(--r);padding:.9rem;margin-bottom:10px;font-size:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div><div class="sl">ID ÚNICO</div><span class="mt" style="font-size:10px;">${uid}</span></div>
+        <div><div class="sl">PLACA</div><span class="mt">${rv.placa}</span></div>
+        <div><div class="sl">CHOFER</div><strong>${rv.chofer}</strong></div>
+        <div><div class="sl">TIPO</div>${rv.tipo}</div>
+        <div><div class="sl">DETALLE</div>${rv.detalle}</div>
+        <div><div class="sl">APROBACIÓN</div><span class="badge b-ok">${rv.apro}</span></div>
+      </div>
+    </div>
+    <div class="field"><span class="fl">Condición del vehículo</span>
+      <select id="ge-cond"><option value="vacio">Vacío</option><option value="lleno">Lleno</option></select>
+    </div>
+    <div class="field"><span class="fl">Tipo de operación</span>
+      <select id="ge-op"><option value="carga">Carga</option><option value="descarga">Descarga</option></select>
+    </div>
+    <div class="field"><span class="fl">Operador garita</span>
+      <input type="text" id="ge-oper" placeholder="Nombre del operador"/>
+    </div>
+    <div class="field"><span class="fl">Observaciones</span>
+      <textarea id="ge-obs" rows="2" placeholder="Estado del vehículo, documentos, etc."></textarea>
+    </div>`;
+  abrir('m-ge');
+}
+
+function geConfirmar(){
+  const uid=modalData.uid,rv=reg[uid];if(!rv)return;
+  rv.tsGE=rv.tsIngreso=horaActual();
+  rv.condicion=document.getElementById('ge-cond')?.value||'vacio';
+  rv.operacion=document.getElementById('ge-op')?.value||'carga';
+  rv.operGE=document.getElementById('ge-oper')?.value||'Garita';
+  rv.obsEntrada=document.getElementById('ge-obs')?.value||'';
+  avanzar(uid,'garita-entrada');
+  addTL('ge-tl','#1D9E75','Ingreso: '+rv.chofer,rv.placa+' · '+rv.detalle);
+  addTL('dash-tl','#1D9E75','Ingreso garita: '+rv.chofer,rv.placa);
+  audit('Garita Entrada',uid,rv.chofer,rv.placa,'Ingreso autorizado · '+rv.condicion+' · '+rv.operacion);
+  cerrar('m-ge');
+  // Mostrar pase
+  paseActual=uid;mostrarPase(uid);
+}
+
+function renderGePend(){
+  const body=document.getElementById('ge-pend');if(!body)return;
+  const pend=planData.filter(r=>{const uid=campo(r,'id');return!reg[uid]||reg[uid].estado==='pendiente';});
+  if(!pend.length){body.innerHTML='<tr><td colspan="7" class="ec">Sin pendientes</td></tr>';return;}
+  body.innerHTML=pend.map(r=>{
+    const uid=campo(r,'id'),apro=campo(r,'apro'),rv=reg[uid];
+    return`<tr>
+      <td><span class="mt" style="font-size:10px;">${uid}</span></td>
+      <td>${campo(r,'chofer')}</td><td><span class="mt">${campo(r,'placa')}</span></td>
+      <td>${campo(r,'detalle')}</td>
+      <td><span class="mt">${campo(r,'hora')}</span></td>
+      <td>${apro.toLowerCase()==='ok'?'<span class="badge b-ok"><i class="ti ti-check"></i> OK</span>':'<span class="badge b-pend">'+apro+'</span>'}</td>
+      <td>
+        ${rv?.qrGenerado?'':`<button class="btn btn-sm btn-purple" onclick="genQRSingle('${uid}')"><i class="ti ti-qrcode"></i></button>`}
+        <button class="btn btn-success btn-sm" onclick="geAbrirModal('${uid}')"><i class="ti ti-login"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// BÁSCULA ENTRADA
+// ══════════════════════════════════════════════════════════
+let beUID=null;
+function beBuscar(){
+  const id=document.getElementById('be-id').value.trim().toUpperCase();
+  const rv=reg[id],el=document.getElementById('be-info');beUID=null;
+  if(!rv){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> ID no encontrado</div>';return;}
+  if(rv.estado==='pendiente'){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> Vehículo no ha pasado por garita de entrada</div>';return;}
+  if(rv.peBruto){el.innerHTML=`<div class="alert a-info"><i class="ti ti-info-circle"></i> Peso ya registrado: <strong>${rv.peBruto} kg</strong></div>`;return;}
+  beUID=id;
+  el.innerHTML=`<div class="alert a-ok"><i class="ti ti-check"></i> <strong>${id}</strong> — ${rv.chofer} · ${rv.placa} · ${rv.detalle}</div>`;
+  document.getElementById('be-peso').focus();
+}
+function beDisplay(){
+  const v=parseFloat(document.getElementById('be-peso').value)||0;
+  document.getElementById('be-display').textContent=v>0?v.toLocaleString('es-EC')+' kg':'— kg';
+}
+function beRegistrar(){
+  if(!beUID){msg('be-msg','warn','Busque y seleccione un ID primero');return;}
+  const p=parseFloat(document.getElementById('be-peso').value);
+  if(isNaN(p)||p<=0){msg('be-msg','warn','Ingrese un peso válido');return;}
+  const rv=reg[beUID];rv.peBruto=p;rv.tsBE=horaActual();
+  avanzar(beUID,'bascula-entrada');
+  renderBeTabla();
+  document.getElementById('be-id').value='';document.getElementById('be-peso').value='';
+  document.getElementById('be-info').innerHTML='';document.getElementById('be-display').textContent='— kg';
+  audit('Báscula Entrada',beUID,rv.chofer,rv.placa,p+' kg bruto');
+  msg('be-msg','ok','Peso registrado: '+p.toLocaleString('es-EC')+' kg — Listo para despacho');
+  beUID=null;
+}
+function renderBeTabla(){
+  const body=document.getElementById('be-tabla');if(!body)return;
+  const items=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.peBruto);
+  if(!items.length){body.innerHTML='<tr><td colspan="5" class="ec">Sin registros</td></tr>';return;}
+  body.innerHTML=items.map(r=>`<tr>
+    <td><span class="mt" style="font-size:10px;">${r.uid}</span></td>
+    <td>${r.chofer}</td><td><span class="mt">${r.placa}</span></td>
+    <td style="font-weight:600;font-family:var(--mono);">${r.peBruto.toLocaleString('es-EC')} kg</td>
+    <td><span class="mt">${r.tsBE||'—'}</span></td>
+  </tr>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════
 // DESPACHO
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 function dBuscar(){
   const id=document.getElementById('d-id').value.trim().toUpperCase();
-  const reg=registros[id];
-  const el=document.getElementById('d-info');
-  if(!reg||reg.estado==='pendiente'){el.innerHTML='<div class="alert a-warning"><i class="ti ti-alert-triangle"></i> ID no encontrado o vehículo no ha pasado por garita/báscula.</div>';return;}
-  if(!reg.pesoEntrada){el.innerHTML='<div class="alert a-warning"><i class="ti ti-alert-triangle"></i> Vehículo debe registrar peso en báscula de entrada primero.</div>';return;}
-  const est=reg.estado;
-  const infoHtml=`<div style="background:var(--surface2);border-radius:var(--r);padding:1rem;margin-bottom:12px;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
-      <div><div class="section-label">ID ÚNICO</div><span class="mono-tag" style="font-size:11px;">${id}</span></div>
-      <div><div class="section-label">ESTADO</div>${estadoBadge(est)}</div>
-      <div><div class="section-label">CHOFER</div><strong>${reg.chofer}</strong></div>
-      <div><div class="section-label">PLACA</div><span class="mono-tag">${reg.placa}</span></div>
-      <div><div class="section-label">DETALLE CARGA</div>${reg.detalle}</div>
-      <div><div class="section-label">PESO ENTRADA</div><span style="font-family:var(--mono);font-weight:600;">${reg.pesoEntrada.toLocaleString('es-EC')} kg</span></div>
+  const rv=reg[id],el=document.getElementById('d-info');
+  if(!rv||!rv.peBruto){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> ID no encontrado o sin peso de entrada registrado</div>';return;}
+  const est=rv.estado;
+  const info=`<div style="background:var(--sf2);border-radius:var(--r);padding:.9rem;margin-bottom:10px;font-size:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+      <div><div class="sl">ID</div><span class="mt" style="font-size:10px;">${id}</span></div>
+      <div><div class="sl">ESTADO</div>${estadoBadge(est)}</div>
+      <div><div class="sl">CHOFER</div><strong>${rv.chofer}</strong></div>
+      <div><div class="sl">PLACA</div><span class="mt">${rv.placa}</span></div>
+      <div><div class="sl">DETALLE</div>${rv.detalle}</div>
+      <div><div class="sl">PESO ENTRADA</div><span style="font-family:var(--mono);font-weight:600;">${rv.peBruto.toLocaleString('es-EC')} kg</span></div>
     </div>
   </div>`;
   if(['despacho','cargando'].includes(est)){
-    // Ya está en despacho, mostrar estado
-    const crono=cronos[id];
-    const tiempoStr=crono?formatCrono(crono.elapsed+(crono.running?Date.now()-crono.start:0)):'—';
-    el.innerHTML=infoHtml+`
-      <div class="alert a-info" style="margin-bottom:10px;"><i class="ti ti-info-circle"></i> Andén: <strong>${reg.anden||'—'}</strong> · Despachador: <strong>${reg.despachador||'—'}</strong></div>
-      <div class="crono-display ${crono&&crono.running?'running':'stopped'}" id="crono-${id}" style="margin-bottom:12px;">${tiempoStr}</div>
-      <div style="display:flex;gap:8px;">
-        ${est==='despacho'?`<button class="btn btn-success" onclick="dIniciarCarga('${id}')" style="flex:1;"><i class="ti ti-play"></i> Iniciar carga</button>`:''}
-        ${est==='cargando'?`<button class="btn btn-danger" onclick="dFinalizarCarga('${id}')" style="flex:1;"><i class="ti ti-stop"></i> Finalizar carga</button>`:''}
+    const cr=cronos[id],cid='crono-'+id.replace(/[^a-z0-9]/gi,'_');
+    const t=cr?fmtCrono(cr.elapsed+(cr.running?Date.now()-cr.start:0)):'00:00:00';
+    if(cr&&cr.running){clearInterval(cr._intd);cr._intd=setInterval(()=>{const e=document.getElementById(cid);if(e)e.textContent=fmtCrono(cr.elapsed+Date.now()-cr.start);},1000);}
+    el.innerHTML=info+`
+      <div class="alert a-info" style="margin-bottom:10px;"><i class="ti ti-building-warehouse"></i> Andén <strong>${rv.anden||'—'}</strong> · Despachador: <strong>${rv.despachador||'—'}</strong></div>
+      <div class="crono ${cr?.running?'run':'stop'}" id="${cid}" style="margin-bottom:10px;">${t}</div>
+      <div style="display:flex;gap:6px;">
+        ${est==='despacho'?`<button class="btn btn-success" onclick="dIniciar('${id}')" style="flex:1;"><i class="ti ti-player-play"></i> Iniciar carga</button>`:''}
+        ${est==='cargando'?`<button class="btn btn-danger" onclick="dFinalizar('${id}')" style="flex:1;"><i class="ti ti-player-stop"></i> Finalizar carga</button>`:''}
       </div>`;
-    if(crono&&crono.running){
-      crono.interval=setInterval(()=>{
-        const el2=document.getElementById('crono-'+id);
-        if(el2)el2.textContent=formatCrono(crono.elapsed+Date.now()-crono.start);
-      },1000);
-    }
   } else {
-    // Listo para configurar despacho
-    el.innerHTML=infoHtml+`<button class="btn btn-primary" onclick="dAbrirConfig('${id}')" style="width:100%;"><i class="ti ti-building-warehouse"></i> Configurar despacho</button>`;
+    el.innerHTML=info+`<button class="btn btn-primary" onclick="dAbrirConfig('${id}')" style="width:100%;"><i class="ti ti-building-warehouse"></i> Configurar despacho</button>`;
   }
-  el.style.display='block';
 }
 function dAbrirConfig(uid){
-  const reg=registros[uid];
-  modalData.uid=uid;
-  document.getElementById('modal-despacho-body').innerHTML=`
-    <div style="background:var(--surface2);border-radius:var(--r);padding:.75rem;margin-bottom:12px;font-size:13px;">
-      <strong>${uid}</strong> — ${reg.chofer} · <span class="mono-tag">${reg.placa}</span>
+  const rv=reg[uid];modalData.uid=uid;
+  document.getElementById('m-desp-body').innerHTML=`
+    <div style="background:var(--sf2);border-radius:var(--r);padding:.75rem;margin-bottom:10px;font-size:12px;">
+      <strong>${uid}</strong> — ${rv.chofer} · <span class="mt">${rv.placa}</span>
     </div>
-    <div class="field"><span class="field-label">Andén asignado</span>
-      <select id="d-anden">${andenes.map(a=>`<option value="${a.id}" ${!a.libre?'disabled':''}>Andén ${a.id} ${a.libre?'(Libre)':'(Ocupado)'}</option>`).join('')}</select>
+    <div class="field"><span class="fl">Andén asignado</span>
+      <select id="d-anden">${andenes.map(a=>`<option value="${a.id}"${!a.libre?' disabled':''}>Andén ${a.id} ${a.libre?'(Libre)':'(Ocupado)'}</option>`).join('')}</select>
     </div>
-    <div class="field"><span class="field-label">Despachador responsable</span><input type="text" id="d-despachador" placeholder="Nombre del despachador"/></div>
-    <div class="field"><span class="field-label">¿Documentos de carga entregados?</span>
-      <div style="display:flex;gap:8px;margin-top:4px;">
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="radio" name="d-docs" value="si" checked/> Sí, entregados</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="radio" name="d-docs" value="no"/> No entregados</label>
+    <div class="field"><span class="fl">Despachador responsable</span>
+      <input type="text" id="d-desp" placeholder="Nombre del despachador"/>
+    </div>
+    <div class="field"><span class="fl">Documentos entregados</span>
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;"><input type="radio" name="d-docs" value="si" checked/> Sí, entregados</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;"><input type="radio" name="d-docs" value="no"/> No entregados</label>
       </div>
     </div>
-    <div class="field"><span class="field-label">Observaciones de despacho</span><textarea id="d-obs-desp" rows="2" placeholder="Notas adicionales"></textarea></div>`;
-  document.getElementById('modal-despacho-actions').innerHTML=`
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-success" onclick="dConfigurar()" style="flex:1;"><i class="ti ti-check"></i> Confirmar despacho</button>
-      <button class="btn" onclick="cerrarModal('modal-despacho')" style="flex:1;">Cancelar</button>
+    <div class="field"><span class="fl">Observaciones de despacho</span>
+      <textarea id="d-obs" rows="2" placeholder="Notas adicionales"></textarea>
     </div>`;
-  abrirModal('modal-despacho');
+  document.getElementById('m-desp-actions').innerHTML=`
+    <div style="display:flex;gap:6px;">
+      <button class="btn btn-success" onclick="dConfigurar()" style="flex:1;"><i class="ti ti-check"></i> Confirmar despacho</button>
+      <button class="btn" onclick="cerrar('m-desp')" style="flex:1;">Cancelar</button>
+    </div>`;
+  abrir('m-desp');
 }
 function dConfigurar(){
-  const uid=modalData.uid, reg=registros[uid];
-  const aid=parseInt(document.getElementById('d-anden').value);
-  const despachador=document.getElementById('d-despachador').value.trim()||'Sin asignar';
+  const uid=modalData.uid,rv=reg[uid];
+  const aid=parseInt(document.getElementById('d-anden')?.value);
+  const desp=document.getElementById('d-desp')?.value.trim()||'Sin asignar';
   const docs=document.querySelector('input[name="d-docs"]:checked')?.value==='si';
-  reg.anden=aid; reg.despachador=despachador; reg.docsEntrega=docs;
-  reg.tsDespacho=horaActual();
-  const a=andenes.find(x=>x.id===aid);
-  if(a){a.libre=false;a.uid=uid;a.label=reg.placa;}
-  avanzarEstado(uid,'despacho');
-  agregarLog('Despacho',uid,reg.chofer,reg.placa,'Andén '+aid+' · '+despachador+(docs?' · Docs OK':' · Sin docs'));
-  cerrarModal('modal-despacho');
-  renderCargasActivas();renderAndenes();
+  rv.anden=aid;rv.despachador=desp;rv.docs=docs;rv.obsDesp=document.getElementById('d-obs')?.value||'';
+  rv.tsDesp=horaActual();
+  const a=andenes.find(x=>x.id===aid);if(a){a.libre=false;a.uid=uid;a.lbl=rv.placa;}
+  avanzar(uid,'despacho');
+  audit('Despacho',uid,rv.chofer,rv.placa,'Andén '+aid+' · '+desp+(docs?' · Docs OK':' · Sin docs'));
+  cerrar('m-desp');
+  // Notif WA al conductor
+  const tel=rv.tel?rv.tel.replace(/\D/g,''):'';
+  const waMsg=`🏭 *AGRIPAC S.A. — Asignación de andén*\n\n📦 ${rv.detalle}\n🏗 *Andén: ${aid}*\n👷 Despachador: ${desp}\n🚛 Diríjase al andén asignado\n\n_${fmtFecha(fechaSel)}_`;
+  if(tel)window.open('https://wa.me/593'+tel.slice(-9)+`?text=${encodeURIComponent(waMsg)}`,'_blank');
   document.getElementById('d-id').value='';document.getElementById('d-info').innerHTML='';
-}
-function dIniciarCarga(uid){
-  const reg=registros[uid];
-  cronos[uid]={start:Date.now(),elapsed:0,running:true};
-  reg.tsInicioC=horaActual();
-  avanzarEstado(uid,'cargando');
-  agregarLog('Despacho',uid,reg.chofer,reg.placa,'Inicio de carga — andén '+reg.anden);
-  renderCargasActivas();
-  document.getElementById('d-info').innerHTML='';
-  document.getElementById('d-id').value='';
-}
-function dFinalizarCarga(uid){
-  const reg=registros[uid];
-  const crono=cronos[uid];
-  if(crono){clearInterval(crono.interval);crono.elapsed+=Date.now()-crono.start;crono.running=false;}
-  reg.tsFinC=horaActual();
-  reg.tiempoCarga=crono?formatCrono(crono.elapsed):'—';
-  avanzarEstado(uid,'bascula-salida');
-  agregarLog('Despacho',uid,reg.chofer,reg.placa,'Fin de carga · Tiempo: '+(reg.tiempoCarga||'—'));
-  // Liberar andén
-  const a=andenes.find(x=>x.uid===uid);
-  if(a){a.libre=true;a.uid=null;a.label='';}
   renderCargasActivas();renderAndenes();
-  document.getElementById('d-info').innerHTML='';
-  document.getElementById('d-id').value='';
+}
+function dIniciar(uid){
+  const rv=reg[uid];
+  cronos[uid]={start:Date.now(),elapsed:0,running:true};
+  rv.tsIniC=horaActual();
+  avanzar(uid,'cargando');
+  audit('Despacho',uid,rv.chofer,rv.placa,'Inicio de carga · andén '+rv.anden);
+  renderCargasActivas();
+  document.getElementById('d-info').innerHTML='';document.getElementById('d-id').value='';
+}
+function dFinalizar(uid){
+  const rv=reg[uid],cr=cronos[uid];
+  if(cr){clearInterval(cr._int);clearInterval(cr._intd);cr.elapsed+=Date.now()-cr.start;cr.running=false;}
+  rv.tsFinC=horaActual();rv.tiempoC=cr?fmtCrono(cr.elapsed):'—';
+  const a=andenes.find(x=>x.uid===uid);if(a){a.libre=true;a.uid=null;a.lbl='';}
+  avanzar(uid,'bascula-salida');
+  audit('Despacho',uid,rv.chofer,rv.placa,'Fin carga · tiempo: '+rv.tiempoC);
+  renderCargasActivas();renderAndenes();
+  document.getElementById('d-info').innerHTML='';document.getElementById('d-id').value='';
 }
 function renderCargasActivas(){
-  const body=document.getElementById('d-activos');
-  const activos=planData.map(r=>registros[campo(r,'id')]).filter(r=>r&&['despacho','cargando'].includes(r.estado));
+  const body=document.getElementById('d-activos');if(!body)return;
+  const activos=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&['despacho','cargando'].includes(r.estado));
   if(!activos.length){body.innerHTML='<tr><td colspan="10" class="ec">Sin cargas activas</td></tr>';return;}
-  body.innerHTML=activos.map(reg=>{
-    const crono=cronos[reg.uid];
-    const tiempoId='crono-t-'+reg.uid.replace(/[^a-z0-9]/gi,'_');
-    if(crono&&crono.running){
-      clearInterval(crono.tableInterval);
-      crono.tableInterval=setInterval(()=>{const el=document.getElementById(tiempoId);if(el)el.textContent=formatCrono(crono.elapsed+Date.now()-crono.start);},1000);
-    }
-    const tiempo=crono?`<span id="${tiempoId}" style="font-family:var(--mono);">${formatCrono(crono.elapsed+(crono.running?Date.now()-crono.start:0))}</span>`:'—';
-    const accion=reg.estado==='despacho'
-      ?`<button class="btn btn-success btn-sm" onclick="dIniciarCarga('${reg.uid}')"><i class="ti ti-play"></i> Iniciar</button>`
-      :`<button class="btn btn-danger btn-sm" onclick="dFinalizarCarga('${reg.uid}')"><i class="ti ti-stop"></i> Finalizar</button>`;
+  body.innerHTML=activos.map(rv=>{
+    const cr=cronos[rv.uid],cid='ct-'+rv.uid.replace(/[^a-z0-9]/gi,'_');
+    const t=cr?fmtCrono(cr.elapsed+(cr.running?Date.now()-cr.start:0)):'—';
+    if(cr&&cr.running){clearInterval(cr._int);cr._int=setInterval(()=>{const e=document.getElementById(cid);if(e)e.textContent=fmtCrono(cr.elapsed+Date.now()-cr.start);},1000);}
+    const ac=rv.estado==='despacho'?`<button class="btn btn-success btn-sm" onclick="dIniciar('${rv.uid}')"><i class="ti ti-player-play"></i></button>`:
+      `<button class="btn btn-danger btn-sm" onclick="dFinalizar('${rv.uid}')"><i class="ti ti-player-stop"></i></button>`;
     return`<tr>
-      <td><span class="mono-tag" style="font-size:11px;">${reg.uid}</span></td>
-      <td>${reg.chofer}</td>
-      <td><span class="mono-tag">${reg.placa}</span></td>
-      <td>${reg.detalle}</td>
-      <td><span class="badge b-despacho">Andén ${reg.anden||'—'}</span></td>
-      <td>${reg.despachador||'—'}</td>
-      <td>${reg.docsEntrega?'<span class="badge b-ok"><i class="ti ti-check"></i> OK</span>':'<span class="badge b-pend">Pendiente</span>'}</td>
-      <td>${tiempo}</td>
-      <td>${estadoBadge(reg.estado)}</td>
-      <td>${accion}</td>
+      <td><span class="mt" style="font-size:10px;">${rv.uid}</span></td>
+      <td>${rv.chofer}</td><td><span class="mt">${rv.placa}</span></td><td>${rv.detalle}</td>
+      <td><span class="badge b-desp">A-${rv.anden||'—'}</span></td>
+      <td>${rv.despachador||'—'}</td>
+      <td>${rv.docs?'<span class="badge b-ok"><i class="ti ti-check"></i> OK</span>':'<span class="badge b-pend">Pend.</span>'}</td>
+      <td><span id="${cid}" style="font-family:var(--mono);font-size:11px;">${t}</span></td>
+      <td>${estadoBadge(rv.estado)}</td><td>${ac}</td>
     </tr>`;
   }).join('');
 }
 function renderAndenes(){
-  const grid=document.getElementById('andenes-grid');
-  const sel=document.getElementById('d-anden');
+  const grid=document.getElementById('andenes-grid');if(!grid)return;
   grid.innerHTML=andenes.map(a=>`<div class="anden ${a.libre?'libre':cronos[a.uid]?.running?'cargando':'ocupado'}" onclick="clickAnden(${a.id})">
-    <div class="anden-num">Andén ${a.id}</div>
-    <div class="anden-icon">${a.libre?'<i class="ti ti-parking"></i>':cronos[a.uid]?.running?'<i class="ti ti-loader"></i>':'<i class="ti ti-truck"></i>'}</div>
-    <div class="anden-sub">${a.libre?'Libre':(a.label||'Ocupado')}</div>
+    <div class="anden-num">A-${a.id}</div>
+    <div style="font-size:18px;margin:4px 0;">${a.libre?'<i class="ti ti-parking"></i>':cronos[a.uid]?.running?'<i class="ti ti-loader"></i>':'<i class="ti ti-truck"></i>'}</div>
+    <div class="anden-sub">${a.libre?'Libre':(a.lbl||'Ocupado')}</div>
   </div>`).join('');
-  if(sel) sel.innerHTML=andenes.filter(a=>a.libre).map(a=>`<option value="${a.id}">Andén ${a.id}</option>`).join('');
+  const sel=document.getElementById('d-anden');
+  if(sel)sel.innerHTML=andenes.filter(a=>a.libre).map(a=>`<option value="${a.id}">Andén ${a.id}</option>`).join('');
 }
-function clickAnden(id){
-  const a=andenes.find(x=>x.id===id);
-  if(a&&!a.libre&&confirm('¿Liberar andén '+id+'?')){a.libre=true;a.uid=null;a.label='';renderAndenes();renderCargasActivas();}
-}
-function agregarAnden(){andenes.push({id:andenes.length+1,libre:true,uid:null,label:''});renderAndenes();}
-function formatCrono(ms){
-  const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);
-  return String(h).padStart(2,'0')+':'+String(m%60).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
-}
+function clickAnden(id){const a=andenes.find(x=>x.id===id);if(a&&!a.libre&&confirm('¿Liberar andén '+id+'?')){a.libre=true;a.uid=null;a.lbl='';renderAndenes();renderCargasActivas();}}
+function agregarAnden(){andenes.push({id:andenes.length+1,libre:true,uid:null,lbl:''});renderAndenes();}
+function fmtCrono(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);return pad(h)+':'+pad(m%60)+':'+pad(s%60);}
 
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // BÁSCULA SALIDA
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 let bsUID=null;
 function bsBuscar(){
   const id=document.getElementById('bs-id').value.trim().toUpperCase();
-  const reg=registros[id];
-  const el=document.getElementById('bs-info');
-  bsUID=null;
-  if(!reg||!reg.pesoEntrada){el.style.display='block';el.className='alert a-warning';el.innerHTML='<i class="ti ti-alert-triangle"></i> ID no encontrado o sin peso de entrada registrado.';return;}
-  if(reg.estado!=='bascula-salida'&&reg.estado!=='garita-salida'){el.style.display='block';el.className='alert a-warning';el.innerHTML='<i class="ti ti-alert-triangle"></i> El vehículo aún no ha completado la carga en despacho.';return;}
-  if(reg.pesoSalida){el.style.display='block';el.className='alert a-info';el.innerHTML=`<i class="ti ti-info-circle"></i> Peso de salida ya registrado: ${reg.pesoSalida} kg`;return;}
+  const rv=reg[id],el=document.getElementById('bs-info');bsUID=null;
+  if(!rv||!rv.peBruto){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> ID no encontrado o sin peso de entrada</div>';return;}
+  if(!['bascula-salida','garita-salida'].includes(rv.estado)){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> Vehículo aún no completó la carga en despacho</div>';return;}
+  if(rv.peSalida){el.innerHTML=`<div class="alert a-info"><i class="ti ti-info-circle"></i> Peso de salida ya registrado: ${rv.peSalida} kg</div>`;return;}
   bsUID=id;
-  el.style.display='block';el.className='alert a-success';
-  el.innerHTML=`<i class="ti ti-check"></i> <strong>${id}</strong> — ${reg.chofer} · ${reg.placa} · ${reg.detalle}`;
-  document.getElementById('bs-entrada').textContent=reg.pesoEntrada.toLocaleString('es-EC')+' kg';
-  document.getElementById('bs-salida').textContent='— kg';
-  document.getElementById('bs-neto').textContent='— kg';
+  el.innerHTML=`<div class="alert a-ok"><i class="ti ti-check"></i> <strong>${id}</strong> — ${rv.chofer} · ${rv.placa}</div>`;
+  document.getElementById('bs-ent').textContent=rv.peBruto.toLocaleString('es-EC')+' kg';
+  document.getElementById('bs-sal').textContent='—';
+  document.getElementById('bs-net').textContent='—';
   document.getElementById('bs-peso').focus();
 }
-function calcPesoNeto(){
+function bsCalc(){
   const v=parseFloat(document.getElementById('bs-peso').value)||0;
-  document.getElementById('bs-salida').textContent=v>0?v.toLocaleString('es-EC')+' kg':'— kg';
-  if(bsUID&&registros[bsUID]&&v>0){
-    const neto=registros[bsUID].pesoEntrada-v;
-    document.getElementById('bs-neto').textContent=neto.toLocaleString('es-EC')+' kg';
-  } else document.getElementById('bs-neto').textContent='— kg';
+  document.getElementById('bs-sal').textContent=v>0?v.toLocaleString('es-EC')+' kg':'—';
+  if(bsUID&&reg[bsUID]&&v>0){
+    const neto=reg[bsUID].peBruto-v;
+    document.getElementById('bs-net').textContent=neto.toLocaleString('es-EC')+' kg';
+  }else document.getElementById('bs-net').textContent='—';
 }
 function bsRegistrar(){
-  if(!bsUID){mostrarMsg('bs-msg','warning','Busque y seleccione un ID primero');return;}
+  if(!bsUID){msg('bs-msg','warn','Busque un ID primero');return;}
   const p=parseFloat(document.getElementById('bs-peso').value);
-  if(isNaN(p)||p<=0){mostrarMsg('bs-msg','warning','Ingrese un peso válido');return;}
-  const reg=registros[bsUID];
-  reg.pesoSalida=p;
-  reg.pesoNeto=reg.pesoEntrada-p;
-  reg.tsBasculaSalida=horaActual();
-  avanzarEstado(bsUID,'garita-salida');
-  agregarLog('Báscula Salida',bsUID,reg.chofer,reg.placa,p+' kg tara · Neto: '+reg.pesoNeto+' kg');
-  renderBsTabla();
+  if(isNaN(p)||p<=0){msg('bs-msg','warn','Ingrese peso válido');return;}
+  const rv=reg[bsUID];rv.peSalida=p;rv.peNeto=rv.peBruto-p;rv.tsBS=horaActual();
+  avanzar(bsUID,'garita-salida');
+  renderBsTabla();calcMetrics();
+  audit('Báscula Salida',bsUID,rv.chofer,rv.placa,p+' kg tara · Neto: '+rv.peNeto+' kg');
   document.getElementById('bs-id').value='';document.getElementById('bs-peso').value='';
-  document.getElementById('bs-info').style.display='none';
-  document.getElementById('bs-entrada').textContent='— kg';document.getElementById('bs-salida').textContent='— kg';document.getElementById('bs-neto').textContent='— kg';
+  document.getElementById('bs-info').innerHTML='';
+  ['bs-ent','bs-sal','bs-net'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='—';});
   bsUID=null;
-  mostrarMsg('bs-msg','success','Peso de salida registrado — vehículo listo para garita de salida');
+  msg('bs-msg','ok','Peso registrado — listo para garita de salida');
 }
 function renderBsTabla(){
-  const body=document.getElementById('bs-tabla');
-  const items=planData.map(r=>registros[campo(r,'id')]).filter(r=>r&&r.pesoSalida);
+  const body=document.getElementById('bs-tabla');if(!body)return;
+  const items=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.peSalida);
   if(!items.length){body.innerHTML='<tr><td colspan="6" class="ec">Sin registros</td></tr>';return;}
   body.innerHTML=items.map(r=>`<tr>
-    <td><span class="mono-tag" style="font-size:11px;">${r.uid}</span></td>
-    <td><span class="mono-tag">${r.placa}</span></td>
-    <td style="font-family:var(--mono);">${r.pesoEntrada.toLocaleString('es-EC')}</td>
-    <td style="font-family:var(--mono);">${r.pesoSalida.toLocaleString('es-EC')}</td>
-    <td style="font-weight:600;font-family:var(--mono);color:var(--green);">${r.pesoNeto.toLocaleString('es-EC')}</td>
-    <td><span class="mono-tag">${r.tsBasculaSalida||'—'}</span></td>
+    <td><span class="mt" style="font-size:10px;">${r.uid}</span></td>
+    <td><span class="mt">${r.placa}</span></td>
+    <td style="font-family:var(--mono);font-size:11px;">${r.peBruto?.toLocaleString('es-EC')}</td>
+    <td style="font-family:var(--mono);font-size:11px;">${r.peSalida?.toLocaleString('es-EC')}</td>
+    <td style="font-weight:600;font-family:var(--mono);color:var(--gr);">${r.peNeto?.toLocaleString('es-EC')}</td>
+    <td><span class="mt">${r.tsBS||'—'}</span></td>
   </tr>`).join('');
+  const tot=items.reduce((s,r)=>s+(r.peNeto||0),0);
+  const el=document.getElementById('bs-total');if(el)el.textContent=tot.toLocaleString('es-EC')+' kg';
 }
 
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // GARITA SALIDA
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 let gsUID=null;
 function gsBuscar(){
   const id=document.getElementById('gs-id').value.trim().toUpperCase();
-  const reg=registros[id];
-  const el=document.getElementById('gs-info');
-  gsUID=null;
-  if(!reg||reg.estado!=='garita-salida'){el.innerHTML='<div class="alert a-warning"><i class="ti ti-alert-triangle"></i> ID no encontrado o vehículo no está listo para salida.</div>';return;}
+  const rv=reg[id],el=document.getElementById('gs-info');gsUID=null;
+  if(!rv||rv.estado!=='garita-salida'){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> ID no encontrado o vehículo no está listo para salida</div>';return;}
   gsUID=id;
   el.innerHTML=`
-    <div class="alert a-success" style="margin-bottom:10px;"><i class="ti ti-check"></i> Vehículo listo para autorización de salida</div>
-    <div style="background:var(--surface2);border-radius:var(--r);padding:1rem;margin-bottom:12px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
-        <div><div class="section-label">ID ÚNICO</div><span class="mono-tag" style="font-size:11px;">${id}</span></div>
-        <div><div class="section-label">PLACA</div><span class="mono-tag">${reg.placa}</span></div>
-        <div><div class="section-label">CHOFER</div><strong>${reg.chofer}</strong></div>
-        <div><div class="section-label">DETALLE CARGA</div>${reg.detalle}</div>
-        <div><div class="section-label">PESO NETO</div><span style="font-family:var(--mono);font-weight:600;color:var(--green);">${(reg.pesoNeto||0).toLocaleString('es-EC')} kg</span></div>
-        <div><div class="section-label">TIEMPO CARGA</div><span class="mono-tag">${reg.tiempoCarga||'—'}</span></div>
+    <div class="alert a-ok" style="margin-bottom:10px;"><i class="ti ti-check"></i> Listo para autorización de salida</div>
+    <div style="background:var(--sf2);border-radius:var(--r);padding:.9rem;margin-bottom:10px;font-size:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div><div class="sl">ID</div><span class="mt" style="font-size:10px;">${id}</span></div>
+        <div><div class="sl">PLACA</div><span class="mt">${rv.placa}</span></div>
+        <div><div class="sl">CHOFER</div><strong>${rv.chofer}</strong></div>
+        <div><div class="sl">DETALLE</div>${rv.detalle}</div>
+        <div><div class="sl">PESO NETO</div><span style="font-family:var(--mono);font-weight:600;color:var(--gr);">${(rv.peNeto||0).toLocaleString('es-EC')} kg</span></div>
+        <div><div class="sl">TIEMPO CARGA</div><span class="mt">${rv.tiempoC||'—'}</span></div>
       </div>
     </div>
     <button class="btn btn-primary" onclick="gsAbrirModal('${id}')" style="width:100%;"><i class="ti ti-shield-check"></i> Completar autorización de salida</button>`;
 }
 function gsAbrirModal(uid){
-  const reg=registros[uid];
-  modalData.uid=uid;
-  document.getElementById('modal-gs-body').innerHTML=`
-    <div style="background:var(--surface2);border-radius:var(--r);padding:.75rem;margin-bottom:12px;font-size:13px;">
-      <strong>${uid}</strong> · ${reg.chofer} · <span class="mono-tag">${reg.placa}</span>
+  const rv=reg[uid];modalData.uid=uid;
+  document.getElementById('m-gs-body').innerHTML=`
+    <div style="background:var(--sf2);border-radius:var(--r);padding:.75rem;margin-bottom:10px;font-size:12px;">
+      <strong>${uid}</strong> · ${rv.chofer} · <span class="mt">${rv.placa}</span> · <strong style="color:var(--gr);">${(rv.peNeto||0).toLocaleString('es-EC')} kg neto</strong>
     </div>
-    <div class="field"><span class="field-label">Números de precintos de seguridad</span><input type="text" id="gs-precintos" placeholder="Ej: PR-001, PR-002"/></div>
-    <div class="field"><span class="field-label">Números de guías de remisión</span><input type="text" id="gs-guias" placeholder="Ej: GR-2025-001"/></div>
-    <div class="field"><span class="field-label">Operador garita salida</span><input type="text" id="gs-operador" placeholder="Nombre del operador"/></div>
-    <div style="margin-bottom:10px;">
-      <div class="field-label">Foto del precinto / carro vacío</div>
-      <div class="foto-area" onclick="document.getElementById('gs-foto-input').click()">
-        <i class="ti ti-camera" style="font-size:24px;color:var(--text3);"></i>
-        <div style="font-size:13px;color:var(--text3);margin-top:8px;">Toca para tomar o subir foto</div>
-        <img id="gs-foto-preview" class="foto-preview" alt="Foto precinto"/>
+    <div class="field"><span class="fl">Números de precintos de seguridad</span>
+      <input type="text" id="gs-prec" placeholder="Ej: PR-001, PR-002"/>
+    </div>
+    <div class="field"><span class="fl">Guías de remisión</span>
+      <input type="text" id="gs-guias" placeholder="Ej: GR-2025-001"/>
+    </div>
+    <div class="field"><span class="fl">¿Documentos de salida verificados?</span>
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;"><input type="radio" name="gs-docs" value="si" checked/> Sí, verificados</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;"><input type="radio" name="gs-docs" value="no"/> No verificados</label>
       </div>
-      <input type="file" id="gs-foto-input" accept="image/*" capture="environment" style="display:none;" onchange="gsFotoPreview(this)"/>
     </div>
-    <div class="field"><span class="field-label">Observaciones de salida</span><textarea id="gs-obs" rows="2" placeholder="Notas de salida"></textarea></div>`;
-  abrirModal('modal-gs');
+    <div class="field"><span class="fl">Foto precinto / carro vacío</span>
+      <div class="foto-area" onclick="document.getElementById('gs-foto-input').click()">
+        <i class="ti ti-camera" style="font-size:22px;color:var(--tx3);"></i>
+        <div style="font-size:12px;color:var(--tx3);margin-top:6px;">Toca para capturar foto</div>
+        <img id="gs-foto-prev" class="foto-preview" alt="Foto precinto"/>
+      </div>
+      <input type="file" id="gs-foto-input" accept="image/*" capture="environment" style="display:none;" onchange="gsFoto(this)"/>
+    </div>
+    <div class="field"><span class="fl">Operador garita salida</span>
+      <input type="text" id="gs-oper" placeholder="Nombre del operador"/>
+    </div>
+    <div class="field"><span class="fl">Observaciones de salida</span>
+      <textarea id="gs-obs" rows="2" placeholder="Notas de salida"></textarea>
+    </div>`;
+  abrir('m-gs');
 }
-function gsFotoPreview(input){
-  const file=input.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{const img=document.getElementById('gs-foto-preview');img.src=e.target.result;img.style.display='block';};
-  reader.readAsDataURL(file);
+function gsFoto(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{const img=document.getElementById('gs-foto-prev');img.src=e.target.result;img.style.display='block';};r.readAsDataURL(f);
 }
-function gsConfirmarSalida(){
-  const uid=modalData.uid, reg=registros[uid];
-  reg.precintos=document.getElementById('gs-precintos').value||'—';
-  reg.guias=document.getElementById('gs-guias').value||'—';
-  reg.autorizadoPor=document.getElementById('gs-operador').value||'Garita';
-  reg.obsSalida=document.getElementById('gs-obs').value||'';
-  reg.tsGaritaSalida=horaActual();
-  const foto=document.getElementById('gs-foto-preview');
-  reg.foto=foto&&foto.style.display!=='none'?foto.src:null;
-  avanzarEstado(uid,'completado');
-  agregarLog('Garita Salida',uid,reg.chofer,reg.placa,'Salida autorizada · Precintos: '+reg.precintos+' · Guías: '+reg.guias);
-  agregarTl('gs-timeline','#1D9E75','Salida autorizada: '+reg.chofer,reg.placa+' · '+reg.guias);
-  cerrarModal('modal-gs');
-  gsUID=null;
+function gsConfirmar(){
+  const uid=modalData.uid,rv=reg[uid];
+  rv.precintos=document.getElementById('gs-prec')?.value||'—';
+  rv.guias=document.getElementById('gs-guias')?.value||'—';
+  rv.autorizadoPor=document.getElementById('gs-oper')?.value||'Garita';
+  rv.obsSal=document.getElementById('gs-obs')?.value||'';
+  rv.tsGS=horaActual();
+  const fp=document.getElementById('gs-foto-prev');rv.foto=fp?.style.display!=='none'?fp?.src:null;
+  avanzar(uid,'completado');
+  addTL('gs-tl','#1D9E75','Salida autorizada: '+rv.chofer,rv.placa+' · Guías: '+rv.guias);
+  addTL('dash-tl','#D85A30','Salida: '+rv.chofer,rv.placa+' · '+rv.peNeto?.toLocaleString('es-EC')+' kg neto');
+  audit('Garita Salida',uid,rv.chofer,rv.placa,'Salida autorizada · Prec: '+rv.precintos+' · Guías: '+rv.guias);
+  cerrar('m-gs');gsUID=null;
   renderGsTabla();
-  document.getElementById('gs-id').value='';
-  document.getElementById('gs-info').innerHTML='';
+  document.getElementById('gs-id').value='';document.getElementById('gs-info').innerHTML='';
 }
 function renderGsTabla(){
-  const body=document.getElementById('gs-tabla');
-  const items=planData.map(r=>registros[campo(r,'id')]).filter(r=>r&&r.estado==='completado');
-  if(!items.length){body.innerHTML='<tr><td colspan="8" class="ec">Sin salidas autorizadas</td></tr>';return;}
-  body.innerHTML=items.map(r=>`<tr>
-    <td><span class="mono-tag" style="font-size:11px;">${r.uid}</span></td>
-    <td>${r.chofer}</td>
-    <td><span class="mono-tag">${r.placa}</span></td>
-    <td style="font-size:12px;">${r.precintos||'—'}</td>
-    <td style="font-size:12px;">${r.guias||'—'}</td>
-    <td style="font-weight:600;font-family:var(--mono);color:var(--green);">${(r.pesoNeto||0).toLocaleString('es-EC')} kg</td>
-    <td><span class="mono-tag">${r.tsGaritaSalida||'—'}</span></td>
-    <td style="font-size:12px;color:var(--text2);">${r.autorizadoPor||'—'}</td>
+  const body=document.getElementById('gs-tabla');if(!body)return;
+  const items=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.estado==='completado');
+  if(!items.length){body.innerHTML='<tr><td colspan="9" class="ec">Sin salidas</td></tr>';return;}
+  body.innerHTML=items.map(r=>{
+    let tiempoTotal='—';
+    if(r.tsIngreso&&r.tsGS){
+      const[hi,mi]=r.tsIngreso.split(':').map(Number),[hs,ms]=r.tsGS.split(':').map(Number);
+      const min=(hs*60+ms)-(hi*60+mi);
+      if(min>=0)tiempoTotal=min+'m';
+    }
+    return`<tr>
+      <td><span class="mt" style="font-size:10px;">${r.uid}</span></td>
+      <td>${r.chofer}</td><td><span class="mt">${r.placa}</span></td>
+      <td style="font-size:11px;">${r.precintos||'—'}</td>
+      <td style="font-size:11px;">${r.guias||'—'}</td>
+      <td style="font-weight:600;font-family:var(--mono);color:var(--gr);">${(r.peNeto||0).toLocaleString('es-EC')} kg</td>
+      <td style="font-family:var(--mono);font-size:11px;">${tiempoTotal}</td>
+      <td><span class="mt">${r.tsGS||'—'}</span></td>
+      <td style="font-size:11px;color:var(--tx2);">${r.autorizadoPor||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// PASE MODAL
+// ══════════════════════════════════════════════════════════
+function mostrarPase(uid){
+  const rv=reg[uid];if(!rv)return;
+  const fields=[
+    ['ID Único',uid],['Chofer',rv.chofer],['Placa',rv.placa],
+    ['Tipo carro',rv.tipo],['Detalle',rv.detalle],
+    ['Área carga',rv.areaCarga],['Área descarga',rv.areaDesc],
+    ['Hora programada',rv.hora],['Hora ingreso',horaActual()],
+    ['Fecha',fmtFecha(fechaSel)]
+  ];
+  document.getElementById('pase-rows').innerHTML=fields.map(([k,v])=>`<div class="pase-row"><span>${k}</span><span>${v||'—'}</span></div>`).join('');
+  // QR en pase
+  const qrEl=document.getElementById('pase-qr-canvas');qrEl.innerHTML='';
+  try{new QRCode(qrEl,{text:makeQRData(uid),width:120,height:120,colorDark:'#000',colorLight:'#fff'});}
+  catch(e){qrEl.innerHTML='<div style="width:120px;height:120px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:10px;">QR</div>';}
+  abrir('m-pase');
+}
+function paseWA(){
+  if(!paseActual)return;
+  const rv=reg[paseActual];if(!rv)return;
+  enviarWAQR(paseActual);cerrar('m-pase');
+}
+
+// ══════════════════════════════════════════════════════════
+// REPORTES
+// ══════════════════════════════════════════════════════════
+function renderReportes(){
+  // Tiempo promedio en planta
+  const completados=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.estado==='completado'&&r.tsIngreso&&r.tsGS);
+  if(completados.length){
+    const promedioMin=completados.map(r=>{
+      const[hi,mi]=r.tsIngreso.split(':').map(Number),[hs,ms]=r.tsGS.split(':').map(Number);
+      return Math.max(0,(hs*60+ms)-(hi*60+mi));
+    });
+    const prom=Math.round(promedioMin.reduce((s,m)=>s+m,0)/promedioMin.length);
+    const el=document.getElementById('r-tprom');if(el)el.textContent=prom;
+  }
+  // Tiempo prom carga
+  const conCarga=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.tiempoC&&r.tiempoC!=='—');
+  if(conCarga.length){
+    const el=document.getElementById('r-tcarga');
+    const promC=Math.round(conCarga.map(r=>{const[h,m,s]=r.tiempoC.split(':').map(Number);return h*60+m+s/60;}).reduce((a,b)=>a+b,0)/conCarga.length);
+    if(el)el.textContent=promC;
+  }
+  // Productividad andenes
+  const opHoy=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.anden).length;
+  const el2=document.getElementById('r-andprod');if(el2)el2.textContent=andenes.length>0?Math.round(opHoy/andenes.length*10)/10:'—';
+  // Productividad por despachador
+  const despMap={};
+  planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.despachador).forEach(r=>{
+    if(!despMap[r.despachador])despMap[r.despachador]={ops:0,kg:0,ts:[]};
+    despMap[r.despachador].ops++;
+    despMap[r.despachador].kg+=(r.peNeto||0);
+    if(r.tiempoC&&r.tiempoC!=='—'){const[h,m,s]=r.tiempoC.split(':').map(Number);despMap[r.despachador].ts.push(h*60+m+s/60);}
+  });
+  const dtBody=document.getElementById('r-desp-tabla');if(dtBody){
+    const entries=Object.entries(despMap);
+    dtBody.innerHTML=entries.length?entries.map(([d,v])=>`<tr>
+      <td>${d}</td><td style="font-family:var(--mono);">${v.ops}</td>
+      <td style="font-family:var(--mono);">${v.ts.length?Math.round(v.ts.reduce((a,b)=>a+b,0)/v.ts.length)+'m':'—'}</td>
+      <td style="font-family:var(--mono);">${v.kg.toLocaleString('es-EC')} kg</td>
+    </tr>`).join(''):'<tr><td colspan="4" class="ec">Sin datos</td></tr>';
+  }
+  renderRptConductor();renderBarChart();
+}
+function renderRptConductor(){
+  const body=document.getElementById('r-cond-tabla');if(!body)return;
+  const q=(document.getElementById('r-cond-filter')?.value||'').toLowerCase();
+  const map={};
+  planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.chofer).forEach(r=>{
+    const k=r.chofer+'|'+r.placa;
+    if(!map[k])map[k]={chofer:r.chofer,placa:r.placa,viajes:0,kg:0,ultimo:null};
+    map[k].viajes++;map[k].kg+=(r.peNeto||0);
+    if(!map[k].ultimo||r.tsIngreso>map[k].ultimo)map[k].ultimo=r.tsIngreso;
+  });
+  const entries=Object.values(map).filter(v=>!q||v.chofer.toLowerCase().includes(q)||v.placa.toLowerCase().includes(q));
+  body.innerHTML=entries.length?entries.map(v=>`<tr>
+    <td>${v.chofer}</td><td><span class="mt">${v.placa}</span></td>
+    <td style="font-family:var(--mono);">${v.viajes}</td>
+    <td><span class="mt">${v.ultimo||'—'}</span></td>
+    <td style="font-family:var(--mono);">${v.kg.toLocaleString('es-EC')} kg</td>
+  </tr>`).join(''):'<tr><td colspan="5" class="ec">Sin datos</td></tr>';
+}
+function renderBarChart(){
+  const el=document.getElementById('r-barchart');if(!el)return;
+  const bins=Array(12).fill(0);
+  auditoria.filter(a=>a.modulo==='Garita Entrada').forEach(a=>{
+    const h=parseInt((a.ts||'0:0').split(':')[0]);
+    const idx=Math.floor((h-6)/0.5);if(idx>=0&&idx<12)bins[idx]++;
+  });
+  const maxV=Math.max(...bins,1);
+  el.innerHTML=bins.map((v,i)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0;">
+    <div class="bar" style="width:100%;height:${Math.max(4,Math.round(v/maxV*72))}px;" title="${v} operaciones"></div>
+  </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// AUDITORÍA
+// ══════════════════════════════════════════════════════════
+function audit(modulo,uid,chofer,placa,detalle){
+  const entry={ts:new Date().toLocaleTimeString('es-EC'),fecha:fmtFecha(fechaSel),modulo,uid,chofer,placa,detalle,usuario:'Sistema'};
+  auditoria.unshift(entry);renderAud();
+  addTL('dash-tl',modulo==='Garita Salida'?'#D85A30':modulo==='Garita Entrada'?'#1D9E75':'#BA7517',modulo+': '+chofer,placa+(detalle?' · '+detalle.slice(0,30):''));
+}
+function renderAud(){
+  const body=document.getElementById('aud-body');if(!body)return;
+  const q=(document.getElementById('aud-q')?.value||'').toLowerCase();
+  const f=auditoria.filter(a=>!q||[a.modulo,a.uid,a.chofer,a.placa,a.detalle].join(' ').toLowerCase().includes(q));
+  if(!f.length){body.innerHTML='<tr><td colspan="8" class="ec">Sin registros</td></tr>';return;}
+  const clrs={'Garita Entrada':'b-garita','Báscula Entrada':'b-bascula','Despacho':'b-desp','Báscula Salida':'b-bascula','Garita Salida':'b-salida','QR':'b-pend','WhatsApp':'b-ok'};
+  body.innerHTML=f.map(a=>`<tr>
+    <td style="font-family:var(--mono);font-size:10px;">${a.ts}</td>
+    <td><span class="badge ${clrs[a.modulo]||'b-pend'}" style="font-size:10px;">${a.modulo}</span></td>
+    <td><span class="mt" style="font-size:10px;">${a.uid}</span></td>
+    <td style="font-size:11px;">${a.chofer}</td>
+    <td><span class="mt">${a.placa}</span></td>
+    <td style="font-size:11px;color:var(--tx2);">${a.detalle}</td>
+    <td style="font-size:11px;color:var(--tx3);">${a.usuario}</td>
   </tr>`).join('');
 }
 
-// ═══════════════════════════════════════════════════════════
-// HISTORIAL
-// ═══════════════════════════════════════════════════════════
-function agregarLog(modulo,uid,chofer,placa,detalle){
-  historial.unshift({hora:horaActual(),modulo,uid,chofer,placa,detalle});
-  renderHistorial();
-}
-function renderHistorial(){
-  const body=document.getElementById('hist-body');
-  if(!historial.length){body.innerHTML='<tr><td colspan="7" class="ec">Sin movimientos</td></tr>';return;}
-  const colores={'Garita Entrada':'b-garita','Báscula Entrada':'b-bascula','Despacho':'b-despacho','Báscula Salida':'b-bascula','Garita Salida':'b-salida'};
-  body.innerHTML=historial.map(r=>`<tr>
-    <td><span class="mono-tag">${r.hora}</span></td>
-    <td><span class="badge ${colores[r.modulo]||'b-pend'}">${r.modulo}</span></td>
-    <td><span class="mono-tag" style="font-size:11px;">${r.uid}</span></td>
-    <td>${r.chofer}</td>
-    <td><span class="mono-tag">${r.placa}</span></td>
-    <td style="color:var(--text2);">${r.detalle}</td>
-  </tr>`).join('');
-}
-function exportarHistorial(){
-  const rows=[['Hora','Módulo','ID Único','Chofer','Placa','Detalle'],...historial.map(r=>[r.hora,r.modulo,r.uid,r.chofer,r.placa,r.detalle])];
+// ══════════════════════════════════════════════════════════
+// EXPORTAR CSV
+// ══════════════════════════════════════════════════════════
+function exportarCSV(tipo){
+  let rows,name;
+  if(tipo==='historial'){
+    rows=[['Timestamp','Módulo','ID Único','Chofer','Placa','Detalle'],...auditoria.map(a=>[a.ts,a.modulo,a.uid,a.chofer,a.placa,a.detalle])];
+    name='historial';
+  }else if(tipo==='pesos'){
+    const items=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.peBruto);
+    rows=[['ID Único','Chofer','Placa','Detalle','Peso entrada','Peso salida','Peso neto','Andén','Despachador','Tiempo carga'],...items.map(r=>[r.uid,r.chofer,r.placa,r.detalle,r.peBruto||'',r.peSalida||'',r.peNeto||'',r.anden||'',r.despachador||'',r.tiempoC||''])];
+    name='pesos';
+  }else if(tipo==='conductores'){
+    const items=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.chofer);
+    rows=[['Chofer','Placa','ID Único','Detalle','Estado','Peso neto','Hora ingreso','Hora salida'],...items.map(r=>[r.chofer,r.placa,r.uid,r.detalle,r.estado,r.peNeto||'',r.tsIngreso||'',r.tsGS||''])];
+    name='conductores';
+  }else if(tipo==='andenes'){
+    rows=[['Andén','ID Único','Placa','Despachador','Tiempo carga'],...planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.anden).map(r=>[r.anden,r.uid,r.placa,r.despachador||'',r.tiempoC||''])];
+    name='andenes';
+  }else return;
   const csv=rows.map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-  a.download='agripac_movimientos_'+fechaSeleccionada+'.csv';
-  a.click();
+  a.download='agripac_'+name+'_'+fechaSel+'.csv';a.click();
 }
 
-// ═══════════════════════════════════════════════════════════
-// HELPERS UI
-// ═══════════════════════════════════════════════════════════
-function agregarTl(elId,color,title,sub){
-  const tl=document.getElementById(elId);
+// ══════════════════════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════════════════════
+function addTL(elId,color,title,sub){
+  const tl=document.getElementById(elId);if(!tl)return;
   const item=document.createElement('div');item.className='tl-item';
-  item.innerHTML=`<div class="tl-dot" style="background:${color};"></div><div style="flex:1;"><div style="font-size:13px;font-weight:500;">${title}</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">${sub}</div></div><div class="tl-time">${horaActual()}</div>`;
-  tl.insertBefore(item,tl.firstChild);
-  while(tl.children.length>8)tl.removeChild(tl.lastChild);
+  item.innerHTML=`<div class="tl-dot" style="background:${color};"></div><div style="flex:1;"><div style="font-size:12px;font-weight:500;">${title}</div><div style="font-size:11px;color:var(--tx2);margin-top:1px;">${sub}</div></div><div class="tl-t">${horaActual()}</div>`;
+  tl.insertBefore(item,tl.firstChild);while(tl.children.length>10)tl.removeChild(tl.lastChild);
 }
-function mostrarMsg(id,tipo,txt){
-  const el=document.getElementById(id);
-  const icon=tipo==='success'?'ti-check':tipo==='warning'?'ti-alert-triangle':'ti-info-circle';
-  el.className='alert a-'+tipo;el.innerHTML=`<i class="ti ${icon}"></i> ${txt}`;el.style.display='flex';
+function msg(id,tipo,txt){
+  const el=document.getElementById(id);if(!el)return;
+  const ic=tipo==='ok'?'ti-check':tipo==='warn'?'ti-alert-triangle':'ti-info-circle';
+  el.className='alert a-'+tipo;el.innerHTML=`<i class="ti ${ic}"></i> ${txt}`;el.style.display='flex';
   clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display='none';},4000);
 }
-function horaActual(){const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
+function horaActual(){const n=new Date();return pad(n.getHours())+':'+pad(n.getMinutes());}
 function showTab(tab){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
   document.getElementById('sec-'+tab).classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
 }
-function abrirModal(id){document.getElementById(id).classList.add('open');}
-function cerrarModal(id){document.getElementById(id).classList.remove('open');}
-function paseWhatsApp(){
-  const uid=paseActual; if(!uid) return;
-  const reg=registros[uid];
-  const msg=`🟢 *AGRIPAC S.A. — Pase de Ingreso*\n\n🆔 *${uid}*\n👤 Chofer: ${reg.chofer}\n🚛 Placa: ${reg.placa}\n📦 Carga: ${reg.detalle}\n📍 Área carga: ${reg.areaCarga}\n📍 Área descarga: ${reg.areaDesc}\n🕐 Hora ingreso: ${horaActual()}\n📅 ${formatDisplay(fechaSeleccionada)}\n\n_AGRIPAC S.A. — Válido solo hoy_`;
-  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
-}
+function abrir(id){document.getElementById(id).classList.add('open');}
+function cerrar(id){document.getElementById(id).classList.remove('open');}
 
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 renderAndenes();
-document.getElementById('fecha-filtro').value=fechaHoy();
-fechaSeleccionada=fechaHoy();
+document.getElementById('fecha-filtro').value=hoy();
+fechaSel=hoy();
 cargarCSV();
-setInterval(cargarCSV,5*60*1000);
+// Dashboard refresh
+setInterval(()=>{renderDashboard();checkAlertas();calcMetrics();},30000);
 </script>
 </body>
 </html>
