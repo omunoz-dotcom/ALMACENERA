@@ -261,13 +261,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--gr);}
 .qr-popup-info{flex:1;min-width:200px;}
 .qr-popup-info .sl{margin-top:6px;}
 
-/* ── SCANNER REAL ── */
+/* ── SCANNER REAL — multi-módulo ── */
 .scan-btn-group{display:flex;gap:8px;margin-bottom:12px;}
 .scan-btn-group .btn{flex:1;justify-content:center;}
 .scan-mode{border:2px solid var(--bd);border-radius:var(--rl);padding:1rem;margin-bottom:10px;min-height:60px;}
 .scan-mode.active-scan{border-color:var(--gr);}
-#cam-video{width:100%;border-radius:var(--r);display:none;max-height:240px;object-fit:cover;}
-#cam-canvas{display:none;}
+.scan-video{width:100%;border-radius:var(--r);display:none;max-height:200px;object-fit:cover;}
+.scan-canvas{display:none;}
 .scan-status{text-align:center;font-size:12px;color:var(--tx3);margin-top:6px;}
 .scan-status.ok{color:var(--grt);}
 .scan-status.err{color:var(--rdt);}
@@ -279,6 +279,16 @@ input:focus,select:focus,textarea:focus{border-color:var(--gr);}
 .scan-corner.br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 4px 0;}
 .scan-line-anim{position:absolute;left:8px;right:8px;height:2px;background:var(--gr);opacity:.7;animation:scanline 2s linear infinite;}
 @keyframes scanline{0%{top:8px}100%{top:calc(100% - 8px)}}
+
+/* ── QR texto copiable ── */
+.qr-id-text{font-family:var(--mono);font-size:11px;background:var(--sf2);border:1px solid var(--bd);
+  border-radius:var(--r);padding:6px 10px;text-align:center;word-break:break-all;
+  cursor:pointer;transition:background .15s;user-select:all;position:relative;}
+.qr-id-text:hover{background:var(--bd);}
+.qr-id-text::after{content:'Toca para copiar';display:block;font-size:9px;
+  color:var(--tx3);margin-top:2px;letter-spacing:.03em;}
+.qr-id-text.copied{background:var(--grb);border-color:var(--gr);}
+.qr-id-text.copied::after{content:'¡Copiado!';color:var(--grt);}
 </style>
 </head>
 <body>
@@ -433,51 +443,41 @@ input:focus,select:focus,textarea:focus{border-color:var(--gr);}
   <div class="g2">
     <div class="card">
       <div class="ct"><i class="ti ti-scan"></i> Control de acceso — Garita Entrada</div>
-
-      <!-- Botones para elegir modo -->
       <div class="scan-btn-group">
-        <button class="btn btn-primary" id="btn-scan-cam" onclick="activarModo('cam')">
-          <i class="ti ti-camera"></i> Escanear QR con cámara
+        <button class="btn btn-primary" id="ge-btn-cam" onclick="activarModo('ge','cam')">
+          <i class="ti ti-camera"></i> Escanear QR
         </button>
-        <button class="btn" id="btn-scan-manual" onclick="activarModo('manual')">
+        <button class="btn" id="ge-btn-manual" onclick="activarModo('ge','manual')">
           <i class="ti ti-keyboard"></i> Ingreso manual
         </button>
       </div>
-
-      <!-- MODO CÁMARA -->
-      <div class="scan-mode" id="modo-cam" style="display:none;">
-        <div class="scan-overlay" style="position:relative;background:#000;border-radius:var(--r);overflow:hidden;max-height:240px;">
-          <video id="cam-video" autoplay playsinline muted style="width:100%;max-height:240px;object-fit:cover;display:block;border-radius:var(--r);"></video>
-          <canvas id="cam-canvas" style="display:none;"></canvas>
-          <!-- Esquinas overlay -->
+      <div class="scan-mode" id="ge-modo-cam" style="display:none;">
+        <div class="scan-overlay" style="position:relative;background:#000;border-radius:var(--r);overflow:hidden;max-height:200px;">
+          <video class="scan-video" id="ge-video" autoplay playsinline muted></video>
+          <canvas class="scan-canvas" id="ge-canvas"></canvas>
           <div style="position:absolute;inset:0;pointer-events:none;">
             <div class="scan-corner tl"></div><div class="scan-corner tr"></div>
             <div class="scan-corner bl"></div><div class="scan-corner br"></div>
-            <div class="scan-line-anim" id="scan-line-anim"></div>
+            <div class="scan-line-anim"></div>
           </div>
         </div>
-        <div class="scan-status" id="cam-status">Iniciando cámara…</div>
+        <div class="scan-status" id="ge-cam-status">Iniciando cámara…</div>
         <div style="display:flex;gap:6px;margin-top:8px;justify-content:center;">
-          <button class="btn btn-sm" onclick="detenerCamara()"><i class="ti ti-player-stop"></i> Detener</button>
-          <button class="btn btn-sm" onclick="iniciarCamara()"><i class="ti ti-refresh"></i> Reiniciar</button>
+          <button class="btn btn-sm" onclick="detenerCamara('ge')"><i class="ti ti-player-stop"></i> Detener</button>
+          <button class="btn btn-sm" onclick="iniciarCamara('ge')"><i class="ti ti-refresh"></i> Reiniciar</button>
         </div>
       </div>
-
-      <!-- MODO MANUAL -->
-      <div class="scan-mode" id="modo-manual" style="display:none;">
+      <div class="scan-mode" id="ge-modo-manual" style="display:none;">
         <div class="sl" style="margin-bottom:8px;"><i class="ti ti-keyboard"></i> Ingreso manual por ID o placa</div>
-        <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
           <input type="text" id="ge-id" placeholder="ID-UNICO o PLACA" style="flex:1;text-transform:uppercase;font-size:13px;"
             oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')geSearch()"/>
           <button class="btn btn-primary" onclick="geSearch()"><i class="ti ti-search"></i> Buscar</button>
         </div>
-        <div style="font-size:11px;color:var(--tx3);">Escribe el ID-UNICO completo o los últimos dígitos de la placa</div>
+        <div style="font-size:11px;color:var(--tx3);">ID-UNICO completo o últimos dígitos de la placa</div>
       </div>
-
-      <!-- RESULTADO validación -->
       <div id="ge-result" style="margin-top:10px;"></div>
     </div>
-
     <div class="card">
       <div class="ct"><i class="ti ti-clock"></i> Pendientes de ingreso hoy</div>
       <div class="tw"><table>
@@ -496,21 +496,50 @@ input:focus,select:focus,textarea:focus{border-color:var(--gr);}
 <div class="sec" id="sec-bascula-e">
   <div class="g2">
     <div class="card">
-      <div class="ct"><i class="ti ti-weight"></i> Registro de peso de entrada</div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" id="be-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;"
-          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')beBuscar()"/>
-        <button class="btn btn-primary" onclick="beBuscar()"><i class="ti ti-search"></i></button>
+      <div class="ct"><i class="ti ti-weight"></i> Báscula de entrada — Registro de peso</div>
+      <div class="scan-btn-group">
+        <button class="btn btn-primary" id="be-btn-cam" onclick="activarModo('be','cam')">
+          <i class="ti ti-camera"></i> Escanear QR
+        </button>
+        <button class="btn" id="be-btn-manual" onclick="activarModo('be','manual')">
+          <i class="ti ti-keyboard"></i> Ingreso manual
+        </button>
       </div>
-      <div id="be-info"></div>
-      <div class="field"><span class="fl">Peso bruto entrada (kg)</span>
-        <input type="number" id="be-peso" placeholder="0" min="0" step="1" oninput="beDisplay()"/>
+      <div class="scan-mode" id="be-modo-cam" style="display:none;">
+        <div class="scan-overlay" style="position:relative;background:#000;border-radius:var(--r);overflow:hidden;max-height:200px;">
+          <video class="scan-video" id="be-video" autoplay playsinline muted></video>
+          <canvas class="scan-canvas" id="be-canvas"></canvas>
+          <div style="position:absolute;inset:0;pointer-events:none;">
+            <div class="scan-corner tl"></div><div class="scan-corner tr"></div>
+            <div class="scan-corner bl"></div><div class="scan-corner br"></div>
+            <div class="scan-line-anim"></div>
+          </div>
+        </div>
+        <div class="scan-status" id="be-cam-status">Iniciando cámara…</div>
+        <div style="display:flex;gap:6px;margin-top:8px;justify-content:center;">
+          <button class="btn btn-sm" onclick="detenerCamara('be')"><i class="ti ti-player-stop"></i> Detener</button>
+          <button class="btn btn-sm" onclick="iniciarCamara('be')"><i class="ti ti-refresh"></i> Reiniciar</button>
+        </div>
       </div>
-      <div style="background:var(--sf2);border-radius:var(--r);padding:.9rem;margin-bottom:10px;">
-        <div style="font-size:10px;color:var(--tx3);margin-bottom:3px;">PESO INGRESADO</div>
-        <div style="font-size:26px;font-weight:600;font-family:var(--mono);" id="be-display">— kg</div>
+      <div class="scan-mode" id="be-modo-manual" style="display:none;">
+        <div class="sl" style="margin-bottom:8px;"><i class="ti ti-keyboard"></i> Ingreso manual</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
+          <input type="text" id="be-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;"
+            oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')beBuscar()"/>
+          <button class="btn btn-primary" onclick="beBuscar()"><i class="ti ti-search"></i> Buscar</button>
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="beRegistrar()" style="width:100%;"><i class="ti ti-device-floppy"></i> Registrar peso entrada</button>
+      <div id="be-info" style="margin-top:10px;"></div>
+      <div id="be-peso-wrap" style="display:none;">
+        <div class="field" style="margin-top:10px;"><span class="fl">Peso bruto entrada (kg)</span>
+          <input type="number" id="be-peso" placeholder="0" min="0" step="1" oninput="beDisplay()"/>
+        </div>
+        <div style="background:var(--sf2);border-radius:var(--r);padding:.9rem;margin-bottom:10px;">
+          <div style="font-size:10px;color:var(--tx3);margin-bottom:3px;">PESO INGRESADO</div>
+          <div style="font-size:26px;font-weight:600;font-family:var(--mono);" id="be-display">— kg</div>
+        </div>
+        <button class="btn btn-primary" onclick="beRegistrar()" style="width:100%;"><i class="ti ti-device-floppy"></i> Registrar peso entrada</button>
+      </div>
       <div id="be-msg" style="margin-top:8px;display:none;"></div>
     </div>
     <div class="card">
@@ -527,13 +556,40 @@ input:focus,select:focus,textarea:focus{border-color:var(--gr);}
 <div class="sec" id="sec-despacho">
   <div class="g2">
     <div class="card">
-      <div class="ct"><i class="ti ti-search"></i> Buscar orden por ID</div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" id="d-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;"
-          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')dBuscar()"/>
-        <button class="btn btn-primary" onclick="dBuscar()"><i class="ti ti-search"></i></button>
+      <div class="ct"><i class="ti ti-building-warehouse"></i> Despacho — Buscar orden por QR</div>
+      <div class="scan-btn-group">
+        <button class="btn btn-primary" id="d-btn-cam" onclick="activarModo('d','cam')">
+          <i class="ti ti-camera"></i> Escanear QR
+        </button>
+        <button class="btn" id="d-btn-manual" onclick="activarModo('d','manual')">
+          <i class="ti ti-keyboard"></i> Ingreso manual
+        </button>
       </div>
-      <div id="d-info"></div>
+      <div class="scan-mode" id="d-modo-cam" style="display:none;">
+        <div class="scan-overlay" style="position:relative;background:#000;border-radius:var(--r);overflow:hidden;max-height:200px;">
+          <video class="scan-video" id="d-video" autoplay playsinline muted></video>
+          <canvas class="scan-canvas" id="d-canvas"></canvas>
+          <div style="position:absolute;inset:0;pointer-events:none;">
+            <div class="scan-corner tl"></div><div class="scan-corner tr"></div>
+            <div class="scan-corner bl"></div><div class="scan-corner br"></div>
+            <div class="scan-line-anim"></div>
+          </div>
+        </div>
+        <div class="scan-status" id="d-cam-status">Iniciando cámara…</div>
+        <div style="display:flex;gap:6px;margin-top:8px;justify-content:center;">
+          <button class="btn btn-sm" onclick="detenerCamara('d')"><i class="ti ti-player-stop"></i> Detener</button>
+          <button class="btn btn-sm" onclick="iniciarCamara('d')"><i class="ti ti-refresh"></i> Reiniciar</button>
+        </div>
+      </div>
+      <div class="scan-mode" id="d-modo-manual" style="display:none;">
+        <div class="sl" style="margin-bottom:8px;"><i class="ti ti-keyboard"></i> Ingreso manual</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
+          <input type="text" id="d-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;"
+            oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')dBuscar()"/>
+          <button class="btn btn-primary" onclick="dBuscar()"><i class="ti ti-search"></i> Buscar</button>
+        </div>
+      </div>
+      <div id="d-info" style="margin-top:10px;"></div>
     </div>
     <div class="card">
       <div class="ct"><i class="ti ti-building-warehouse"></i> Andenes
@@ -555,24 +611,53 @@ input:focus,select:focus,textarea:focus{border-color:var(--gr);}
 <div class="sec" id="sec-bascula-s">
   <div class="g2">
     <div class="card">
-      <div class="ct"><i class="ti ti-weight"></i> Registro de peso de salida</div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" id="bs-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;"
-          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')bsBuscar()"/>
-        <button class="btn btn-primary" onclick="bsBuscar()"><i class="ti ti-search"></i></button>
+      <div class="ct"><i class="ti ti-weight"></i> Báscula de salida — Registro de peso</div>
+      <div class="scan-btn-group">
+        <button class="btn btn-primary" id="bs-btn-cam" onclick="activarModo('bs','cam')">
+          <i class="ti ti-camera"></i> Escanear QR
+        </button>
+        <button class="btn" id="bs-btn-manual" onclick="activarModo('bs','manual')">
+          <i class="ti ti-keyboard"></i> Ingreso manual
+        </button>
       </div>
-      <div id="bs-info"></div>
-      <div class="field"><span class="fl">Peso tara salida (kg)</span>
-        <input type="number" id="bs-peso" placeholder="0" min="0" step="1" oninput="bsCalc()"/>
-      </div>
-      <div style="background:var(--sf2);border-radius:var(--r);padding:.9rem;margin-bottom:10px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-          <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;">ENTRADA</div><div style="font-size:16px;font-weight:600;font-family:var(--mono);" id="bs-ent">—</div></div>
-          <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;">SALIDA</div><div style="font-size:16px;font-weight:600;font-family:var(--mono);" id="bs-sal">—</div></div>
-          <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;">NETO</div><div style="font-size:16px;font-weight:600;font-family:var(--mono);color:var(--gr);" id="bs-net">—</div></div>
+      <div class="scan-mode" id="bs-modo-cam" style="display:none;">
+        <div class="scan-overlay" style="position:relative;background:#000;border-radius:var(--r);overflow:hidden;max-height:200px;">
+          <video class="scan-video" id="bs-video" autoplay playsinline muted></video>
+          <canvas class="scan-canvas" id="bs-canvas"></canvas>
+          <div style="position:absolute;inset:0;pointer-events:none;">
+            <div class="scan-corner tl"></div><div class="scan-corner tr"></div>
+            <div class="scan-corner bl"></div><div class="scan-corner br"></div>
+            <div class="scan-line-anim"></div>
+          </div>
+        </div>
+        <div class="scan-status" id="bs-cam-status">Iniciando cámara…</div>
+        <div style="display:flex;gap:6px;margin-top:8px;justify-content:center;">
+          <button class="btn btn-sm" onclick="detenerCamara('bs')"><i class="ti ti-player-stop"></i> Detener</button>
+          <button class="btn btn-sm" onclick="iniciarCamara('bs')"><i class="ti ti-refresh"></i> Reiniciar</button>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="bsRegistrar()" style="width:100%;"><i class="ti ti-device-floppy"></i> Registrar peso salida</button>
+      <div class="scan-mode" id="bs-modo-manual" style="display:none;">
+        <div class="sl" style="margin-bottom:8px;"><i class="ti ti-keyboard"></i> Ingreso manual</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
+          <input type="text" id="bs-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;"
+            oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')bsBuscar()"/>
+          <button class="btn btn-primary" onclick="bsBuscar()"><i class="ti ti-search"></i> Buscar</button>
+        </div>
+      </div>
+      <div id="bs-info" style="margin-top:10px;"></div>
+      <div id="bs-peso-wrap" style="display:none;">
+        <div class="field" style="margin-top:10px;"><span class="fl">Peso tara salida (kg)</span>
+          <input type="number" id="bs-peso" placeholder="0" min="0" step="1" oninput="bsCalc()"/>
+        </div>
+        <div style="background:var(--sf2);border-radius:var(--r);padding:.9rem;margin-bottom:10px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;">ENTRADA</div><div style="font-size:16px;font-weight:600;font-family:var(--mono);" id="bs-ent">—</div></div>
+            <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;">SALIDA</div><div style="font-size:16px;font-weight:600;font-family:var(--mono);" id="bs-sal">—</div></div>
+            <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;">NETO</div><div style="font-size:16px;font-weight:600;font-family:var(--mono);color:var(--gr);" id="bs-net">—</div></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="bsRegistrar()" style="width:100%;"><i class="ti ti-device-floppy"></i> Registrar peso salida</button>
+      </div>
       <div id="bs-msg" style="margin-top:8px;display:none;"></div>
     </div>
     <div class="card">
@@ -1074,6 +1159,9 @@ function renderPlan(){
       <td colspan="12">
         <div class="qr-popup-inner">
           <div class="qr-popup-img" id="qrimg-${safeUid}"></div>
+          <div style="margin-top:8px;">
+            <div class="qr-id-text" onclick="copiarTexto('${uid}',this)" title="Toca para copiar">${uid}</div>
+          </div>
           <div class="qr-popup-info">
             <div style="font-size:13px;font-weight:500;margin-bottom:6px;">Código QR — ${uid}</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;margin-bottom:10px;">
@@ -1291,6 +1379,10 @@ function genQRSingle(uid, show=false){
     wrap.style.display='flex';
     dibujarQRconLogo(container, uid, 180).then(()=>{
       document.getElementById('qr-data').textContent=uid+' · '+rv.chofer+' · '+rv.placa;
+      // Texto copiable debajo del QR
+      let tc=document.getElementById('qr-text-copy');
+      if(!tc){ tc=document.createElement('div'); tc.id='qr-text-copy'; container.parentNode.insertBefore(tc,container.nextSibling); }
+      tc.innerHTML=`<div class="qr-id-text" onclick="copiarTexto('${uid}',this)" title="Toca para copiar el ID">${uid}</div>`;
     });
     paseActual=uid;
   }
@@ -1345,85 +1437,119 @@ function enviarWAQR(uid){
 // ══════════════════════════════════════════════════════════
 // GARITA ENTRADA — SCANNER + MANUAL
 // ══════════════════════════════════════════════════════════
-let camStream=null, camInterval=null, modoActivo='';
+// ══════════════════════════════════════════════════════════
+// SCANNER QR — SISTEMA MULTI-MÓDULO
+// Prefijos: 'ge' garita entrada, 'be' báscula entrada,
+//           'd' despacho, 'bs' báscula salida
+// ══════════════════════════════════════════════════════════
+let camStreams={}, camIntervals={}, modoActivo={};
 
-function activarModo(modo){
-  modoActivo=modo;
-  document.getElementById('modo-cam').style.display=modo==='cam'?'block':'none';
-  document.getElementById('modo-manual').style.display=modo==='manual'?'block':'none';
-  document.getElementById('btn-scan-cam').className='btn'+(modo==='cam'?' btn-primary':'');
-  document.getElementById('btn-scan-manual').className='btn'+(modo==='manual'?' btn-primary':'');
-  document.getElementById('ge-result').innerHTML='';
-  if(modo==='cam'){iniciarCamara();}
-  else{detenerCamara();document.getElementById('ge-id')?.focus();}
+// Callbacks: qué hace cada módulo cuando lee un QR exitoso
+const scanCallbacks={
+  ge: uid => { procesarQRLeido_ge(uid); },
+  be: uid => { beDesdeQR(uid); },
+  d:  uid => { dDesdeQR(uid); },
+  bs: uid => { bsDesdeQR(uid); },
+};
+
+function activarModo(pfx, modo){
+  modoActivo[pfx]=modo;
+  // Botones
+  const bc=document.getElementById(pfx+'-btn-cam');
+  const bm=document.getElementById(pfx+'-btn-manual');
+  if(bc) bc.className='btn'+(modo==='cam'?' btn-primary':'');
+  if(bm) bm.className='btn'+(modo==='manual'?' btn-primary':'');
+  // Paneles
+  const mc=document.getElementById(pfx+'-modo-cam');
+  const mm=document.getElementById(pfx+'-modo-manual');
+  if(mc) mc.style.display=modo==='cam'?'block':'none';
+  if(mm) mm.style.display=modo==='manual'?'block':'none';
+  // Limpiar resultado
+  const res=document.getElementById(pfx+'-result')||document.getElementById(pfx+'-info');
+  if(res) res.innerHTML='';
+  // Ocultar peso wrap si existe
+  const pw=document.getElementById(pfx+'-peso-wrap');
+  if(pw) pw.style.display='none';
+  if(modo==='cam') iniciarCamara(pfx);
+  else { detenerCamara(pfx); const inp=document.getElementById(pfx+'-id'); if(inp) inp.focus(); }
 }
 
-function iniciarCamara(){
-  const video=document.getElementById('cam-video');
-  const status=document.getElementById('cam-status');
-  detenerCamara();
+function iniciarCamara(pfx){
+  const video=document.getElementById(pfx+'-video');
+  const status=document.getElementById(pfx+'-cam-status');
+  detenerCamara(pfx);
+  if(!video||!status) return;
   if(!navigator.mediaDevices?.getUserMedia){
-    status.textContent='Cámara no disponible en este dispositivo/navegador';
-    status.className='scan-status err';return;
+    status.textContent='Cámara no disponible — use ingreso manual';
+    status.className='scan-status err'; return;
   }
   status.textContent='Solicitando acceso a cámara…';
   status.className='scan-status';
   navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}}})
     .then(stream=>{
-      camStream=stream;
+      camStreams[pfx]=stream;
       video.srcObject=stream;
       video.style.display='block';
       video.onloadedmetadata=()=>{
         video.play();
         status.textContent='Apunte el QR al recuadro…';
         status.className='scan-status';
-        camInterval=setInterval(leerFrameQR,300);
+        camIntervals[pfx]=setInterval(()=>leerFrameQR(pfx),250);
       };
     })
     .catch(err=>{
-      status.textContent='Sin acceso a cámara: '+err.message+'. Use el modo manual.';
+      status.textContent='Sin acceso a cámara: '+err.message;
       status.className='scan-status err';
     });
 }
 
-function detenerCamara(){
-  clearInterval(camInterval);camInterval=null;
-  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
-  const video=document.getElementById('cam-video');
-  if(video){video.srcObject=null;video.style.display='none';}
+function detenerCamara(pfx){
+  clearInterval(camIntervals[pfx]); delete camIntervals[pfx];
+  if(camStreams[pfx]){ camStreams[pfx].getTracks().forEach(t=>t.stop()); delete camStreams[pfx]; }
+  const video=document.getElementById(pfx+'-video');
+  if(video){ video.srcObject=null; video.style.display='none'; }
 }
 
-function leerFrameQR(){
-  const video=document.getElementById('cam-video');
-  const canvas=document.getElementById('cam-canvas');
-  const status=document.getElementById('cam-status');
-  if(!video||!canvas||video.readyState<video.HAVE_ENOUGH_DATA)return;
-  const w=video.videoWidth,h=video.videoHeight;
-  canvas.width=w;canvas.height=h;
+function leerFrameQR(pfx){
+  const video=document.getElementById(pfx+'-video');
+  const canvas=document.getElementById(pfx+'-canvas');
+  const status=document.getElementById(pfx+'-cam-status');
+  if(!video||!canvas||video.readyState<video.HAVE_ENOUGH_DATA) return;
+  const w=video.videoWidth, h=video.videoHeight;
+  canvas.width=w; canvas.height=h;
   const ctx=canvas.getContext('2d');
   ctx.drawImage(video,0,0,w,h);
-  const imgData=ctx.getImageData(0,0,w,h);
   try{
-    const code=jsQR(imgData.data,imgData.width,imgData.height,{inversionAttempts:'dontInvert'});
+    const code=jsQR(ctx.getImageData(0,0,w,h).data,w,h,{inversionAttempts:'dontInvert'});
     if(code){
-      const txt=code.data;
-      detenerCamara();
-      status.textContent='✓ QR detectado';
-      status.className='scan-status ok';
-      // Intentar parsear JSON del QR
-      let uid='';
-      try{const d=JSON.parse(txt);uid=d.id||txt;}catch(e){uid=txt.trim().toUpperCase();}
-      procesarQRLeido(uid);
+      detenerCamara(pfx);
+      if(status){ status.textContent='✓ QR detectado'; status.className='scan-status ok'; }
+      // El QR contiene el ID-UNICO directamente (ver makeQRData)
+      const uid=code.data.trim().toUpperCase();
+      if(scanCallbacks[pfx]) scanCallbacks[pfx](uid);
     }
   }catch(e){}
 }
 
-function procesarQRLeido(uid){
+// ── Reiniciar scanner de un módulo al cambiar de pestaña
+function detenerTodosScanners(){
+  ['ge','be','d','bs'].forEach(pfx=>detenerCamara(pfx));
+}
+
+// Detener cámara activa al cambiar de módulo
+const _origShowTab=showTab;
+function showTab(tab){
+  detenerTodosScanners();
+  _origShowTab(tab);
+}
+
+// ── GARITA ENTRADA ──
+function procesarQRLeido_ge(uid){
   const el=document.getElementById('ge-result');
   const row=todos.find(r=>(campo(r,'id')||'').toUpperCase()===uid);
   if(!row){
     el.innerHTML=`<div class="alert a-err"><i class="ti ti-qrcode"></i> QR no reconocido: <strong>${uid}</strong> — No está en la planificación</div>`;
-    setTimeout(()=>{if(modoActivo==='cam')iniciarCamara();},3000);
+    setTimeout(()=>{ if(modoActivo['ge']==='cam') iniciarCamara('ge'); },3000);
     return;
   }
   geRenderResultado(row, true);
@@ -1436,6 +1562,27 @@ function geSearch(){
   const row=todos.find(r=>(campo(r,'id')||'').toUpperCase()===q||(campo(r,'placa')||'').toUpperCase().includes(q));
   if(!row){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> No encontrado en planificación — verifique el ID o placa</div>';return;}
   geRenderResultado(row, false);
+}
+
+// ── BÁSCULA ENTRADA callbacks ──
+function beDesdeQR(uid){
+  activarModo('be','manual');   // cambia a manual para mostrar resultado
+  document.getElementById('be-id').value=uid;
+  beBuscar();
+}
+
+// ── DESPACHO callbacks ──
+function dDesdeQR(uid){
+  activarModo('d','manual');
+  document.getElementById('d-id').value=uid;
+  dBuscar();
+}
+
+// ── BÁSCULA SALIDA callbacks ──
+function bsDesdeQR(uid){
+  activarModo('bs','manual');
+  document.getElementById('bs-id').value=uid;
+  bsBuscar();
 }
 
 function geRenderResultado(row, desdeQR){
@@ -1553,13 +1700,15 @@ function renderGePend(){
 let beUID=null;
 function beBuscar(){
   const id=document.getElementById('be-id').value.trim().toUpperCase();
-  const rv=reg[id],el=document.getElementById('be-info');beUID=null;
-  if(!rv){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> ID no encontrado</div>';return;}
-  if(rv.estado==='pendiente'){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> Vehículo no ha pasado por garita de entrada</div>';return;}
-  if(rv.peBruto){el.innerHTML=`<div class="alert a-info"><i class="ti ti-info-circle"></i> Peso ya registrado: <strong>${rv.peBruto} kg</strong></div>`;return;}
+  const rv=reg[id],el=document.getElementById('be-info');
+  const pw=document.getElementById('be-peso-wrap');
+  beUID=null; if(pw) pw.style.display='none';
+  if(!rv){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> ID no encontrado — verifique o use el escáner</div>';return;}
+  if(rv.estado==='pendiente'){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> Vehículo aún no ha pasado por garita de entrada</div>';return;}
+  if(rv.peBruto){el.innerHTML=`<div class="alert a-info"><i class="ti ti-info-circle"></i> Peso de entrada ya registrado: <strong>${rv.peBruto.toLocaleString('es-EC')} kg</strong> a las ${rv.tsBE}</div>`;return;}
   beUID=id;
-  el.innerHTML=`<div class="alert a-ok"><i class="ti ti-check"></i> <strong>${id}</strong> — ${rv.chofer} · ${rv.placa} · ${rv.detalle}</div>`;
-  document.getElementById('be-peso').focus();
+  el.innerHTML=`<div class="alert a-ok"><i class="ti ti-check"></i> <strong>${id}</strong> — ${rv.chofer} · <span class="mt">${rv.placa}</span> · ${rv.detalle}</div>`;
+  if(pw){ pw.style.display='block'; document.getElementById('be-peso').value=''; document.getElementById('be-display').textContent='— kg'; document.getElementById('be-peso').focus(); }
 }
 function beDisplay(){
   const v=parseFloat(document.getElementById('be-peso').value)||0;
@@ -1574,6 +1723,7 @@ function beRegistrar(){
   renderBeTabla();
   document.getElementById('be-id').value='';document.getElementById('be-peso').value='';
   document.getElementById('be-info').innerHTML='';document.getElementById('be-display').textContent='— kg';
+  const pw=document.getElementById('be-peso-wrap');if(pw)pw.style.display='none';
   audit('Báscula Entrada',beUID,rv.chofer,rv.placa,p+' kg bruto');
   msg('be-msg','ok','Peso registrado: '+p.toLocaleString('es-EC')+' kg — Listo para despacho');
   beUID=null;
@@ -1729,16 +1879,18 @@ function fmtCrono(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floo
 let bsUID=null;
 function bsBuscar(){
   const id=document.getElementById('bs-id').value.trim().toUpperCase();
-  const rv=reg[id],el=document.getElementById('bs-info');bsUID=null;
-  if(!rv||!rv.peBruto){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> ID no encontrado o sin peso de entrada</div>';return;}
+  const rv=reg[id],el=document.getElementById('bs-info');
+  const pw=document.getElementById('bs-peso-wrap');
+  bsUID=null; if(pw) pw.style.display='none';
+  if(!rv||!rv.peBruto){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> ID no encontrado o sin peso de entrada registrado</div>';return;}
   if(!['bascula-salida','garita-salida'].includes(rv.estado)){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> Vehículo aún no completó la carga en despacho</div>';return;}
-  if(rv.peSalida){el.innerHTML=`<div class="alert a-info"><i class="ti ti-info-circle"></i> Peso de salida ya registrado: ${rv.peSalida} kg</div>`;return;}
+  if(rv.peSalida){el.innerHTML=`<div class="alert a-info"><i class="ti ti-info-circle"></i> Peso de salida ya registrado: <strong>${rv.peSalida.toLocaleString('es-EC')} kg</strong> a las ${rv.tsBS}</div>`;return;}
   bsUID=id;
-  el.innerHTML=`<div class="alert a-ok"><i class="ti ti-check"></i> <strong>${id}</strong> — ${rv.chofer} · ${rv.placa}</div>`;
+  el.innerHTML=`<div class="alert a-ok"><i class="ti ti-check"></i> <strong>${id}</strong> — ${rv.chofer} · <span class="mt">${rv.placa}</span> · ${rv.detalle}</div>`;
   document.getElementById('bs-ent').textContent=rv.peBruto.toLocaleString('es-EC')+' kg';
   document.getElementById('bs-sal').textContent='—';
   document.getElementById('bs-net').textContent='—';
-  document.getElementById('bs-peso').focus();
+  if(pw){ pw.style.display='block'; document.getElementById('bs-peso').value=''; document.getElementById('bs-peso').focus(); }
 }
 function bsCalc(){
   const v=parseFloat(document.getElementById('bs-peso').value)||0;
@@ -1758,6 +1910,7 @@ function bsRegistrar(){
   audit('Báscula Salida',bsUID,rv.chofer,rv.placa,p+' kg tara · Neto: '+rv.peNeto+' kg');
   document.getElementById('bs-id').value='';document.getElementById('bs-peso').value='';
   document.getElementById('bs-info').innerHTML='';
+  const pw=document.getElementById('bs-peso-wrap');if(pw)pw.style.display='none';
   ['bs-ent','bs-sal','bs-net'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='—';});
   bsUID=null;
   msg('bs-msg','ok','Peso registrado — listo para garita de salida');
@@ -1895,7 +2048,12 @@ function mostrarPase(uid){
   // QR en pase — canvas con logo
   const qrEl=document.getElementById('pase-qr-canvas');
   qrEl.innerHTML='<div style="font-size:10px;color:var(--tx3);padding:.5rem;">Generando…</div>';
-  dibujarQRconLogo(qrEl, uid, 130);
+  dibujarQRconLogo(qrEl, uid, 130).then(()=>{
+    // Texto copiable bajo el QR del pase
+    let tc=document.getElementById('pase-qr-text');
+    if(!tc){ tc=document.createElement('div'); tc.id='pase-qr-text'; qrEl.parentNode.insertBefore(tc,qrEl.nextSibling); }
+    tc.innerHTML=`<div class="qr-id-text" onclick="copiarTexto('${uid}',this)" style="margin-top:8px;">${uid}</div>`;
+  });
   abrir('m-pase');
 }
 function paseWA(){
@@ -2044,6 +2202,22 @@ function msg(id,tipo,txt){
   clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display='none';},4000);
 }
 function horaActual(){const n=new Date();return pad(n.getHours())+':'+pad(n.getMinutes());}
+
+function copiarTexto(txt, el){
+  navigator.clipboard?.writeText(txt).then(()=>{
+    el.classList.add('copied');
+    setTimeout(()=>el.classList.remove('copied'), 2000);
+  }).catch(()=>{
+    // Fallback para navegadores sin Clipboard API
+    const ta=document.createElement('textarea');
+    ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    el.classList.add('copied');
+    setTimeout(()=>el.classList.remove('copied'), 2000);
+  });
+}
 function showTab(tab){
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
