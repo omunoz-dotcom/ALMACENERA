@@ -1098,17 +1098,151 @@ function renderPlan(){
   body.innerHTML=rows.join('');
 }
 
-function toggleQRRow(safeUid,uid){
+// ══════════════════════════════════════════════════════════
+// QR CON LOGO AGRIPAC — canvas personalizado
+// ══════════════════════════════════════════════════════════
+
+// Logo AGRIPAC incrustado como base64 (SVG → no depende de URLs externas)
+const AGRIPAC_LOGO = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzFEOUU3NSIgcng9IjIwIi8+CiAgPHRleHQgeD0iMTAwIiB5PSI5NSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLCBBcmlhbCIgZm9udC13ZWlnaHQ9IjkwMCIgZm9udC1zaXplPSI1MiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5BRzwvdGV4dD4KICA8dGV4dCB4PSIxMDAiIHk9IjE0NSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iNzAwIiBmb250LXNpemU9IjE4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjMiPkFHUklQQUM8L3RleHQ+Cjwvc3ZnPgo=';
+
+// Objeto Image precargado para el logo (evita re-cargar en cada QR)
+let _logoImg = null;
+function getLogoImg(){
+  return new Promise(resolve=>{
+    if(_logoImg){resolve(_logoImg);return;}
+    const img=new Image();
+    img.onload=()=>{_logoImg=img;resolve(img);};
+    img.onerror=()=>resolve(null);
+    img.src=AGRIPAC_LOGO;
+  });
+}
+
+/**
+ * Dibuja un QR con logo AGRIPAC centrado en un elemento contenedor.
+ * @param {HTMLElement} container  – div donde se inserta el canvas
+ * @param {string}      uid        – ID-UNICO (texto que va en el QR)
+ * @param {number}      size       – tamaño en px del QR final (default 200)
+ * @returns {HTMLCanvasElement}    – canvas generado (para descargar)
+ */
+async function dibujarQRconLogo(container, uid, size=200){
+  container.innerHTML='';
+
+  const qrData = makeQRData(uid);
+
+  // 1. Generar QR base con qrcodejs en un div temporal oculto
+  const tmp = document.createElement('div');
+  tmp.style.cssText='position:absolute;left:-9999px;top:-9999px;';
+  document.body.appendChild(tmp);
+
+  await new Promise(resolve=>{
+    try{
+      new QRCode(tmp,{
+        text: qrData,
+        width: size,
+        height: size,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H   // H = 30% corrección → espacio para logo
+      });
+      // qrcodejs es síncrono internamente pero el canvas puede tardar 1 frame
+      setTimeout(resolve, 50);
+    }catch(e){resolve();}
+  });
+
+  const qrCanvas = tmp.querySelector('canvas');
+  document.body.removeChild(tmp);
+
+  // 2. Canvas final donde componemos QR + logo
+  const canvas = document.createElement('canvas');
+  canvas.width  = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  if(qrCanvas){
+    // Dibujar QR base
+    ctx.drawImage(qrCanvas, 0, 0, size, size);
+  } else {
+    // Fallback: fondo blanco con texto
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
+    ctx.fillStyle='#000';ctx.font='12px Arial';
+    ctx.textAlign='center';ctx.fillText('QR: '+uid.slice(0,20),size/2,size/2);
+  }
+
+  // 3. Logo centrado — tamaño = 22% del QR, con padding blanco alrededor
+  const logoSize  = Math.round(size * 0.22);
+  const padSize   = Math.round(size * 0.26);   // borde blanco incluido
+  const logoX     = Math.round((size - padSize) / 2);
+  const logoY     = Math.round((size - padSize) / 2);
+
+  // Fondo blanco con borde redondeado para que el logo no tape módulos críticos
+  const r = Math.round(padSize * 0.2);
+  ctx.save();
+  ctx.fillStyle = '#ffffff';
+  roundRect(ctx, logoX - 2, logoY - 2, padSize + 4, padSize + 4, r + 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Intentar cargar logo
+  const logo = await getLogoImg();
+  if(logo){
+    const lx = logoX + Math.round((padSize - logoSize)/2);
+    const ly = logoY + Math.round((padSize - logoSize)/2);
+    ctx.save();
+    // Clip redondeado para el logo
+    ctx.beginPath();
+    roundRect(ctx, lx, ly, logoSize, logoSize, Math.round(logoSize*0.18));
+    ctx.clip();
+    ctx.drawImage(logo, lx, ly, logoSize, logoSize);
+    ctx.restore();
+  } else {
+    // Fallback texto "AG" si el logo no carga
+    ctx.save();
+    ctx.fillStyle='#1D9E75';
+    roundRect(ctx, logoX, logoY, padSize, padSize, r);
+    ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.font=`bold ${Math.round(padSize*0.45)}px Arial Black, Arial`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('AG', logoX+padSize/2, logoY+padSize/2);
+    ctx.restore();
+  }
+
+  container.appendChild(canvas);
+  return canvas;
+}
+
+// Helper: dibuja un rectángulo redondeado en el path actual
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+function makeQRData(uid){
+  const rv=reg[uid]||{};
+  // El QR contiene solo el ID para que el escáner lo lea limpio
+  // Se puede ampliar a JSON si el lector lo soporta
+  return uid;
+}
+
+// ── Fila expandible en tabla planificación ──
+function toggleQRRow(safeUid, uid){
   const row=document.getElementById('qrrow-'+safeUid);
   if(!row)return;
   const visible=row.style.display!=='none';
   if(visible){row.style.display='none';return;}
-  // Generar QR en el contenedor si aún no está
   const imgEl=document.getElementById('qrimg-'+safeUid);
   if(imgEl&&!imgEl.dataset.built){
     imgEl.dataset.built='1';
-    try{new QRCode(imgEl,{text:makeQRData(uid),width:140,height:140,colorDark:'#000',colorLight:'#fff'});}
-    catch(e){imgEl.innerHTML='<div style="width:140px;height:140px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:4px;">QR generado</div>';}
+    dibujarQRconLogo(imgEl, uid, 160);
   }
   row.style.display='';
 }
@@ -1118,49 +1252,52 @@ function cerrarQRRow(safeUid){
   if(row)row.style.display='none';
 }
 
-function descargarQRById(safeUid,uid){
+function descargarQRById(safeUid, uid){
   const el=document.getElementById('qrimg-'+safeUid);
-  if(!el)return;
+  if(!el){alert('Abre el QR primero con "Ver QR"');return;}
   const canvas=el.querySelector('canvas');
-  if(!canvas){alert('Genera el QR primero haciendo clic en Ver QR');return;}
-  const a=document.createElement('a');a.href=canvas.toDataURL('image/png');
-  a.download='QR-'+uid+'.png';a.click();
+  if(canvas){
+    _descargarCanvas(canvas, uid);
+  } else {
+    // Si aún no está construido, generarlo y descargar
+    dibujarQRconLogo(el, uid, 160).then(c=>{if(c)_descargarCanvas(c,uid);});
+  }
 }
 
-// ══════════════════════════════════════════════════════════
-// QR
-// ══════════════════════════════════════════════════════════
-function makeQRData(uid){
-  return JSON.stringify({id:uid,fecha:fechaSel,ts:Date.now(),v:1});
+function _descargarCanvas(canvas, uid){
+  const a=document.createElement('a');
+  a.href=canvas.toDataURL('image/png');
+  a.download='QR-AGRIPAC-'+uid+'.png';
+  a.click();
 }
 
+// ── Módulo QR (pestaña QR) ──
 function generarQR(){
   const uid=document.getElementById('qr-id').value.trim().toUpperCase();
   const rv=reg[uid];
   const el=document.getElementById('qr-info');
   if(!rv){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> ID no encontrado en la planificación de hoy</div>';return;}
   el.innerHTML='';
-  genQRSingle(uid,true);
+  genQRSingle(uid, true);
 }
 
-function genQRSingle(uid,show=false){
+function genQRSingle(uid, show=false){
   const rv=reg[uid];if(!rv)return;
   rv.qrGenerado=true;rv.tsQR=horaActual();
-  const qrData=makeQRData(uid);
   if(show){
     const wrap=document.getElementById('qr-display');
-    const canvas=document.getElementById('qr-canvas');
-    canvas.innerHTML='';
-    try{new QRCode(canvas,{text:qrData,width:160,height:160,colorDark:'#000',colorLight:'#fff'});}
-    catch(e){canvas.innerHTML='<div style="width:160px;height:160px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:4px;">QR generado</div>';}
+    const container=document.getElementById('qr-canvas');
+    container.innerHTML='<div style="font-size:11px;color:var(--tx3);padding:1rem;">Generando QR…</div>';
     wrap.style.display='flex';
-    document.getElementById('qr-data').textContent=uid+' · '+rv.chofer+' · '+rv.placa;
+    dibujarQRconLogo(container, uid, 180).then(()=>{
+      document.getElementById('qr-data').textContent=uid+' · '+rv.chofer+' · '+rv.placa;
+    });
     paseActual=uid;
   }
   renderQRTabla();
-  renderPlan();   // ← actualiza badge en tabla
+  renderPlan();
   actualizarBadges();
-  audit('QR',uid,rv.chofer,rv.placa,'QR generado');
+  audit('QR',uid,rv.chofer,rv.placa,'QR generado con logo AGRIPAC');
 }
 
 function generarTodosQR(){
@@ -1172,20 +1309,24 @@ function renderQRTabla(){
   const body=document.getElementById('qr-tabla');if(!body)return;
   const items=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.qrGenerado);
   document.getElementById('qr-count').textContent=items.length;
-  if(!items.length){body.innerHTML='<tr><td colspan="6" class="ec">Sin QRs</td></tr>';return;}
+  if(!items.length){body.innerHTML='<tr><td colspan="6" class="ec">Sin QRs generados</td></tr>';return;}
   body.innerHTML=items.map(r=>`<tr>
     <td><span class="mt" style="font-size:10px;">${r.uid}</span></td>
     <td>${r.chofer}</td><td><span class="mt">${r.placa}</span></td>
     <td>${r.estado==='completado'?'<span class="badge b-used">Usado</span>':'<span class="badge b-ok">Activo</span>'}</td>
     <td style="font-family:var(--mono);font-size:11px;">${r.tsQR||'—'}</td>
-    <td>${r.qrEnviado?'<span class="badge b-ok"><i class="ti ti-check"></i> Enviado</span>':'<button class="btn btn-success btn-sm" onclick="enviarWAQR(\''+r.uid+'\')"><i class="ti ti-brand-whatsapp"></i></button>'}</td>
+    <td>${r.qrEnviado
+      ?'<span class="badge b-ok"><i class="ti ti-check"></i> Enviado</span>'
+      :`<button class="btn btn-success btn-sm" onclick="enviarWAQR('${r.uid}')"><i class="ti ti-brand-whatsapp"></i> Enviar</button>`}
+    </td>
   </tr>`).join('');
 }
 
 function descargarQR(){
-  const canvas=document.querySelector('#qr-canvas canvas');if(!canvas)return;
-  const a=document.createElement('a');a.href=canvas.toDataURL('image/png');
-  a.download='QR-'+paseActual+'.png';a.click();
+  const container=document.getElementById('qr-canvas');if(!container)return;
+  const canvas=container.querySelector('canvas');
+  if(canvas){_descargarCanvas(canvas, paseActual||'QR');}
+  else{alert('Genera el QR primero');}
 }
 
 function enviarWhatsApp(){paseActual&&enviarWAQR(paseActual);}
@@ -1193,10 +1334,12 @@ function enviarWhatsApp(){paseActual&&enviarWAQR(paseActual);}
 function enviarWAQR(uid){
   const rv=reg[uid];if(!rv)return;
   rv.qrEnviado=true;
-  const msg=`🟢 *AGRIPAC S.A. — Pase de Ingreso*\n\n🆔 ID: ${uid}\n👤 Chofer: ${rv.chofer}\n🚛 Placa: ${rv.placa}\n📦 Carga: ${rv.detalle}\n📍 Carga: ${rv.areaCarga}\n📍 Descarga: ${rv.areaDesc}\n🕐 Hora programada: ${rv.hora}\n📅 ${fmtFecha(fechaSel)}\n\n_Presente este código QR en garita de entrada_\n_Válido solo para hoy_`;
+  const msg=`🟢 *AGRIPAC S.A. — Pase de Ingreso*\n\n🆔 ID: *${uid}*\n👤 Chofer: ${rv.chofer}\n🚛 Placa: ${rv.placa}\n📦 Carga: ${rv.detalle}\n📍 Área carga: ${rv.areaCarga}\n📍 Área descarga: ${rv.areaDesc}\n🕐 Hora programada: ${rv.hora}\n📅 ${fmtFecha(fechaSel)}\n\n_Muestre este QR en la garita de entrada._\n_Válido solo para hoy · Un solo uso_`;
   const tel=rv.tel?rv.tel.replace(/\D/g,''):'';
   window.open('https://wa.me/'+(tel?'593'+tel.slice(-9):'')+`?text=${encodeURIComponent(msg)}`,'_blank');
-  renderQRTabla();audit('WhatsApp',uid,rv.chofer,rv.placa,'QR enviado por WhatsApp');
+  renderQRTabla();
+  renderPlan();
+  audit('WhatsApp',uid,rv.chofer,rv.placa,'QR enviado por WhatsApp');
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1749,10 +1892,10 @@ function mostrarPase(uid){
     ['Fecha',fmtFecha(fechaSel)]
   ];
   document.getElementById('pase-rows').innerHTML=fields.map(([k,v])=>`<div class="pase-row"><span>${k}</span><span>${v||'—'}</span></div>`).join('');
-  // QR en pase
-  const qrEl=document.getElementById('pase-qr-canvas');qrEl.innerHTML='';
-  try{new QRCode(qrEl,{text:makeQRData(uid),width:120,height:120,colorDark:'#000',colorLight:'#fff'});}
-  catch(e){qrEl.innerHTML='<div style="width:120px;height:120px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:10px;">QR</div>';}
+  // QR en pase — canvas con logo
+  const qrEl=document.getElementById('pase-qr-canvas');
+  qrEl.innerHTML='<div style="font-size:10px;color:var(--tx3);padding:.5rem;">Generando…</div>';
+  dibujarQRconLogo(qrEl, uid, 130);
   abrir('m-pase');
 }
 function paseWA(){
