@@ -8,8 +8,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <!-- QR generator -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<!-- QR scanner -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <style>
 :root{
   --bg:#f5f4f0;--sf:#fff;--sf2:#f0efe9;--bd:#e0dfd8;--bd2:#c8c7be;
@@ -253,6 +253,32 @@ input:focus,select:focus,textarea:focus{border-color:var(--gr);}
 
 .divider{height:1px;background:var(--bd);margin:.9rem 0;}
 .sl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:6px;}
+
+/* ── QR POPUP INLINE EN TABLA ── */
+.qr-popup-row{background:var(--sf2);border-bottom:1px solid var(--bd);}
+.qr-popup-inner{display:flex;align-items:flex-start;gap:1.5rem;padding:1rem 1.25rem;flex-wrap:wrap;}
+.qr-popup-img{background:#fff;padding:8px;border-radius:6px;border:1px solid var(--bd);flex-shrink:0;}
+.qr-popup-info{flex:1;min-width:200px;}
+.qr-popup-info .sl{margin-top:6px;}
+
+/* ── SCANNER REAL ── */
+.scan-btn-group{display:flex;gap:8px;margin-bottom:12px;}
+.scan-btn-group .btn{flex:1;justify-content:center;}
+.scan-mode{border:2px solid var(--bd);border-radius:var(--rl);padding:1rem;margin-bottom:10px;min-height:60px;}
+.scan-mode.active-scan{border-color:var(--gr);}
+#cam-video{width:100%;border-radius:var(--r);display:none;max-height:240px;object-fit:cover;}
+#cam-canvas{display:none;}
+.scan-status{text-align:center;font-size:12px;color:var(--tx3);margin-top:6px;}
+.scan-status.ok{color:var(--grt);}
+.scan-status.err{color:var(--rdt);}
+.scan-overlay{position:relative;}
+.scan-corner{position:absolute;width:18px;height:18px;border-color:var(--gr);border-style:solid;}
+.scan-corner.tl{top:0;left:0;border-width:3px 0 0 3px;border-radius:4px 0 0 0;}
+.scan-corner.tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 4px 0 0;}
+.scan-corner.bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 4px;}
+.scan-corner.br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 4px 0;}
+.scan-line-anim{position:absolute;left:8px;right:8px;height:2px;background:var(--gr);opacity:.7;animation:scanline 2s linear infinite;}
+@keyframes scanline{0%{top:8px}100%{top:calc(100% - 8px)}}
 </style>
 </head>
 <body>
@@ -364,7 +390,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gr);}
       <thead><tr>
         <th>ID Único</th><th>Área Carga</th><th>Área Descarga</th><th>Detalle</th>
         <th>Tipo</th><th>Chofer</th><th>Placa</th><th>Hora</th><th>Aprobación</th>
-        <th>QR</th><th>Estado</th><th>Acción</th>
+        <th>Código QR</th><th>Estado</th><th>Acción</th>
       </tr></thead>
       <tbody id="plan-body"><tr><td colspan="12" class="ec"><i class="ti ti-loader"></i> Cargando…</td></tr></tbody>
     </table></div>
@@ -406,28 +432,54 @@ input:focus,select:focus,textarea:focus{border-color:var(--gr);}
 <div class="sec" id="sec-garita-e">
   <div class="g2">
     <div class="card">
-      <div class="ct"><i class="ti ti-scan"></i> Escáner / Validación QR</div>
-      <!-- Mock scanner visual -->
-      <div class="scanner-frame" id="scanner-frame">
-        <div class="corner c-tl"></div><div class="corner c-tr"></div>
-        <div class="corner c-bl"></div><div class="corner c-br"></div>
-        <div class="scanner-line" id="scanner-line"></div>
-        <i class="ti ti-qrcode" style="font-size:48px;color:var(--bd2);"></i>
+      <div class="ct"><i class="ti ti-scan"></i> Control de acceso — Garita Entrada</div>
+
+      <!-- Botones para elegir modo -->
+      <div class="scan-btn-group">
+        <button class="btn btn-primary" id="btn-scan-cam" onclick="activarModo('cam')">
+          <i class="ti ti-camera"></i> Escanear QR con cámara
+        </button>
+        <button class="btn" id="btn-scan-manual" onclick="activarModo('manual')">
+          <i class="ti ti-keyboard"></i> Ingreso manual
+        </button>
       </div>
-      <div style="text-align:center;font-size:11px;color:var(--tx3);margin-bottom:10px;">
-        Cámara QR — apunte el código al recuadro verde
+
+      <!-- MODO CÁMARA -->
+      <div class="scan-mode" id="modo-cam" style="display:none;">
+        <div class="scan-overlay" style="position:relative;background:#000;border-radius:var(--r);overflow:hidden;max-height:240px;">
+          <video id="cam-video" autoplay playsinline muted style="width:100%;max-height:240px;object-fit:cover;display:block;border-radius:var(--r);"></video>
+          <canvas id="cam-canvas" style="display:none;"></canvas>
+          <!-- Esquinas overlay -->
+          <div style="position:absolute;inset:0;pointer-events:none;">
+            <div class="scan-corner tl"></div><div class="scan-corner tr"></div>
+            <div class="scan-corner bl"></div><div class="scan-corner br"></div>
+            <div class="scan-line-anim" id="scan-line-anim"></div>
+          </div>
+        </div>
+        <div class="scan-status" id="cam-status">Iniciando cámara…</div>
+        <div style="display:flex;gap:6px;margin-top:8px;justify-content:center;">
+          <button class="btn btn-sm" onclick="detenerCamara()"><i class="ti ti-player-stop"></i> Detener</button>
+          <button class="btn btn-sm" onclick="iniciarCamara()"><i class="ti ti-refresh"></i> Reiniciar</button>
+        </div>
       </div>
-      <div class="divider"></div>
-      <div class="sl">O ingrese el ID manualmente</div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" id="ge-id" placeholder="ID-UNICO o PLACA" style="flex:1;text-transform:uppercase;"
-          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')geSearch()"/>
-        <button class="btn btn-primary" onclick="geSearch()"><i class="ti ti-search"></i></button>
+
+      <!-- MODO MANUAL -->
+      <div class="scan-mode" id="modo-manual" style="display:none;">
+        <div class="sl" style="margin-bottom:8px;"><i class="ti ti-keyboard"></i> Ingreso manual por ID o placa</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <input type="text" id="ge-id" placeholder="ID-UNICO o PLACA" style="flex:1;text-transform:uppercase;font-size:13px;"
+            oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')geSearch()"/>
+          <button class="btn btn-primary" onclick="geSearch()"><i class="ti ti-search"></i> Buscar</button>
+        </div>
+        <div style="font-size:11px;color:var(--tx3);">Escribe el ID-UNICO completo o los últimos dígitos de la placa</div>
       </div>
-      <div id="ge-result"></div>
+
+      <!-- RESULTADO validación -->
+      <div id="ge-result" style="margin-top:10px;"></div>
     </div>
+
     <div class="card">
-      <div class="ct"><i class="ti ti-clock"></i> Pendientes de ingreso</div>
+      <div class="ct"><i class="ti ti-clock"></i> Pendientes de ingreso hoy</div>
       <div class="tw"><table>
         <thead><tr><th>ID Único</th><th>Chofer</th><th>Placa</th><th>Detalle</th><th>Hora</th><th>QR</th><th></th></tr></thead>
         <tbody id="ge-pend"><tr><td colspan="7" class="ec">Sin pendientes</td></tr></tbody>
@@ -674,26 +726,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--gr);}
       <div id="pase-rows"></div>
       <div style="font-size:10px;color:var(--tx3);margin-top:8px;">Válido únicamente el día de hoy · Un solo uso</div>
     </div>
-<div style="display:flex;gap:6px;margin-top:1rem;flex-wrap:wrap;">
-
-  <button class="btn btn-success"
-  onclick="paseWA()" style="flex:1;">
-    <i class="ti ti-brand-whatsapp"></i>
-    WhatsApp
-  </button>
-
-  <button class="btn btn-blue"
-  onclick="descargarPaseImagen()">
-    <i class="ti ti-photo"></i>
-    Imagen
-  </button>
-
-  <button class="btn"
-  onclick="cerrar('m-pase')" style="flex:1;">
-    Cerrar
-  </button>
-
-</div>
+    <div style="display:flex;gap:6px;margin-top:1rem;">
+      <button class="btn btn-success" onclick="paseWA()" style="flex:1;"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
+      <button class="btn" onclick="cerrar('m-pase')" style="flex:1;">Cerrar</button>
+    </div>
   </div>
 </div>
 
@@ -985,18 +1021,40 @@ function renderPlan(){
   const q=(document.getElementById('sp').value||'').toLowerCase();
   const f=planData.filter(r=>!q||[campo(r,'id'),campo(r,'chofer'),campo(r,'placa'),campo(r,'detalle')].join(' ').toLowerCase().includes(q));
   if(!f.length){body.innerHTML='<tr><td colspan="12" class="ec">Sin vehículos</td></tr>';return;}
-  body.innerHTML=f.map(r=>{
+
+  const rows=[];
+  f.forEach(r=>{
     const uid=campo(r,'id'),rv=reg[uid],est=rv?rv.estado:'pendiente';
     const apro=campo(r,'apro');
-    const aproBadge=apro.toLowerCase()==='ok'?`<span class="badge b-ok"><i class="ti ti-check"></i> OK</span>`:`<span class="badge b-pend">${apro}</span>`;
-    const qrBadge=rv?.qrGenerado?`<span class="badge b-ok"><i class="ti ti-qrcode"></i>${rv.qrEnviado?' Enviado':' Listo'}</span>`:`<span class="badge b-pend">Sin QR</span>`;
-    const accion=est==='pendiente'?`<button class="btn btn-success btn-sm" onclick="geAbrirModal('${uid}')"><i class="ti ti-login"></i></button>`:
-      est==='garita-entrada'?`<button class="btn btn-purple btn-sm" onclick="showTab('bascula-e')"><i class="ti ti-weight"></i></button>`:
-      ['bascula-entrada'].includes(est)?`<button class="btn btn-warn btn-sm" onclick="showTab('despacho')"><i class="ti ti-building-warehouse"></i></button>`:
-      ['despacho','cargando'].includes(est)?`<button class="btn btn-sm" onclick="showTab('despacho')"><i class="ti ti-eye"></i></button>`:
-      est==='bascula-salida'?`<button class="btn btn-sm" onclick="showTab('garita-s')"><i class="ti ti-logout"></i></button>`:
-      est==='completado'?`<span style="font-size:11px;color:var(--tx3);">✓</span>`:'';
-    return`<tr>
+    const safeUid=uid.replace(/[^a-zA-Z0-9_-]/g,'_');
+    const aproBadge=apro.toLowerCase()==='ok'
+      ?`<span class="badge b-ok"><i class="ti ti-check"></i> OK</span>`
+      :`<span class="badge b-pend">${apro}</span>`;
+
+    // QR column: si ya generado → botón "Ver QR", si no → botón "Generar QR"
+    const qrCol=rv?.qrGenerado
+      ?`<button class="btn btn-sm btn-purple" onclick="toggleQRRow('${safeUid}','${uid}')">
+          <i class="ti ti-qrcode"></i> Ver QR ${rv.qrEnviado?'<span class="badge b-ok" style="font-size:9px;padding:1px 4px;">Enviado</span>':''}
+        </button>`
+      :`<button class="btn btn-sm" onclick="genQRSingle('${uid}');renderPlan();" style="border-color:var(--pu);color:var(--pu);">
+          <i class="ti ti-qrcode"></i> Generar QR
+        </button>`;
+
+    // Acción flujo
+    const accion=est==='pendiente'
+      ?`<button class="btn btn-success btn-sm" onclick="geAbrirModal('${uid}')"><i class="ti ti-login"></i> Ingresar</button>`
+      :est==='garita-entrada'
+      ?`<button class="btn btn-purple btn-sm" onclick="showTab('bascula-e')"><i class="ti ti-weight"></i> Báscula</button>`
+      :['bascula-entrada'].includes(est)
+      ?`<button class="btn btn-warn btn-sm" onclick="showTab('despacho')"><i class="ti ti-building-warehouse"></i> Despacho</button>`
+      :['despacho','cargando'].includes(est)
+      ?`<button class="btn btn-sm" onclick="showTab('despacho')"><i class="ti ti-eye"></i> Ver carga</button>`
+      :est==='bascula-salida'
+      ?`<button class="btn btn-sm" onclick="showTab('garita-s')"><i class="ti ti-logout"></i> Autorizar</button>`
+      :est==='completado'
+      ?`<span class="badge b-salida"><i class="ti ti-checks"></i> Completado</span>`:'';
+
+    rows.push(`<tr id="row-${safeUid}">
       <td><span class="mt" style="font-size:10px;">${uid}</span></td>
       <td style="font-size:11px;color:var(--tx2);">${campo(r,'areaCarga')}</td>
       <td style="font-size:11px;color:var(--tx2);">${campo(r,'areaDesc')}</td>
@@ -1006,11 +1064,67 @@ function renderPlan(){
       <td><span class="mt">${campo(r,'placa')}</span></td>
       <td><span class="mt">${campo(r,'hora')}</span></td>
       <td>${aproBadge}</td>
-      <td>${qrBadge}</td>
+      <td>${qrCol}</td>
       <td>${estadoBadge(est)}</td>
-      <td>${accion} <button class="btn btn-sm" onclick="genQRSingle('${uid}')" title="QR"><i class="ti ti-qrcode"></i></button></td>
-    </tr>`;
-  }).join('');
+      <td>${accion}</td>
+    </tr>`);
+
+    // Fila QR expandible (oculta por defecto)
+    rows.push(`<tr class="qr-popup-row" id="qrrow-${safeUid}" style="display:none;">
+      <td colspan="12">
+        <div class="qr-popup-inner">
+          <div class="qr-popup-img" id="qrimg-${safeUid}"></div>
+          <div class="qr-popup-info">
+            <div style="font-size:13px;font-weight:500;margin-bottom:6px;">Código QR — ${uid}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;margin-bottom:10px;">
+              <div><span class="sl">Chofer</span>${campo(r,'chofer')}</div>
+              <div><span class="sl">Placa</span><span class="mt">${campo(r,'placa')}</span></div>
+              <div><span class="sl">Detalle</span>${campo(r,'detalle')}</div>
+              <div><span class="sl">Hora prog.</span><span class="mt">${campo(r,'hora')}</span></div>
+              <div><span class="sl">Tipo carro</span>${campo(r,'tipo')}</div>
+              <div><span class="sl">Área carga</span>${campo(r,'areaCarga')}</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="btn btn-success btn-sm" onclick="enviarWAQR('${uid}')"><i class="ti ti-brand-whatsapp"></i> Enviar WhatsApp</button>
+              <button class="btn btn-sm" onclick="descargarQRById('${safeUid}','${uid}')"><i class="ti ti-download"></i> Descargar PNG</button>
+              <button class="btn btn-sm" onclick="cerrarQRRow('${safeUid}')"><i class="ti ti-x"></i> Cerrar</button>
+            </div>
+            <div style="font-size:10px;color:var(--tx3);margin-top:8px;"><i class="ti ti-info-circle"></i> Válido solo para hoy · Un solo uso · Verificado en garita</div>
+          </div>
+        </div>
+      </td>
+    </tr>`);
+  });
+  body.innerHTML=rows.join('');
+}
+
+function toggleQRRow(safeUid,uid){
+  const row=document.getElementById('qrrow-'+safeUid);
+  if(!row)return;
+  const visible=row.style.display!=='none';
+  if(visible){row.style.display='none';return;}
+  // Generar QR en el contenedor si aún no está
+  const imgEl=document.getElementById('qrimg-'+safeUid);
+  if(imgEl&&!imgEl.dataset.built){
+    imgEl.dataset.built='1';
+    try{new QRCode(imgEl,{text:makeQRData(uid),width:140,height:140,colorDark:'#000',colorLight:'#fff'});}
+    catch(e){imgEl.innerHTML='<div style="width:140px;height:140px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:4px;">QR generado</div>';}
+  }
+  row.style.display='';
+}
+
+function cerrarQRRow(safeUid){
+  const row=document.getElementById('qrrow-'+safeUid);
+  if(row)row.style.display='none';
+}
+
+function descargarQRById(safeUid,uid){
+  const el=document.getElementById('qrimg-'+safeUid);
+  if(!el)return;
+  const canvas=el.querySelector('canvas');
+  if(!canvas){alert('Genera el QR primero haciendo clic en Ver QR');return;}
+  const a=document.createElement('a');a.href=canvas.toDataURL('image/png');
+  a.download='QR-'+uid+'.png';a.click();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1033,17 +1147,19 @@ function genQRSingle(uid,show=false){
   const rv=reg[uid];if(!rv)return;
   rv.qrGenerado=true;rv.tsQR=horaActual();
   const qrData=makeQRData(uid);
-  // Si show=true mostrar en módulo QR
   if(show){
     const wrap=document.getElementById('qr-display');
     const canvas=document.getElementById('qr-canvas');
     canvas.innerHTML='';
-    try{new QRCode(canvas,{text:qrData,width:160,height:160,colorDark:'#000',colorLight:'#fff'});}catch(e){canvas.innerHTML='<div style="width:160px;height:160px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:11px;">QR generado</div>';}
+    try{new QRCode(canvas,{text:qrData,width:160,height:160,colorDark:'#000',colorLight:'#fff'});}
+    catch(e){canvas.innerHTML='<div style="width:160px;height:160px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:4px;">QR generado</div>';}
     wrap.style.display='flex';
     document.getElementById('qr-data').textContent=uid+' · '+rv.chofer+' · '+rv.placa;
     paseActual=uid;
   }
-  renderQRTabla();renderPlan();actualizarBadges();
+  renderQRTabla();
+  renderPlan();   // ← actualiza badge en tabla
+  actualizarBadges();
   audit('QR',uid,rv.chofer,rv.placa,'QR generado');
 }
 
@@ -1084,32 +1200,143 @@ function enviarWAQR(uid){
 }
 
 // ══════════════════════════════════════════════════════════
-// GARITA ENTRADA
+// GARITA ENTRADA — SCANNER + MANUAL
 // ══════════════════════════════════════════════════════════
+let camStream=null, camInterval=null, modoActivo='';
+
+function activarModo(modo){
+  modoActivo=modo;
+  document.getElementById('modo-cam').style.display=modo==='cam'?'block':'none';
+  document.getElementById('modo-manual').style.display=modo==='manual'?'block':'none';
+  document.getElementById('btn-scan-cam').className='btn'+(modo==='cam'?' btn-primary':'');
+  document.getElementById('btn-scan-manual').className='btn'+(modo==='manual'?' btn-primary':'');
+  document.getElementById('ge-result').innerHTML='';
+  if(modo==='cam'){iniciarCamara();}
+  else{detenerCamara();document.getElementById('ge-id')?.focus();}
+}
+
+function iniciarCamara(){
+  const video=document.getElementById('cam-video');
+  const status=document.getElementById('cam-status');
+  detenerCamara();
+  if(!navigator.mediaDevices?.getUserMedia){
+    status.textContent='Cámara no disponible en este dispositivo/navegador';
+    status.className='scan-status err';return;
+  }
+  status.textContent='Solicitando acceso a cámara…';
+  status.className='scan-status';
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}}})
+    .then(stream=>{
+      camStream=stream;
+      video.srcObject=stream;
+      video.style.display='block';
+      video.onloadedmetadata=()=>{
+        video.play();
+        status.textContent='Apunte el QR al recuadro…';
+        status.className='scan-status';
+        camInterval=setInterval(leerFrameQR,300);
+      };
+    })
+    .catch(err=>{
+      status.textContent='Sin acceso a cámara: '+err.message+'. Use el modo manual.';
+      status.className='scan-status err';
+    });
+}
+
+function detenerCamara(){
+  clearInterval(camInterval);camInterval=null;
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  const video=document.getElementById('cam-video');
+  if(video){video.srcObject=null;video.style.display='none';}
+}
+
+function leerFrameQR(){
+  const video=document.getElementById('cam-video');
+  const canvas=document.getElementById('cam-canvas');
+  const status=document.getElementById('cam-status');
+  if(!video||!canvas||video.readyState<video.HAVE_ENOUGH_DATA)return;
+  const w=video.videoWidth,h=video.videoHeight;
+  canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(video,0,0,w,h);
+  const imgData=ctx.getImageData(0,0,w,h);
+  try{
+    const code=jsQR(imgData.data,imgData.width,imgData.height,{inversionAttempts:'dontInvert'});
+    if(code){
+      const txt=code.data;
+      detenerCamara();
+      status.textContent='✓ QR detectado';
+      status.className='scan-status ok';
+      // Intentar parsear JSON del QR
+      let uid='';
+      try{const d=JSON.parse(txt);uid=d.id||txt;}catch(e){uid=txt.trim().toUpperCase();}
+      procesarQRLeido(uid);
+    }
+  }catch(e){}
+}
+
+function procesarQRLeido(uid){
+  const el=document.getElementById('ge-result');
+  const row=todos.find(r=>(campo(r,'id')||'').toUpperCase()===uid);
+  if(!row){
+    el.innerHTML=`<div class="alert a-err"><i class="ti ti-qrcode"></i> QR no reconocido: <strong>${uid}</strong> — No está en la planificación</div>`;
+    setTimeout(()=>{if(modoActivo==='cam')iniciarCamara();},3000);
+    return;
+  }
+  geRenderResultado(row, true);
+}
+
 function geSearch(){
-  const q=document.getElementById('ge-id').value.trim().toUpperCase();
+  const q=document.getElementById('ge-id')?.value.trim().toUpperCase()||'';
   const el=document.getElementById('ge-result');
   if(!q){el.innerHTML='';return;}
   const row=todos.find(r=>(campo(r,'id')||'').toUpperCase()===q||(campo(r,'placa')||'').toUpperCase().includes(q));
-  if(!row){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> No encontrado en planificación</div>';return;}
+  if(!row){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> No encontrado en planificación — verifique el ID o placa</div>';return;}
+  geRenderResultado(row, false);
+}
+
+function geRenderResultado(row, desdeQR){
   const uid=campo(row,'id'),rv=reg[uid];
   const est=rv?rv.estado:'pendiente';
-  // Validar QR
-  let qrValid='Sin QR generado';let qrClass='a-warn';
-  if(rv?.qrGenerado){qrValid='QR válido ✓';qrClass='a-ok';}
-  if(est==='completado'){qrValid='QR ya utilizado';qrClass='a-err';}
+  const el=document.getElementById('ge-result');
+
+  // Validaciones QR
+  let validMsg='',validClass='a-ok';
+  if(est==='completado'){
+    validMsg='<i class="ti ti-lock"></i> QR ya utilizado — Esta operación está cerrada';validClass='a-err';
+  } else if(!rv?.qrGenerado){
+    validMsg='<i class="ti ti-alert-triangle"></i> QR no generado para este viaje';validClass='a-warn';
+  } else {
+    validMsg=desdeQR
+      ?'<i class="ti ti-circle-check"></i> QR escaneado y verificado correctamente'
+      :'<i class="ti ti-circle-check"></i> ID verificado en planificación';
+  }
+
   el.innerHTML=`
-    <div class="alert ${qrClass}" style="margin-bottom:8px;"><i class="ti ti-qrcode"></i> ${qrValid} · ${estadoBadge(est)}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;margin-bottom:10px;">
-      <div><div class="sl">ID ÚNICO</div><span class="mt" style="font-size:10px;">${uid}</span></div>
-      <div><div class="sl">PLACA</div><span class="mt">${campo(row,'placa')}</span></div>
-      <div><div class="sl">CHOFER</div><strong>${campo(row,'chofer')}</strong></div>
-      <div><div class="sl">TIPO CARRO</div>${campo(row,'tipo')}</div>
-      <div><div class="sl">DETALLE</div>${campo(row,'detalle')}</div>
-      <div><div class="sl">HORA PROG.</div><span class="mt">${campo(row,'hora')}</span></div>
+    <div class="alert ${validClass}" style="margin-bottom:10px;">${validMsg}</div>
+    <div style="background:var(--sf2);border-radius:var(--r);padding:.9rem;margin-bottom:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;">
+        <div><div class="sl">ID ÚNICO</div><span class="mt" style="font-size:10px;">${uid}</span></div>
+        <div><div class="sl">PLACA</div><span class="mt">${campo(row,'placa')}</span></div>
+        <div><div class="sl">CHOFER</div><strong>${campo(row,'chofer')}</strong></div>
+        <div><div class="sl">TIPO CARRO</div>${campo(row,'tipo')}</div>
+        <div><div class="sl">DETALLE CARGA</div>${campo(row,'detalle')}</div>
+        <div><div class="sl">HORA PROG.</div><span class="mt">${campo(row,'hora')}</span></div>
+        <div><div class="sl">ÁREA CARGA</div>${campo(row,'areaCarga')}</div>
+        <div><div class="sl">ÁREA DESCARGA</div>${campo(row,'areaDesc')}</div>
+      </div>
     </div>
-    ${est==='pendiente'?`<button class="btn btn-success" onclick="geAbrirModal('${uid}')" style="width:100%;"><i class="ti ti-login"></i> Autorizar ingreso</button>`:''}
-    ${est==='garita-entrada'?'<div class="alert a-info"><i class="ti ti-info-circle"></i> Ya registrado en garita — proceder a báscula</div>':''}`;
+    ${est==='pendiente' && (rv?.qrGenerado||!desdeQR)
+      ?`<button class="btn btn-success" onclick="geAbrirModal('${uid}')" style="width:100%;font-size:13px;padding:10px;">
+          <i class="ti ti-login"></i> Autorizar ingreso a planta
+        </button>`:''}
+    ${est==='garita-entrada'?'<div class="alert a-info"><i class="ti ti-info-circle"></i> Ya registrado en garita — proceder a báscula de entrada</div>':''}
+    ${est==='completado'?'<div class="alert a-err"><i class="ti ti-lock"></i> Operación finalizada — QR no reutilizable</div>':''}
+    ${est==='pendiente'&&!rv?.qrGenerado&&desdeQR
+      ?`<div style="margin-top:8px;"><button class="btn btn-success" onclick="genQRSingle('${uid}');geAbrirModal('${uid}')" style="width:100%;">
+          <i class="ti ti-login"></i> Generar QR y autorizar ingreso
+        </button></div>`:''}
+  `;
 }
 
 function geAbrirModal(uid){
@@ -1524,7 +1751,7 @@ function mostrarPase(uid){
   document.getElementById('pase-rows').innerHTML=fields.map(([k,v])=>`<div class="pase-row"><span>${k}</span><span>${v||'—'}</span></div>`).join('');
   // QR en pase
   const qrEl=document.getElementById('pase-qr-canvas');qrEl.innerHTML='';
-  try{new QRCode(qrEl,{text:makeQRData(uid),width:220,height:220,colorDark:'#000',colorLight:'#fff'});}
+  try{new QRCode(qrEl,{text:makeQRData(uid),width:120,height:120,colorDark:'#000',colorLight:'#fff'});}
   catch(e){qrEl.innerHTML='<div style="width:120px;height:120px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:10px;">QR</div>';}
   abrir('m-pase');
 }
@@ -1692,45 +1919,6 @@ fechaSel=hoy();
 cargarCSV();
 // Dashboard refresh
 setInterval(()=>{renderDashboard();checkAlertas();calcMetrics();},30000);
-
-
-//══════════════════════════════════════════════
-// GENERAR IMAGEN DEL PASE
-//══════════════════════════════════════════════
-async function generarImagenPase(){
-
-  const pase = document.querySelector('.pase');
-
-  const canvas = await html2canvas(pase,{
-    scale:3,
-    backgroundColor:"#ffffff"
-  });
-
-  return canvas.toDataURL("image/png");
-}
-
-  //══════════════════════════════════════════════
-// DESCARGAR PASE COMO IMAGEN
-//══════════════════════════════════════════════
-async function descargarPaseImagen(){
-
-  if(!paseActual){
-    alert("No existe un pase generado");
-    return;
-  }
-
-  const imgData = await generarImagenPase();
-
-  const link = document.createElement('a');
-
-  link.download = `PASE-${paseActual.uid}.png`;
-
-  link.href = imgData;
-
-  link.click();
-}
-
-  
 </script>
 </body>
 </html>
