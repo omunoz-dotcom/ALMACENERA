@@ -10,10 +10,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <!-- QR scanner -->
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<!-- Firebase compat SDK v9 (no bundler needed) -->
+<!-- Firebase compat SDK v9 — solo Authentication -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 :root{
   --bg:#f5f4f0;--sf:#fff;--sf2:#f0efe9;--bd:#e0dfd8;--bd2:#c8c7be;
@@ -938,7 +937,7 @@ const FB_CONFIG = {
 
 firebase.initializeApp(FB_CONFIG);
 const fbAuth = firebase.auth();
-const fbDB   = firebase.firestore();
+// Firestore eliminado — datos en Google Sheets vía Apps Script
 
 // ══════════════════════════════════════════════════════════
 // MÓDULO AUTH — Login / Logout / Roles
@@ -1004,13 +1003,9 @@ const AUTH = {
     await fbAuth.signOut();
   },
 
-  // Carga perfil de usuario desde Firestore (colección 'usuarios')
+  // Carga perfil de usuario — delega al módulo DB
   async cargarPerfil(uid){
-    try{
-      const doc = await fbDB.collection('usuarios').doc(uid).get();
-      if(doc.exists) return doc.data();
-    }catch(e){}
-    return null;
+    return await DB.cargarPerfil(uid);
   },
 
   // Aplica visibilidad de tabs según rol
@@ -1100,108 +1095,125 @@ const AUTH = {
 };
 
 // ══════════════════════════════════════════════════════════
-// MÓDULO DB — Firestore CRUD + listeners
+// MÓDULO DB — Google Sheets vía Apps Script
+// Firebase solo para Auth. Sheets maneja todos los datos.
 // ══════════════════════════════════════════════════════════
-// Colecciones:
-//   viajes/{fechaSel}/{uid}   → estado de cada viaje del día
-//   auditoria/{autoId}        → log de eventos
-//   usuarios/{uid}            → perfil + rol
-//   config/andenes            → estado de andenes en tiempo real
+// ⚠ PEGA TU URL DE APPS SCRIPT AQUÍ después de implementarlo:
+const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/agripac.com.ec/s/AKfycbyPRBsL0xliAIqzM1yg3aSZgHTVuYWklG0p5bikBOr4kPJzFnzDKjSVdWfGZcDfY2temw/exec';  // Ej: 'https://script.google.com/macros/s/AKfy.../exec'
+
+// Helper: GET al Apps Script
+async function dbGet(params){
+  if(!APPS_SCRIPT_URL){ console.warn('APPS_SCRIPT_URL no configurada'); return null; }
+  try{
+    const qs=Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+    const r=await fetch(APPS_SCRIPT_URL+'?'+qs,{cache:'no-store'});
+    return await r.json();
+  }catch(e){ console.warn('DB GET error:',e); return null; }
+}
+
+// Helper: POST al Apps Script
+async function dbPost(body){
+  if(!APPS_SCRIPT_URL){ console.warn('APPS_SCRIPT_URL no configurada'); return null; }
+  try{
+    const r=await fetch(APPS_SCRIPT_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body),
+      redirect:'follow'
+    });
+    return await r.json();
+  }catch(e){ console.warn('DB POST error:',e); return null; }
+}
 
 const DB = {
-  // ── Guardar/actualizar estado de un viaje ──
+  // ── Leer perfil de usuario — sigue siendo Firebase Auth + Firestore mínimo ──
+  // Solo 1 lectura al login, sin costo relevante
+  async cargarPerfil(uid){
+    // Intenta Firestore si está disponible (para compatibilidad)
+    try{
+      if(firebase.firestore){
+        const doc=await firebase.firestore().collection('usuarios').doc(uid).get();
+        if(doc.exists) return doc.data();
+      }
+    }catch(e){}
+    return null;
+  },
+
+  // ── Guardar estado de un viaje en Sheets ──
   async guardarReg(uid){
     if(!uid||!reg[uid]) return;
-    const fecha=fechaSel||hoy();
-    const data={...reg[uid]};
-    // Eliminar el row original (objeto grande con todas las columnas CSV) — no necesario en Firestore
-    delete data.row;
-    // Eliminar foto (base64 muy grande — no apta para Firestore)
-    delete data.foto;
-    try{
-      await fbDB.collection('viajes').doc(fecha)
-        .collection('registros').doc(uid)
-        .set(data, {merge:true});
-    }catch(e){ console.warn('DB.guardarReg error:',e); }
+    const r=reg[uid];
+    const data={
+      uid, fecha:fechaSel||hoy(),
+      estado:r.estado||'', chofer:r.chofer||'', placa:r.placa||'', areaCD:r.areaCD||'',
+      tsGE:r.tsGE||'', condicion:r.condicion||'', peBruto:r.peBruto||'', tsBE:r.tsBE||'',
+      anden:r.anden||'', despachador:r.despachador||'', docs:r.docs||false, tsDesp:r.tsDesp||'',
+      tsIniC:r.tsIniC||'', tsFinC:r.tsFinC||'', tiempoC:r.tiempoC||'',
+      peSalida:r.peSalida||'', peNeto:r.peNeto||'', tsBS:r.tsBS||'',
+      precintos:r.precintos||'', guias:r.guias||'', autorizadoPor:r.autorizadoPor||'', tsGS:r.tsGS||'',
+      qrGenerado:r.qrGenerado||false, qrEnviado:r.qrEnviado||false,
+    };
+    dbPost({accion:'guardarVehiculo', data});  // fire-and-forget, no bloquea la UI
   },
 
-  // ── Cargar todos los viajes de una fecha ──
+  // ── Cargar estados del día desde Sheets (al iniciar o cambiar fecha) ──
   async cargarViajes(fecha){
-    try{
-      const snap=await fbDB.collection('viajes').doc(fecha).collection('registros').get();
-      snap.forEach(doc=>{
-        const data=doc.data();
-        const uid=doc.id;
-        if(reg[uid]){
-          // Merge: Firebase tiene prioridad sobre memoria (persiste entre recargas)
-          Object.assign(reg[uid], data);
-        }
-      });
-    }catch(e){ console.warn('DB.cargarViajes error:',e); }
+    const res=await dbGet({accion:'leerVehiculos', fecha});
+    if(!res?.ok||!res.registros) return;
+    res.registros.forEach(r=>{
+      if(reg[r.uid]){
+        // Firebase tenía prioridad antes — ahora Sheets tiene prioridad sobre memoria
+        Object.keys(r).forEach(k=>{ if(r[k]!==''&&r[k]!==null) reg[r.uid][k]=r[k]; });
+      } else {
+        reg[r.uid]=r;
+      }
+    });
   },
 
-  // ── Escuchar cambios en tiempo real (listener por fecha) ──
-  // Retorna la función unsubscribe para limpieza
-  escucharViajes(fecha, onUpdate){
-    return fbDB.collection('viajes').doc(fecha)
-      .collection('registros')
-      .onSnapshot(snap=>{
-        snap.docChanges().forEach(change=>{
-          const uid=change.doc.id;
-          const data=change.doc.data();
-          if(reg[uid]) Object.assign(reg[uid], data);
-          else reg[uid]=data;
-        });
-        if(onUpdate) onUpdate();
-      }, e=>console.warn('DB.escucharViajes error:',e));
+  // ── Sin listener en tiempo real (Sheets no soporta push) ──
+  // Polling cada 30s para ver cambios de otros usuarios
+  iniciarPolling(onUpdate){
+    clearInterval(DB._pollInt);
+    DB._pollInt=setInterval(async()=>{
+      await DB.cargarViajes(fechaSel);
+      if(onUpdate) onUpdate();
+    }, 30000);
+    return ()=>clearInterval(DB._pollInt);
   },
 
   // ── Guardar evento de auditoría ──
-  async audit(modulo,uid,chofer,placa,detalle){
-    try{
-      await fbDB.collection('auditoria').add({
-        ts:         firebase.firestore.FieldValue.serverTimestamp(),
-        tsLocal:    new Date().toLocaleTimeString('es-EC'),
-        fecha:      fechaSel||hoy(),
-        modulo, uid, chofer, placa, detalle,
-        usuario:    currentUser?.nombre||'Sistema',
-        userUid:    currentUser?.uid||'—',
-        rol:        currentUser?.rol||'—',
-      });
-    }catch(e){ console.warn('DB.audit error:',e); }
+  audit(modulo,uid,chofer,placa,detalle){
+    dbPost({
+      accion:'guardarAuditoria',
+      data:{ fecha:fechaSel||hoy(), modulo, uid, chofer, placa, detalle,
+             usuario:currentUser?.nombre||'Sistema', rol:currentUser?.rol||'—' }
+    });
   },
 
   // ── Guardar estado de andenes ──
-  async guardarAndenes(){
-    try{
-      const data=andenes.map(a=>({id:a.id,libre:a.libre,uid:a.uid||null,lbl:a.lbl||''}));
-      await fbDB.collection('config').doc('andenes').set({data, ts:firebase.firestore.FieldValue.serverTimestamp()});
-    }catch(e){ console.warn('DB.guardarAndenes error:',e); }
+  guardarAndenes(){
+    const data=andenes.map(a=>({id:a.id,nombre:a.nombre||a.id,libre:a.libre,uid:a.uid||null,lbl:a.lbl||''}));
+    dbPost({accion:'guardarAndenes', data});
   },
 
-  // ── Cargar estado de andenes desde Firestore ──
+  // ── Cargar estado de andenes ──
   async cargarAndenes(){
-    try{
-      const doc=await fbDB.collection('config').doc('andenes').get();
-      if(doc.exists){
-        const saved=doc.data().data||[];
-        saved.forEach(s=>{
-          const a=andenes.find(x=>x.id===s.id);
-          if(a){ a.libre=s.libre; a.uid=s.uid||null; a.lbl=s.lbl||''; }
-        });
-      }
-    }catch(e){ console.warn('DB.cargarAndenes error:',e); }
+    const res=await dbGet({accion:'leerAndenes'});
+    if(!res?.ok||!res.andenes) return;
+    res.andenes.forEach(s=>{
+      const a=andenes.find(x=>x.id===s.id);
+      if(a){ a.libre=s.libre; a.uid=s.uid||null; a.lbl=s.lbl||''; }
+    });
   },
 };
-
-let _viajesListener=null;   // unsubscribe function para listener activo
 
 
 // ══════════════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ══════════════════════════════════════════════════════════
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCU-_7OuwK0xSG_eMJ5QMAI6-FI5O59a33ZP2sDtRPwVZxvJwcXIv_ymBh7-JFhZTPX-bSKngVC2b0/pub?gid=1481211359&single=true&output=csv';
-const APPS_SCRIPT_URL = ''; // Pega aquí tu URL de Apps Script para conexión garantizada
+// URL del CSV de planificación (pestaña ALMACENERA publicada como CSV)
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCU-_7OuwK0xSG_eMJ5QMAI6-FI5O59a33ZP2sDtRPwVZxvJwcXIv_ymBh7-JFhZTPX-bSKngVC2b0/pub?output=csv';
+// APPS_SCRIPT_URL está definida arriba en el módulo DB
 const REFRESH_SEC = 60;
 
 const COL = {
@@ -1350,20 +1362,21 @@ const PROXIES=[
 
 async function cargarCSV(){
   setConStatus('loading');
+  // 1. Intentar Apps Script primero (lee la hoja ALMACENERA directamente)
   if(APPS_SCRIPT_URL){
     try{
-      const r=await fetch(APPS_SCRIPT_URL+'?t='+Date.now(),{cache:'no-store'});
-      const d=await r.json();
-      if(d&&d.csv){procCSV(d.csv,'Apps Script');return;}
+      const res=await dbGet({accion:'leerPlanificacion'});
+      if(res?.ok&&res.csv){procCSV(res.csv,'Apps Script (Sheets)');return;}
     }catch(e){}
   }
+  // 2. Fallback: CSV público
   for(let i=0;i<PROXIES.length;i++){
     try{
       const r=await fetch(PROXIES[i](CSV_URL+'&t='+Date.now()),{cache:'no-store'});
       if(!r.ok)throw new Error();
       const txt=await r.text();
       if(!txt.includes(','))throw new Error();
-      procCSV(txt,i===0?'Directo':'Proxy '+i);return;
+      procCSV(txt,i===0?'Google Sheets directo':'Proxy '+i);return;
     }catch(e){continue;}
   }
   cargarDemo();setConStatus('demo');
@@ -2816,9 +2829,9 @@ async function INIT_APP(){
   // Cargar viajes del día desde Firestore (merge sobre lo cargado del CSV)
   await DB.cargarViajes(fechaSel);
 
-  // Activar listener en tiempo real para el día actual
-  if(_viajesListener) _viajesListener();  // cancelar anterior si existe
-  _viajesListener = DB.escucharViajes(fechaSel, ()=>{
+  // Activar polling cada 30s en vez de listener Firestore
+  if(_viajesListener) _viajesListener();  // cancelar anterior
+  _viajesListener = DB.iniciarPolling(()=>{
     calcMetrics(); renderPlan(); renderDashboard(); renderGePend();
   });
 
