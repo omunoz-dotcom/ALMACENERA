@@ -943,19 +943,34 @@ const fbDB   = firebase.firestore();
 // ══════════════════════════════════════════════════════════
 // MÓDULO AUTH — Login / Logout / Roles
 // ══════════════════════════════════════════════════════════
-// Roles y tabs permitidos por rol
-// ADMIN tiene acceso total — no se filtra
-const ROLE_TABS = {
+// Tabs disponibles en el sistema
+const ALL_TABS = ['dashboard','planificacion','qr','garita-e','bascula-e','despacho','bascula-s','garita-s','reportes','auditoria'];
+
+// Nombres legibles por tab (para el badge de rol)
+const TAB_NOMBRES = {
+  'dashboard':    'Dashboard',
+  'planificacion':'Planificación',
+  'qr':           'QR',
+  'garita-e':     'Garita Entrada',
+  'garita-s':     'Garita Salida',
+  'bascula-e':    'Báscula Entrada',
+  'bascula-s':    'Báscula Salida',
+  'despacho':     'Despacho',
+  'reportes':     'Reportes',
+  'auditoria':    'Auditoría',
+};
+
+// Presets opcionales — se usan si el usuario NO tiene campo 'tabs' en Firestore
+// Si el usuario tiene campo 'tabs' (array), esos tienen prioridad total
+const ROLE_PRESETS = {
+  admin:         null,   // null = acceso total
   garita:        ['dashboard','garita-e','garita-s'],
   bascula:       ['dashboard','bascula-e','bascula-s'],
   planificacion: ['dashboard','planificacion'],
   despacho:      ['dashboard','planificacion','despacho'],
-  admin:         null,  // null = acceso total
 };
 
-const ALL_TABS = ['dashboard','planificacion','qr','garita-e','bascula-e','despacho','bascula-s','garita-s','reportes','auditoria'];
-
-let currentUser = null;   // { uid, email, nombre, rol }
+let currentUser = null;  // { uid, email, nombre, rol, tabs }
 
 const AUTH = {
   async login(){
@@ -999,21 +1014,37 @@ const AUTH = {
   },
 
   // Aplica visibilidad de tabs según rol
-  aplicarRol(rol){
-    const permitidos = ROLE_TABS[rol] || null;
+  aplicarRol(perfil){
+    const rol  = perfil?.rol  || '';
+    const tabs = perfil?.tabs || null;  // array personalizado en Firestore
+
+    // Prioridad: tabs personalizado > preset por rol > acceso total
+    let permitidos;
+    if(tabs && Array.isArray(tabs) && tabs.length > 0){
+      permitidos = tabs;                          // personalizado
+    } else if(rol === 'admin' || ROLE_PRESETS[rol] === null){
+      permitidos = null;                          // acceso total
+    } else {
+      permitidos = ROLE_PRESETS[rol] || ['dashboard'];
+    }
+
+    // Guardar en currentUser para validación en showTab
+    if(currentUser) currentUser.tabs = permitidos;
+
+    // Mostrar/ocultar tabs
     ALL_TABS.forEach(tab=>{
       const btn=document.getElementById('tab-'+tab);
       if(!btn) return;
-      if(!permitidos){
-        btn.classList.remove('role-hidden'); // admin = todo visible
-      } else {
-        btn.classList.toggle('role-hidden', !permitidos.includes(tab));
-      }
+      btn.classList.toggle('role-hidden', !(!permitidos || permitidos.includes(tab)));
     });
-    // Actualizar badge de rol en header
-    const roleNames={admin:'Admin',garita:'Garita',bascula:'Báscula',planificacion:'Planificación',despacho:'Despacho'};
+
+    // Badge de rol en header
     const badge=document.getElementById('user-role-badge');
-    if(badge) badge.textContent=roleNames[rol]||rol;
+    if(badge){
+      if(!permitidos){ badge.textContent='Admin'; }
+      else if(tabs && Array.isArray(tabs)){ badge.textContent='Personalizado'; }
+      else{ const n={admin:'Admin',garita:'Garita',bascula:'Báscula',planificacion:'Planificación',despacho:'Despacho'}; badge.textContent=n[rol]||rol; }
+    }
   },
 
   // Listener principal — se ejecuta en cada cambio de auth
@@ -1022,25 +1053,32 @@ const AUTH = {
       if(user){
         // Cargar perfil y rol desde Firestore
         const perfil = await AUTH.cargarPerfil(user.uid);
-        const rol    = perfil?.rol || 'planificacion'; // rol por defecto si no tiene perfil
+        const rol    = perfil?.rol    || 'planificacion';
         const nombre = perfil?.nombre || user.email;
-        currentUser  = { uid:user.uid, email:user.email, nombre, rol };
+        // areaCD: si es 'TODAS' o null → ve todo; si tiene valor → filtra por ese área
+        const areaCD = perfil?.areaCD || null;
+        currentUser  = { uid:user.uid, email:user.email, nombre, rol, areaCD };
 
         // Actualizar UI header
         const pill=document.getElementById('user-pill');
         const nameEl=document.getElementById('user-name');
         if(pill)  pill.style.display='flex';
         if(nameEl) nameEl.textContent=nombre;
+        // Mostrar área asignada en el badge si aplica
+        if(areaCD && areaCD!=='TODAS'){
+          const badge=document.getElementById('user-role-badge');
+          if(badge) badge.title='Área asignada: '+areaCD;
+        }
 
         // Aplicar restricciones de rol
-        AUTH.aplicarRol(rol);
+        AUTH.aplicarRol(perfil);
 
         // Mostrar app, ocultar login
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('app-shell').classList.add('visible');
 
         // Auditar inicio de sesión
-        DB.audit('LOGIN',user.uid,nombre,'—','Inicio de sesión · rol: '+rol);
+        DB.audit('LOGIN',user.uid,nombre,'—','Inicio de sesión · rol: '+rol+(areaCD?' · área: '+areaCD:''));
 
         // Iniciar app
         INIT_APP();
@@ -1171,7 +1209,9 @@ const COL = {
   areaDesc:['ÁREA DE DESCARGA','AREA DE DESCARGA'],detalle:['DETALLE CARGA'],
   fecha:['FECHA'],tipo:['TIPO CARRO'],operador:['OPERADOR LOGÍSTICO','OPERADOR LOGISTICO'],
   chofer:['CHOFER'],placa:['PLACA'],tel:['TELEFONO','TELÉFONO'],
-  hora:['HORA SOLICITADA','HORA'],apro:['APROBACION CARGA','APROBACION']
+  hora:['HORA SOLICITADA','HORA'],apro:['APROBACION CARGA','APROBACION'],
+  // Columna M — área de operación para filtrado por usuario
+  areaCD:['AREA DE CARGA/DESCARGA','ÁREA DE CARGA/DESCARGA','AREA CARGA/DESCARGA','AREA CD']
 };
 
 // ══════════════════════════════════════════════════════════
@@ -1208,6 +1248,7 @@ const AREAS_CONFIG = [
 let andenes = AREAS_CONFIG.map(a=>({ ...a, libre:true, uid:null, lbl:'' }));
 
 // Reglas de asignación automática por área de carga
+// La clave debe coincidir con los valores de la columna M del CSV
 const REGLAS_ASIGNACION = {
   'PETFOOD':      ['a1','a2','a3','a4','a5','a6','a7','a8','a9','patio'],
   'ALMACENERA':   ['volteador'],
@@ -1215,9 +1256,12 @@ const REGLAS_ASIGNACION = {
   'BPT':          ['a1','a2','a3','a4','a5','a6','nexgard','patio'],
 };
 
+// Normaliza el valor del área para comparar sin importar mayúsculas/tildes
+function normArea(str){ return (str||'').toUpperCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+
 function sugerirAndenes(areaCarga){
   if(!areaCarga) return [];
-  const key=Object.keys(REGLAS_ASIGNACION).find(k=>areaCarga.toUpperCase().includes(k));
+  const key=Object.keys(REGLAS_ASIGNACION).find(k=>normArea(areaCarga).includes(normArea(k)));
   if(!key) return andenes.filter(a=>a.libre).map(a=>a.id);
   return REGLAS_ASIGNACION[key].filter(id=>{ const a=andenes.find(x=>x.id===id); return a&&a.libre; });
 }
@@ -1259,11 +1303,27 @@ function cambiarDia(d){
 function aplicarFiltro(){
   fechaSel=document.getElementById('fecha-filtro').value;
   document.getElementById('hoy-pill').style.display=fechaSel===hoy()?'inline-flex':'none';
-  planData=todos.filter(r=>normFecha(campo(r,'fecha'))===fechaSel);
+
+  // Filtro base por fecha
+  let filtrado=todos.filter(r=>normFecha(campo(r,'fecha'))===fechaSel);
+
+  // ── FILTRO POR ÁREA DEL USUARIO ──────────────────────────
+  // Si el usuario tiene areaCD definida en su perfil Firestore,
+  // solo ve las cargas que corresponden a SU área (columna M)
+  const userArea = currentUser?.areaCD || null;
+  if(userArea && userArea !== 'TODAS'){
+    filtrado = filtrado.filter(r=>{
+      const areaRow = normArea(campo(r,'areaCD'));
+      return areaRow === normArea(userArea) || areaRow === '';
+    });
+  }
+
+  planData=filtrado;
   planData.forEach(r=>{const uid=campo(r,'id');if(uid&&!reg[uid])initReg(uid,r);});
   renderPlan();calcMetrics();renderGePend();renderDashboard();
   const c=planData.length;
-  document.getElementById('f-count').textContent=c+' vehículo'+(c!==1?'s':'')+' — '+fmtFecha(fechaSel);
+  const areaLabel=userArea&&userArea!=='TODAS'?' · Área: '+userArea:'';
+  document.getElementById('f-count').textContent=c+' vehículo'+(c!==1?'s':'')+' — '+fmtFecha(fechaSel)+areaLabel;
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1357,6 +1417,7 @@ function initReg(uid,row){
     detalle:campo(row,'detalle'),areaCarga:campo(row,'areaCarga'),
     areaDesc:campo(row,'areaDesc'),tipo:campo(row,'tipo'),
     hora:campo(row,'hora'),apro:campo(row,'apro'),tel:campo(row,'tel'),
+    areaCD:campo(row,'areaCD'),  // ← columna M: área de operación
     qrGenerado:false,qrEnviado:false,tsQR:null,
     tsGE:null,condicion:null,operGE:null,
     peBruto:null,tsBE:null,
@@ -2723,9 +2784,9 @@ function showTab(tab){
   detenerTodosScanners();   // ← detiene cámara activa al cambiar tab
   // Validación de rol — bloquea tabs no permitidos aunque se llame directamente
   if(currentUser){
-    const permitidos=ROLE_TABS[currentUser.rol];
+    const permitidos=currentUser?.tabs ?? null;
     if(permitidos && !permitidos.includes(tab)){
-      console.warn('Acceso denegado al tab:',tab,'para rol:',currentUser.rol);
+      console.warn('Acceso denegado al tab:',tab,'para rol:',currentUser?.rol);
       return;
     }
   }
@@ -2761,8 +2822,8 @@ async function INIT_APP(){
     calcMetrics(); renderPlan(); renderDashboard(); renderGePend();
   });
 
-  // Navegar al primer tab permitido del rol
-  const permitidos=ROLE_TABS[currentUser?.rol];
+  // Navegar al primer tab permitido
+  const permitidos=currentUser?.tabs ?? null;
   const primerTab=permitidos?permitidos[0]:'dashboard';
   showTab(primerTab);
 
