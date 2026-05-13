@@ -1105,25 +1105,26 @@ const AUTH = {
 const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/agripac.com.ec/s/AKfycbyPRBsL0xliAIqzM1yg3aSZgHTVuYWklG0p5bikBOr4kPJzFnzDKjSVdWfGZcDfY2temw/exec';
 
 // Helper: GET al Apps Script
+// Helper GET — lectura
 async function dbGet(params){
   if(!APPS_SCRIPT_URL){ console.warn('APPS_SCRIPT_URL no configurada'); return null; }
   try{
     const qs=Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
-    const r=await fetch(APPS_SCRIPT_URL+'?'+qs,{cache:'no-store'});
+    const r=await fetch(APPS_SCRIPT_URL+'?'+qs,{cache:'no-store',redirect:'follow'});
     return await r.json();
   }catch(e){ console.warn('DB GET error:',e); return null; }
 }
 
-// Helper: POST al Apps Script
+// Helper POST — escritura
+// Apps Script no acepta Content-Type:application/json en dominios Workspace
+// Solución: enviar como GET con payload JSON codificado en parámetro 'data'
 async function dbPost(body){
   if(!APPS_SCRIPT_URL){ console.warn('APPS_SCRIPT_URL no configurada'); return null; }
   try{
-    const r=await fetch(APPS_SCRIPT_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(body),
-      redirect:'follow'
-    });
+    const url=APPS_SCRIPT_URL
+      +'?accion='+encodeURIComponent(body.accion)
+      +'&payload='+encodeURIComponent(JSON.stringify(body.data||body));
+    const r=await fetch(url,{cache:'no-store',redirect:'follow'});
     return await r.json();
   }catch(e){ console.warn('DB POST error:',e); return null; }
 }
@@ -1164,29 +1165,83 @@ const DB = {
     dbPost({accion:'guardarVehiculo', data});  // fire-and-forget, no bloquea la UI
   },
 
-  // ── Cargar estados del día desde Sheets (al iniciar o cambiar fecha) ──
+  // ── Cargar estados del día desde Sheets ──
+  // Retorna true si hubo cambios reales (para saber si re-renderizar)
   async cargarViajes(fecha){
     const res=await dbGet({accion:'leerVehiculos', fecha});
-    if(!res?.ok||!res.registros) return;
+    if(!res?.ok||!res.registros) return false;
+    let cambios=false;
     res.registros.forEach(r=>{
-      if(reg[r.uid]){
-        // Firebase tenía prioridad antes — ahora Sheets tiene prioridad sobre memoria
-        Object.keys(r).forEach(k=>{ if(r[k]!==''&&r[k]!==null) reg[r.uid][k]=r[k]; });
+      const uid=r.uid; if(!uid) return;
+      const anterior=reg[uid]?reg[uid].estado:null;
+      if(reg[uid]){
+        Object.keys(r).forEach(k=>{ if(r[k]!==''&&r[k]!==null) reg[uid][k]=r[k]; });
       } else {
-        reg[r.uid]=r;
+        reg[uid]=r;
       }
+      if(reg[uid].estado!==anterior) cambios=true;
     });
+    return cambios;
   },
 
-  // ── Sin listener en tiempo real (Sheets no soporta push) ──
-  // Polling cada 30s para ver cambios de otros usuarios
+  // ── Polling inteligente ──
+  // Intervalo: 8s en primer plano, 30s si la pestaña está oculta
+  // Solo re-renderiza si Sheets devuelve cambios reales
   iniciarPolling(onUpdate){
     clearInterval(DB._pollInt);
-    DB._pollInt=setInterval(async()=>{
-      await DB.cargarViajes(fechaSel);
-      if(onUpdate) onUpdate();
-    }, 30000);
-    return ()=>clearInterval(DB._pollInt);
+    let _ultimaSync='';
+
+    async function poll(){
+      const intervalo=document.hidden?30000:8000;
+      try{
+        // Verificar si hubo cambios comparando timestamp de última escritura
+        const chk=await dbGet({accion:'checkTimestamp', fecha:fechaSel});
+        const tsActual=chk?.ts||'';
+        if(tsActual && tsActual===_ultimaSync){
+          // Sin cambios — no hace nada
+        } else {
+          _ultimaSync=tsActual;
+          const hayCambios=await DB.cargarViajes(fechaSel);
+          if(hayCambios||!tsActual){
+            if(onUpdate) onUpdate();
+            // Mostrar indicador visual de actualización
+            DB._flashSync();
+          }
+        }
+      }catch(e){ /* silencio — no interrumpir la UI */ }
+      DB._pollInt=setTimeout(poll, intervalo);
+    }
+
+    // Arrancar de inmediato
+    DB._pollInt=setTimeout(poll, 8000);
+
+    // Cuando el usuario vuelve a la pestaña, sincronizar al instante
+    document.addEventListener('visibilitychange', DB._onVisible);
+
+    return ()=>{
+      clearTimeout(DB._pollInt);
+      document.removeEventListener('visibilitychange', DB._onVisible);
+    };
+  },
+
+  _onVisible(){
+    if(!document.hidden){
+      clearTimeout(DB._pollInt);
+      DB.cargarViajes(fechaSel).then(cambios=>{
+        if(cambios){ calcMetrics();renderPlan();renderDashboard();renderGePend();DB._flashSync(); }
+      });
+    }
+  },
+
+  // Destello visual en el header cuando se recibe una actualización
+  _flashSync(){
+    const dot=document.getElementById('csv-dot');
+    const lbl=document.getElementById('csv-status');
+    if(!dot||!lbl) return;
+    dot.className='conn-dot on';
+    lbl.textContent='Actualizado — '+new Date().toLocaleTimeString('es-EC');
+    dot.style.transform='scale(1.6)';
+    setTimeout(()=>{ dot.style.transform=''; },600);
   },
 
   // ── Guardar evento de auditoría ──
