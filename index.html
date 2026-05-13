@@ -171,7 +171,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--gr);}
 .anden{border:1px solid var(--bd);border-radius:var(--rl);padding:.75rem;
   text-align:center;cursor:pointer;transition:all .15s;}
 .anden:hover{border-color:var(--bd2);}
-.anden.libre{border-color:var(--gr);background:var(--grb);}
+.anden.libre.sugerido{border-color:var(--bl);background:var(--blb);box-shadow:0 0 0 2px var(--blb);}
+.anden.libre.sugerido .anden-sub{color:var(--blt);}
+.anden.libre   { border-color: var(--gr); background: var(--grb); }
 .anden.cargando{border-color:var(--am);background:var(--amb);animation:pulse 2s ease-in-out infinite;}
 .anden.ocupado{border-color:var(--rd);background:var(--rdb);}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.75}}
@@ -678,13 +680,42 @@ input:focus,select:focus,textarea:focus{border-color:var(--gr);}
 <div class="sec" id="sec-garita-s">
   <div class="g2">
     <div class="card">
-      <div class="ct"><i class="ti ti-shield-check"></i> Autorización de salida</div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" id="gs-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;"
-          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')gsBuscar()"/>
-        <button class="btn btn-primary" onclick="gsBuscar()"><i class="ti ti-search"></i></button>
+      <div class="ct"><i class="ti ti-shield-check"></i> Garita Salida — Autorización</div>
+      <!-- SCANNER idéntico al de garita entrada, prefijo 'gs' -->
+      <div class="scan-btn-group">
+        <button class="btn btn-primary" id="gs-btn-cam" onclick="activarModo('gs','cam')">
+          <i class="ti ti-camera"></i> Escanear QR
+        </button>
+        <button class="btn" id="gs-btn-manual" onclick="activarModo('gs','manual')">
+          <i class="ti ti-keyboard"></i> Ingreso manual
+        </button>
       </div>
-      <div id="gs-info"></div>
+      <div class="scan-mode" id="gs-modo-cam" style="display:none;">
+        <div class="scan-overlay" style="position:relative;background:#000;border-radius:var(--r);overflow:hidden;max-height:200px;">
+          <video class="scan-video" id="gs-video" autoplay playsinline muted></video>
+          <canvas class="scan-canvas" id="gs-canvas"></canvas>
+          <div style="position:absolute;inset:0;pointer-events:none;">
+            <div class="scan-corner tl"></div><div class="scan-corner tr"></div>
+            <div class="scan-corner bl"></div><div class="scan-corner br"></div>
+            <div class="scan-line-anim"></div>
+          </div>
+        </div>
+        <div class="scan-status" id="gs-cam-status">Iniciando cámara…</div>
+        <div style="display:flex;gap:6px;margin-top:8px;justify-content:center;">
+          <button class="btn btn-sm" onclick="detenerCamara('gs')"><i class="ti ti-player-stop"></i> Detener</button>
+          <button class="btn btn-sm" onclick="iniciarCamara('gs')"><i class="ti ti-refresh"></i> Reiniciar</button>
+        </div>
+      </div>
+      <div class="scan-mode" id="gs-modo-manual" style="display:none;">
+        <div class="sl" style="margin-bottom:8px;"><i class="ti ti-keyboard"></i> Ingreso manual</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
+          <input type="text" id="gs-id" placeholder="ID-UNICO" style="flex:1;text-transform:uppercase;"
+            oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')gsBuscar()"/>
+          <button class="btn btn-primary" onclick="gsBuscar()"><i class="ti ti-search"></i> Buscar</button>
+        </div>
+        <div style="font-size:11px;color:var(--tx3);">ID-UNICO completo — debe tener peso de salida registrado</div>
+      </div>
+      <div id="gs-info" style="margin-top:10px;"></div>
     </div>
     <div class="card">
       <div class="ct"><i class="ti ti-activity"></i> Actividad garita salida</div>
@@ -839,9 +870,48 @@ const COL = {
 // ══════════════════════════════════════════════════════════
 let todos=[], planData=[], fechaSel='';
 // reg[uid] = { estado, pasos, pesos, tiempos, docs, qr, ... }
-let reg={}, auditoria=[], andenes=[1,2,3].map(i=>({id:i,libre:true,uid:null,lbl:''}));
-let cronos={}, modalData={}, paseActual=null;
+let reg={}, auditoria=[], cronos={}, modalData={}, paseActual=null;
 let cntDown=REFRESH_SEC, cntInt=null;
+
+// ── INFRAESTRUCTURA DE ÁREAS — configurable ──
+// estado: 'libre' | 'ocupado' | 'bloqueado'
+const AREAS_CONFIG = [
+  { id:'patio',     nombre:'Patio de Maniobra',           grupo:'patio',   capacidad:1 },
+  { id:'volteador', nombre:'Volteador',                    grupo:'proceso', capacidad:1 },
+  { id:'b1',        nombre:'Bodega 1',                     grupo:'bodega',  capacidad:1 },
+  { id:'b2',        nombre:'Bodega 2',                     grupo:'bodega',  capacidad:1 },
+  { id:'b3',        nombre:'Bodega 3',                     grupo:'bodega',  capacidad:1 },
+  { id:'b4',        nombre:'Bodega 4',                     grupo:'bodega',  capacidad:1 },
+  { id:'tanques',   nombre:'Tanques de Aceite',            grupo:'bodega',  capacidad:1 },
+  { id:'nexgard',   nombre:'Bodega Nexgard/Desparasitantes',grupo:'especial',capacidad:1 },
+  { id:'a1',        nombre:'Andén 1',                      grupo:'anden',   capacidad:1 },
+  { id:'a2',        nombre:'Andén 2',                      grupo:'anden',   capacidad:1 },
+  { id:'a3',        nombre:'Andén 3',                      grupo:'anden',   capacidad:1 },
+  { id:'a4',        nombre:'Andén 4',                      grupo:'anden',   capacidad:1 },
+  { id:'a5',        nombre:'Andén 5',                      grupo:'anden',   capacidad:1 },
+  { id:'a6',        nombre:'Andén 6',                      grupo:'anden',   capacidad:1 },
+  { id:'a7',        nombre:'Andén 7',                      grupo:'anden',   capacidad:1 },
+  { id:'a8',        nombre:'Andén 8',                      grupo:'anden',   capacidad:1 },
+  { id:'a9',        nombre:'Andén 9',                      grupo:'anden',   capacidad:1 },
+];
+
+// Estado en tiempo de ejecución — separado de la config
+let andenes = AREAS_CONFIG.map(a=>({ ...a, libre:true, uid:null, lbl:'' }));
+
+// Reglas de asignación automática por área de carga
+const REGLAS_ASIGNACION = {
+  'PETFOOD':      ['a1','a2','a3','a4','a5','a6','a7','a8','a9','patio'],
+  'ALMACENERA':   ['volteador'],
+  'MATERIA PRIMA':['b1','b2','b3','b4','tanques'],
+  'BPT':          ['a1','a2','a3','a4','a5','a6','nexgard','patio'],
+};
+
+function sugerirAndenes(areaCarga){
+  if(!areaCarga) return [];
+  const key=Object.keys(REGLAS_ASIGNACION).find(k=>areaCarga.toUpperCase().includes(k));
+  if(!key) return andenes.filter(a=>a.libre).map(a=>a.id);
+  return REGLAS_ASIGNACION[key].filter(id=>{ const a=andenes.find(x=>x.id===id); return a&&a.libre; });
+}
 
 const PASOS=['pendiente','garita-entrada','bascula-entrada','despacho','cargando','bascula-salida','garita-salida','completado'];
 const PNOMBRES=['Pendiente','Garita E.','Báscula E.','Despacho','Cargando','Báscula S.','Garita S.','Completado'];
@@ -1450,6 +1520,7 @@ const scanCallbacks={
   be: uid => { beDesdeQR(uid); },
   d:  uid => { dDesdeQR(uid); },
   bs: uid => { bsDesdeQR(uid); },
+  gs: uid => { gsDesdeQR(uid); },   // ← NUEVO garita salida
 };
 
 function activarModo(pfx, modo){
@@ -1533,7 +1604,7 @@ function leerFrameQR(pfx){
 
 // ── Reiniciar scanner de un módulo al cambiar de pestaña
 function detenerTodosScanners(){
-  ['ge','be','d','bs'].forEach(pfx=>detenerCamara(pfx));
+  ['ge','be','d','bs','gs'].forEach(pfx=>detenerCamara(pfx));
 }
 
 // Detener cámara activa al cambiar de módulo
@@ -1589,6 +1660,22 @@ function geRenderResultado(row, desdeQR){
   const uid=campo(row,'id'),rv=reg[uid];
   const est=rv?rv.estado:'pendiente';
   const el=document.getElementById('ge-result');
+
+  // BLOQUEO DOBLE INGRESO — mostrar antes que nada
+  if(rv?.tsGE && est!=='pendiente'){
+    el.innerHTML=`
+      <div class="alert a-err" style="font-size:12px;">
+        <i class="ti ti-lock" style="font-size:18px;flex-shrink:0;"></i>
+        <div>
+          <strong>INGRESO YA REGISTRADO</strong><br>
+          ${uid} ingresó a las <strong>${rv.tsGE}</strong>.<br>
+          Un QR es de un solo uso e intransferible.<br>
+          <span style="font-size:10px;opacity:.7;">Estado actual: ${estadoBadge(est)}</span>
+        </div>
+      </div>`;
+    if(desdeQR) audit('DOBLE INGRESO BLOQUEADO',uid,rv.chofer,rv.placa,'Intento escaneo reingreso — bloqueado');
+    return;
+  }
 
   // Validaciones QR
   let validMsg='',validClass='a-ok';
@@ -1659,7 +1746,20 @@ function geAbrirModal(uid){
 }
 
 function geConfirmar(){
-  const uid=modalData.uid,rv=reg[uid];if(!rv)return;
+  const uid=modalData.uid, rv=reg[uid]; if(!rv) return;
+  // BLOQUEO DOBLE INGRESO — validación crítica
+  if(rv.tsGE){
+    cerrar('m-ge');
+    const el=document.getElementById('ge-result');
+    if(el) el.innerHTML=`<div class="alert a-err" style="font-size:13px;">
+      <i class="ti ti-lock"></i>
+      <div><strong>INGRESO BLOQUEADO</strong><br>
+      Este vehículo ya registró ingreso a las <strong>${rv.tsGE}</strong>.<br>
+      Un QR es intransferible y de un solo uso.</div>
+    </div>`;
+    audit('DOBLE INGRESO BLOQUEADO',uid,rv.chofer,rv.placa,'Intento de reingreso — bloqueado por sistema');
+    return;
+  }
   rv.tsGE=rv.tsIngreso=horaActual();
   rv.condicion=document.getElementById('ge-cond')?.value||'vacio';
   rv.operacion=document.getElementById('ge-op')?.value||'carga';
@@ -1774,13 +1874,29 @@ function dBuscar(){
   }
 }
 function dAbrirConfig(uid){
-  const rv=reg[uid];modalData.uid=uid;
+  const rv=reg[uid]; modalData.uid=uid;
+  const sugeridos=sugerirAndenes(rv.areaCarga);
+  renderAndenes(sugeridos);
+  const libres=andenes.filter(a=>a.libre);
+  const makeOpt=a=>{const s=sugeridos.includes(a.id);return`<option value="${a.id}"${s?' selected':''}>${a.nombre}${s?' ★':''}</option>`;};
   document.getElementById('m-desp-body').innerHTML=`
     <div style="background:var(--sf2);border-radius:var(--r);padding:.75rem;margin-bottom:10px;font-size:12px;">
       <strong>${uid}</strong> — ${rv.chofer} · <span class="mt">${rv.placa}</span>
+      <div style="margin-top:3px;color:var(--tx2);">Área carga: <strong>${rv.areaCarga||'—'}</strong></div>
     </div>
-    <div class="field"><span class="fl">Andén asignado</span>
-      <select id="d-anden">${andenes.map(a=>`<option value="${a.id}"${!a.libre?' disabled':''}>Andén ${a.id} ${a.libre?'(Libre)':'(Ocupado)'}</option>`).join('')}</select>
+    ${sugeridos.length?`<div class="alert a-info" style="margin-bottom:10px;font-size:11px;">
+      <i class="ti ti-sparkles"></i> Áreas sugeridas: <strong>${sugeridos.map(id=>andenes.find(a=>a.id===id)?.nombre||id).join(' · ')}</strong>
+    </div>`:''}
+    <div class="field"><span class="fl">Área / Andén asignado</span>
+      <select id="d-anden" style="width:100%;" onchange="document.getElementById('d-anden-manual-wrap').style.display=this.value==='__manual__'?'block':'none'">
+        <option value="">— Seleccione área —</option>
+        ${libres.map(makeOpt).join('')}
+        <option value="__manual__">Otro (escribir manualmente)</option>
+      </select>
+    </div>
+    <div class="field" id="d-anden-manual-wrap" style="display:none;">
+      <span class="fl">Ubicación manual</span>
+      <input type="text" id="d-anden-manual" placeholder="Ej: Zona Norte, Patio Exterior…"/>
     </div>
     <div class="field"><span class="fl">Despachador responsable</span>
       <input type="text" id="d-desp" placeholder="Nombre del despachador"/>
@@ -1791,7 +1907,7 @@ function dAbrirConfig(uid){
         <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;"><input type="radio" name="d-docs" value="no"/> No entregados</label>
       </div>
     </div>
-    <div class="field"><span class="fl">Observaciones de despacho</span>
+    <div class="field"><span class="fl">Observaciones</span>
       <textarea id="d-obs" rows="2" placeholder="Notas adicionales"></textarea>
     </div>`;
   document.getElementById('m-desp-actions').innerHTML=`
@@ -1801,24 +1917,34 @@ function dAbrirConfig(uid){
     </div>`;
   abrir('m-desp');
 }
+
 function dConfigurar(){
-  const uid=modalData.uid,rv=reg[uid];
-  const aid=parseInt(document.getElementById('d-anden')?.value);
+  const uid=modalData.uid, rv=reg[uid]; if(!rv) return;
+  const sel=document.getElementById('d-anden');
+  const isManual=sel?.value==='__manual__';
+  const aid=isManual?'manual':sel?.value;
+  const andenNombre=isManual
+    ?(document.getElementById('d-anden-manual')?.value||'Manual')
+    :(andenes.find(a=>a.id===aid)?.nombre||aid);
   const desp=document.getElementById('d-desp')?.value.trim()||'Sin asignar';
   const docs=document.querySelector('input[name="d-docs"]:checked')?.value==='si';
-  rv.anden=aid;rv.despachador=desp;rv.docs=docs;rv.obsDesp=document.getElementById('d-obs')?.value||'';
+  rv.anden=andenNombre; rv.andenId=aid;
+  rv.despachador=desp; rv.docs=docs;
+  rv.obsDesp=document.getElementById('d-obs')?.value||'';
   rv.tsDesp=horaActual();
-  const a=andenes.find(x=>x.id===aid);if(a){a.libre=false;a.uid=uid;a.lbl=rv.placa;}
+  // Marcar andén ocupado si es área configurada
+  if(!isManual){ const a=andenes.find(x=>x.id===aid);if(a){a.libre=false;a.uid=uid;a.lbl=rv.placa;} }
   avanzar(uid,'despacho');
-  audit('Despacho',uid,rv.chofer,rv.placa,'Andén '+aid+' · '+desp+(docs?' · Docs OK':' · Sin docs'));
+  audit('Despacho',uid,rv.chofer,rv.placa,andenNombre+' · '+desp+(docs?' · Docs OK':' · Sin docs'));
   cerrar('m-desp');
   // Notif WA al conductor
   const tel=rv.tel?rv.tel.replace(/\D/g,''):'';
-  const waMsg=`🏭 *AGRIPAC S.A. — Asignación de andén*\n\n📦 ${rv.detalle}\n🏗 *Andén: ${aid}*\n👷 Despachador: ${desp}\n🚛 Diríjase al andén asignado\n\n_${fmtFecha(fechaSel)}_`;
-  if(tel)window.open('https://wa.me/593'+tel.slice(-9)+`?text=${encodeURIComponent(waMsg)}`,'_blank');
-  document.getElementById('d-id').value='';document.getElementById('d-info').innerHTML='';
-  renderCargasActivas();renderAndenes();
+  const waMsg=`🏭 *AGRIPAC S.A. — Asignación de área*\n\n📦 ${rv.detalle}\n🏗 *Área: ${andenNombre}*\n👷 Despachador: ${desp}\n🚛 Diríjase al área asignada\n\n_${fmtFecha(fechaSel)}_`;
+  if(tel) window.open('https://wa.me/593'+tel.slice(-9)+`?text=${encodeURIComponent(waMsg)}`,'_blank');
+  document.getElementById('d-id').value=''; document.getElementById('d-info').innerHTML='';
+  renderCargasActivas(); renderAndenes();
 }
+
 function dIniciar(uid){
   const rv=reg[uid];
   cronos[uid]={start:Date.now(),elapsed:0,running:true};
@@ -1859,17 +1985,49 @@ function renderCargasActivas(){
     </tr>`;
   }).join('');
 }
-function renderAndenes(){
+function renderAndenes(sugeridos=[]){
   const grid=document.getElementById('andenes-grid');if(!grid)return;
-  grid.innerHTML=andenes.map(a=>`<div class="anden ${a.libre?'libre':cronos[a.uid]?.running?'cargando':'ocupado'}" onclick="clickAnden(${a.id})">
-    <div class="anden-num">A-${a.id}</div>
-    <div style="font-size:18px;margin:4px 0;">${a.libre?'<i class="ti ti-parking"></i>':cronos[a.uid]?.running?'<i class="ti ti-loader"></i>':'<i class="ti ti-truck"></i>'}</div>
-    <div class="anden-sub">${a.libre?'Libre':(a.lbl||'Ocupado')}</div>
-  </div>`).join('');
-  const sel=document.getElementById('d-anden');
-  if(sel)sel.innerHTML=andenes.filter(a=>a.libre).map(a=>`<option value="${a.id}">Andén ${a.id}</option>`).join('');
+  // Agrupar por grupo
+  const grupos={patio:'Patio',proceso:'Proceso',bodega:'Bodegas',anden:'Andenes',especial:'Especial'};
+  const byGrupo={};
+  andenes.forEach(a=>{ if(!byGrupo[a.grupo]) byGrupo[a.grupo]=[]; byGrupo[a.grupo].push(a); });
+  let html='';
+  Object.entries(byGrupo).forEach(([g,items])=>{
+    html+=`<div style="grid-column:1/-1;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);margin-top:8px;margin-bottom:2px;">${grupos[g]||g}</div>`;
+    items.forEach(a=>{
+      const isSug=sugeridos.includes(a.id);
+      const crono=cronos[a.uid];
+      const cls=a.libre?(isSug?'libre sugerido':'libre'):crono?.running?'cargando':'ocupado';
+      const sugBadge=isSug&&a.libre?'<div style="font-size:9px;color:var(--grt);font-weight:600;">★ Sugerido</div>':'';
+      html+=`<div class="anden ${cls}" onclick="clickAnden('${a.id}')" title="${a.nombre}">
+        <div class="anden-num" style="font-size:11px;">${a.nombre.split(' ')[0]}<br><span style="font-size:9px;opacity:.7;">${a.nombre.split(' ').slice(1).join(' ')}</span></div>
+        <div class="anden-icon">${a.libre?'<i class="ti ti-parking"></i>':crono?.running?'<i class="ti ti-loader"></i>':'<i class="ti ti-truck"></i>'}</div>
+        <div class="anden-sub">${a.libre?'Libre':(a.lbl||'Ocupado')}</div>
+        ${sugBadge}
+      </div>`;
+    });
+  });
+  grid.innerHTML=html;
+  grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;';
+  // Actualizar dashboard también
+  const dg=document.getElementById('dash-andenes');
+  if(dg) dg.innerHTML=andenes.filter(a=>!a.libre).map(a=>`<div class="anden ocupado">
+    <div class="anden-num" style="font-size:11px;">${a.nombre}</div>
+    <div class="anden-icon"><i class="ti ti-truck"></i></div>
+    <div class="anden-sub">${a.lbl||'Ocupado'}</div>
+  </div>`).join('')||'<div style="font-size:12px;color:var(--tx3);padding:.5rem;">Todos los andenes libres</div>';
 }
-function clickAnden(id){const a=andenes.find(x=>x.id===id);if(a&&!a.libre&&confirm('¿Liberar andén '+id+'?')){a.libre=true;a.uid=null;a.lbl='';renderAndenes();renderCargasActivas();}}
+function clickAnden(id){
+  const a=andenes.find(x=>x.id===id);
+  if(a&&!a.libre&&confirm('¿Liberar '+a.nombre+'?')){
+    a.libre=true;a.uid=null;a.lbl='';
+    renderAndenes();renderCargasActivas();
+  }
+}
+function agregarAnden(){
+  // No se puede agregar — la infraestructura está fija en AREAS_CONFIG
+  alert('La infraestructura está definida en AREAS_CONFIG. Edita esa constante para agregar áreas.');
+}
 function agregarAnden(){andenes.push({id:andenes.length+1,libre:true,uid:null,lbl:''});renderAndenes();}
 function fmtCrono(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);return pad(h)+':'+pad(m%60)+':'+pad(s%60);}
 
@@ -1934,31 +2092,61 @@ function renderBsTabla(){
 // ══════════════════════════════════════════════════════════
 // GARITA SALIDA
 // ══════════════════════════════════════════════════════════
+// ── GARITA SALIDA — callback desde scanner ──
+function gsDesdeQR(uid){
+  activarModo('gs','manual');
+  const inp=document.getElementById('gs-id');
+  if(inp) inp.value=uid;
+  gsBuscar();
+}
+
 let gsUID=null;
 function gsBuscar(){
-  const id=document.getElementById('gs-id').value.trim().toUpperCase();
-  const rv=reg[id],el=document.getElementById('gs-info');gsUID=null;
-  if(!rv||rv.estado!=='garita-salida'){el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> ID no encontrado o vehículo no está listo para salida</div>';return;}
+  const id=document.getElementById('gs-id')?.value.trim().toUpperCase()||'';
+  const rv=reg[id], el=document.getElementById('gs-info');
+  gsUID=null;
+  if(!id){el.innerHTML='';return;}
+  if(!rv){
+    el.innerHTML='<div class="alert a-warn"><i class="ti ti-alert-triangle"></i> ID no encontrado en la planificación</div>';return;
+  }
+  if(!rv.peSalida){
+    el.innerHTML='<div class="alert a-err"><i class="ti ti-alert-triangle"></i> Sin peso de salida registrado — debe pasar primero por Báscula Salida</div>';return;
+  }
+  if(!['bascula-salida','garita-salida','completado'].includes(rv.estado)){
+    el.innerHTML='<div class="alert a-err"><i class="ti ti-alert-triangle"></i> Despacho aún no completado — estado actual: '+estadoBadge(rv.estado)+'</div>';return;
+  }
+  if(rv.estado==='completado'){
+    el.innerHTML='<div class="alert a-err"><i class="ti ti-lock"></i> <strong>Vehículo ya registró salida</strong> a las '+rv.tsGS+' — QR finalizado e intransferible</div>';
+    audit('DOBLE SALIDA BLOQUEADA',id,rv.chofer,rv.placa,'Intento de doble salida — bloqueado');
+    return;
+  }
   gsUID=id;
   el.innerHTML=`
     <div class="alert a-ok" style="margin-bottom:10px;"><i class="ti ti-check"></i> Listo para autorización de salida</div>
     <div style="background:var(--sf2);border-radius:var(--r);padding:.9rem;margin-bottom:10px;font-size:12px;">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-        <div><div class="sl">ID</div><span class="mt" style="font-size:10px;">${id}</span></div>
+        <div><div class="sl">ID ÚNICO</div><span class="mt" style="font-size:10px;">${id}</span></div>
         <div><div class="sl">PLACA</div><span class="mt">${rv.placa}</span></div>
         <div><div class="sl">CHOFER</div><strong>${rv.chofer}</strong></div>
         <div><div class="sl">DETALLE</div>${rv.detalle}</div>
         <div><div class="sl">PESO NETO</div><span style="font-family:var(--mono);font-weight:600;color:var(--gr);">${(rv.peNeto||0).toLocaleString('es-EC')} kg</span></div>
         <div><div class="sl">TIEMPO CARGA</div><span class="mt">${rv.tiempoC||'—'}</span></div>
+        <div><div class="sl">DESPACHADOR</div>${rv.despachador||'—'}</div>
+        <div><div class="sl">ANDÉN</div>${rv.anden?'Andén '+rv.anden:'—'}</div>
       </div>
     </div>
-    <button class="btn btn-primary" onclick="gsAbrirModal('${id}')" style="width:100%;"><i class="ti ti-shield-check"></i> Completar autorización de salida</button>`;
+    <button class="btn btn-primary" onclick="gsAbrirModal('${id}')" style="width:100%;padding:10px;font-size:13px;">
+      <i class="ti ti-shield-check"></i> Completar autorización de salida
+    </button>`;
 }
+
 function gsAbrirModal(uid){
-  const rv=reg[uid];modalData.uid=uid;
+  const rv=reg[uid]; if(!rv) return;
+  modalData.uid=uid;
   document.getElementById('m-gs-body').innerHTML=`
     <div style="background:var(--sf2);border-radius:var(--r);padding:.75rem;margin-bottom:10px;font-size:12px;">
-      <strong>${uid}</strong> · ${rv.chofer} · <span class="mt">${rv.placa}</span> · <strong style="color:var(--gr);">${(rv.peNeto||0).toLocaleString('es-EC')} kg neto</strong>
+      <strong>${uid}</strong> · ${rv.chofer} · <span class="mt">${rv.placa}</span> ·
+      <strong style="color:var(--gr);">${(rv.peNeto||0).toLocaleString('es-EC')} kg neto</strong>
     </div>
     <div class="field"><span class="fl">Números de precintos de seguridad</span>
       <input type="text" id="gs-prec" placeholder="Ej: PR-001, PR-002"/>
@@ -1988,26 +2176,33 @@ function gsAbrirModal(uid){
     </div>`;
   abrir('m-gs');
 }
+
 function gsFoto(input){
-  const f=input.files[0];if(!f)return;
-  const r=new FileReader();r.onload=e=>{const img=document.getElementById('gs-foto-prev');img.src=e.target.result;img.style.display='block';};r.readAsDataURL(f);
+  const f=input.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{const img=document.getElementById('gs-foto-prev');img.src=e.target.result;img.style.display='block';};
+  r.readAsDataURL(f);
 }
+
 function gsConfirmar(){
-  const uid=modalData.uid,rv=reg[uid];
+  const uid=modalData.uid, rv=reg[uid]; if(!rv) return;
   rv.precintos=document.getElementById('gs-prec')?.value||'—';
   rv.guias=document.getElementById('gs-guias')?.value||'—';
   rv.autorizadoPor=document.getElementById('gs-oper')?.value||'Garita';
   rv.obsSal=document.getElementById('gs-obs')?.value||'';
   rv.tsGS=horaActual();
-  const fp=document.getElementById('gs-foto-prev');rv.foto=fp?.style.display!=='none'?fp?.src:null;
+  const fp=document.getElementById('gs-foto-prev');
+  rv.foto=fp?.style.display!=='none'?fp?.src:null;
   avanzar(uid,'completado');
   addTL('gs-tl','#1D9E75','Salida autorizada: '+rv.chofer,rv.placa+' · Guías: '+rv.guias);
-  addTL('dash-tl','#D85A30','Salida: '+rv.chofer,rv.placa+' · '+rv.peNeto?.toLocaleString('es-EC')+' kg neto');
+  addTL('dash-tl','#D85A30','Salida: '+rv.chofer,rv.placa+' · '+(rv.peNeto||0).toLocaleString('es-EC')+' kg neto');
   audit('Garita Salida',uid,rv.chofer,rv.placa,'Salida autorizada · Prec: '+rv.precintos+' · Guías: '+rv.guias);
-  cerrar('m-gs');gsUID=null;
+  cerrar('m-gs'); gsUID=null;
   renderGsTabla();
-  document.getElementById('gs-id').value='';document.getElementById('gs-info').innerHTML='';
+  const inp=document.getElementById('gs-id'); if(inp) inp.value='';
+  document.getElementById('gs-info').innerHTML='';
 }
+
 function renderGsTabla(){
   const body=document.getElementById('gs-tabla');if(!body)return;
   const items=planData.map(r=>reg[campo(r,'id')]).filter(r=>r&&r.estado==='completado');
