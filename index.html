@@ -10,9 +10,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <!-- QR scanner -->
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<!-- Firebase compat SDK v9 — solo Authentication -->
+<!-- Firebase compat SDK v9 — Auth + Firestore (solo perfiles de usuario) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 :root{
   --bg:#f5f4f0;--sf:#fff;--sf2:#f0efe9;--bd:#e0dfd8;--bd2:#c8c7be;
@@ -937,7 +938,9 @@ const FB_CONFIG = {
 
 firebase.initializeApp(FB_CONFIG);
 const fbAuth = firebase.auth();
-// Firestore eliminado — datos en Google Sheets vía Apps Script
+// Firestore — SOLO para perfiles de usuario (colección 'usuarios')
+// Todos los demás datos van a Google Sheets vía Apps Script
+const fbDB   = firebase.firestore();
 
 // ══════════════════════════════════════════════════════════
 // MÓDULO AUTH — Login / Logout / Roles
@@ -1126,16 +1129,21 @@ async function dbPost(body){
 }
 
 const DB = {
-  // ── Leer perfil de usuario — sigue siendo Firebase Auth + Firestore mínimo ──
-  // Solo 1 lectura al login, sin costo relevante
+  // ══════════════════════════════════════════════════════
+  // PERFILES DE USUARIO — Firestore (única colección usada)
+  // Documento: usuarios/{uid}
+  // Campos:
+  //   nombre   string   "Juan Pérez"
+  //   email    string   "juan@agripac.com"
+  //   rol      string   "admin"|"garita"|"bascula"|"despacho"|"planificacion"
+  //   tabs     array    ["dashboard","garita-e","garita-s"]  ← opcional, sobreescribe rol
+  //   areaCD   string   "ALMACENERA"|"PETFOOD"|"BPT"|"MATERIA PRIMA"|"TODAS"
+  // ══════════════════════════════════════════════════════
   async cargarPerfil(uid){
-    // Intenta Firestore si está disponible (para compatibilidad)
     try{
-      if(firebase.firestore){
-        const doc=await firebase.firestore().collection('usuarios').doc(uid).get();
-        if(doc.exists) return doc.data();
-      }
-    }catch(e){}
+      const doc = await fbDB.collection('usuarios').doc(uid).get();
+      if(doc.exists) return doc.data();
+    }catch(e){ console.warn('cargarPerfil error:',e); }
     return null;
   },
 
